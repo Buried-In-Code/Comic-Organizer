@@ -69,14 +69,14 @@ def _get_folder(folder: Path, filter: Tuple[str, ...]) -> List[Path]:
 def safe_list_get(data: List[Any], index: int) -> Optional[Any]:
     try:
         return data[index]
-    except (IndexError, KeyError):
+    except (IndexError, KeyError, TypeError):
         return None
 
 
 def safe_dict_get(data: Dict[str, Any], key: str) -> Optional[Any]:
     try:
         return data[key]
-    except (IndexError, KeyError):
+    except (IndexError, KeyError, TypeError):
         return None
 
 

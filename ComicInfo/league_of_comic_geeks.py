@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from requests import get
 from requests.exceptions import ConnectionError, HTTPError
 
-from Common import ComicFormat, CONFIG, Console, remove_annoying_chars, safe_list_get, safe_dict_get
+from Common import ComicFormat, CONFIG, Console, remove_annoying_chars, safe_dict_get, safe_list_get
 
 LOGGER = logging.getLogger(__name__)
 BASE_URL = 'https://leagueofcomicgeeks.com/api'
@@ -13,7 +13,7 @@ TIMEOUT = 100
 
 
 def _calculate_search_term(comic_info: Dict[str, Any]) -> str:
-    search_series = comic_info['Series']['Name']
+    search_series = comic_info['Series']['Title']
     if comic_info['Comic']['Number']:
         if comic_info['Format'] == ComicFormat.TRADE_PAPERBACK:
             return f"{search_series} Vol. {comic_info['Comic']['Number']} TP"
@@ -28,7 +28,7 @@ def _calculate_search_term(comic_info: Dict[str, Any]) -> str:
 
 
 def add_league_info(comic_info: Dict[str, Any], show_variants: bool = False) -> Dict[str, Any]:
-    league_id = safe_dict_get(comic_info['Identifiers']['League of Comic Geeks'], 'Id')
+    league_id = safe_dict_get(safe_dict_get(comic_info['Identifiers'], 'League of Comic Geeks'), 'Id')
     if league_id:
         response = select_comic(league_id)
     else:
@@ -72,24 +72,12 @@ def add_league_info(comic_info: Dict[str, Any], show_variants: bool = False) -> 
     if 'details' in response and 'format' in response['details'] and response['details']['format']:
         comic_info['Format'] = response['details']['format']
     if 'creators' in response and response['creators']:
-        mappings = {
-            'Cover Artist': 'Cover Artists',
-            'Artist': 'Artists',
-            'Colorist': 'Colourists',
-            'Editor': 'Editors',
-            'Inker': 'Inkers',
-            'Letterer': 'Letterers',
-            'Penciller': 'Pencillers',
-            'Writer': 'Writers'
-        }
         for creator in response['creators']:
-            roles = [x.strip() for x in creator['role'].split(',')]
-            for role in roles:
-                if role in mappings:
-                    comic_info['Creators'][mappings[role]].append(creator['name'])
-                    roles.remove(role)
+            for role in [x.strip() for x in creator['role'].split(',')]:
+                if role in comic_info['Creators']:
+                    comic_info['Creators'][role].append(creator['name'])
                 else:
-                    LOGGER.warning(f"Unmapped Role: `{role}`")
+                    comic_info['Creators'][role] = [creator['name']]
 
 
 def __generate_name_options(results: List[Dict[str, Any]]) -> List[str]:
