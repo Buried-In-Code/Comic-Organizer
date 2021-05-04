@@ -48,17 +48,17 @@ class Console:
 
     @classmethod
     def display_item_value(cls, item: str, value: str):
-        cls.__coloured_print(text=f"{item}: ", colour=Colour.BRIGHT_BLUE, end='')
+        cls.__coloured_print(text=f"{item}: ", colour=Colour.BLUE, end='')
         cls.__coloured_print(text=value)
 
     @classmethod
     def display_prompt(cls, prompt: Optional[str] = None) -> str:
         prompt = f"{prompt} >> " if prompt else '>> '
-        cls.__coloured_print(text=prompt, colour=Colour.BRIGHT_BLUE, end='')
+        cls.__coloured_print(text=prompt, colour=Colour.BLUE, end='')
         return input()
 
     @classmethod
-    def display_menu(cls, items: List[str], exit_text: str = None) -> int:
+    def display_menu(cls, items: List[str], exit_text: Optional[str] = None, prompt: Optional[str] = None) -> int:
         if len(items) == 0:
             return 0
         for count in range(0, len(items)):
@@ -66,11 +66,11 @@ class Console:
         if exit_text is not None:
             cls.display_item_value(item="0", value=exit_text)
         try:
-            return int(cls.display_prompt())
+            return int(cls.display_prompt(prompt))
         except ValueError as err:
             LOGGER.error(f"Invalid Number: {err}")
             return 0
 
     @classmethod
-    def __coloured_print(cls, text: str, colour: Colour = Colour.BRIGHT_WHITE, end: Optional[str] = None):
+    def __coloured_print(cls, text: str, colour: Colour = Colour.WHITE, end: Optional[str] = None):
         print(f"{colour.style}{text}{Style.RESET_ALL}", end=end)

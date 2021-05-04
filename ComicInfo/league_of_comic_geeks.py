@@ -14,7 +14,7 @@ TIMEOUT = 100
 
 def _calculate_search_term(comic_info: Dict[str, Any]) -> str:
     search_series = comic_info['Series']['Title']
-    if comic_info['Comic']['Number']:
+    if comic_info['Comic']['Number'] and comic_info['Comic']['Number'] != '1':
         if comic_info['Format'] == ComicFormat.TRADE_PAPERBACK:
             return f"{search_series} Vol. {comic_info['Comic']['Number']} TP"
         if comic_info['Format'] == ComicFormat.HARDCOVER:
@@ -70,7 +70,7 @@ def add_league_info(comic_info: Dict[str, Any], show_variants: bool = False) -> 
         except ValueError:
             pass
     if 'details' in response and 'format' in response['details'] and response['details']['format']:
-        comic_info['Format'] = response['details']['format']
+        comic_info['Format'] = ComicFormat.from_string(response['details']['format'])
     if 'creators' in response and response['creators']:
         for creator in response['creators']:
             for role in [x.strip() for x in creator['role'].split(',')]:
@@ -78,6 +78,7 @@ def add_league_info(comic_info: Dict[str, Any], show_variants: bool = False) -> 
                     comic_info['Creators'][role].append(creator['name'])
                 else:
                     comic_info['Creators'][role] = [creator['name']]
+    return comic_info
 
 
 def __generate_name_options(results: List[Dict[str, Any]]) -> List[str]:
@@ -106,7 +107,7 @@ def __generate_name_options(results: List[Dict[str, Any]]) -> List[str]:
     return options
 
 
-def search_comic(search_title: str, show_variants: bool = False) -> Optional[Dict[str, Any]]:
+def search_comic(search_title: str, show_variants: bool = False) -> Dict[str, Any]:
     comic_id = None
     results = __get_request('/search/format/json', params=[('query', search_title)]) or []
     if results:
@@ -124,16 +125,16 @@ def search_comic(search_title: str, show_variants: bool = False) -> Optional[Dic
         try:
             comic_id = int(Console.display_prompt('Input League of Comic Geeks ID'))
         except ValueError as err:
-            return None
+            return {}
     if comic_id:
         return select_comic(comic_id=comic_id)
-    return None
+    return {}
 
 
-def select_comic(comic_id: int) -> Optional[Dict[str, Any]]:
+def select_comic(comic_id: int) -> Dict[str, Any]:
     result = __get_request('/comic/format/json', params=[('comic_id', str(comic_id))]) or {}
     if not result:
-        return None
+        return {}
     return result
 
 

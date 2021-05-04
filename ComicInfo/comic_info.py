@@ -1,14 +1,14 @@
 import copy
 import json
 import logging
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from bs4 import BeautifulSoup
 from ruamel.yaml import YAML
 
-from Common import ComicFormat, ComicGenre, remove_annoying_chars
+from Common import ComicFormat, ComicGenre, remove_annoying_chars, Console
 
 LOGGER = logging.getLogger(__name__)
 DEFAULT_INFO = {
@@ -35,25 +35,27 @@ DEFAULT_INFO = {
 }
 
 
-def load_comic_info(folder: Path, include_xml: bool = False) -> Dict[str, Any]:
-    comic_info = None
+def load_comic_info(folder: Path) -> Dict[str, Any]:
     json_file = folder.joinpath('ComicInfo.json')
     yaml_file = folder.joinpath('ComicInfo.yaml')
     xml_file = folder.joinpath('ComicInfo.xml')
     if json_file.exists():
-        comic_info = __load_json_comic_info(json_file)
-    elif yaml_file.exists():
-        comic_info = __load_yaml_comic_info(yaml_file)
+        return __load_json_comic_info(json_file)
+    if yaml_file.exists():
+        return __load_yaml_comic_info(yaml_file)
     elif xml_file.exists():
         comic_info = __load_xml_comic_info(xml_file)
-        if not include_xml:
-            xml_file.unlink(missing_ok=True)
-    return comic_info or copy.deepcopy(DEFAULT_INFO)
+        xml_file.unlink(missing_ok=True)
+        comic_info['Format'] = list(ComicFormat)[Console.display_menu(list(ComicFormat), prompt='Select Format') - 1]
+        return comic_info
+    comic_info = copy.deepcopy(DEFAULT_INFO)
+    comic_info['Format'] = list(ComicFormat)[Console.display_menu(list(ComicFormat), prompt='Select Format') - 1]
+    return comic_info
 
 
 def __load_xml_comic_info(xml_file: Path) -> Dict[str, Any]:
     def str_to_list(soup, key: str) -> List[str]:
-        return [x for x in (str(soup.find(key).string) if soup.find(key) else '').split(',') if x]
+        return [x.strip() for x in (str(soup.find(key).string) if soup.find(key) else '').split(',') if x]
 
     comic_info = copy.deepcopy(DEFAULT_INFO)
     with open(xml_file, 'r', encoding='UTF-8') as xml_info:
@@ -71,8 +73,8 @@ def __load_xml_comic_info(xml_file: Path) -> Dict[str, Any]:
         # Alternative Series - Volume
         # Alternative Series - Number
         # endregion
-        comic_info['Summary'] = remove_annoying_chars(str(info.find('Summary').string)) if info.find(
-            'Summary') else None
+        comic_info['Summary'] = remove_annoying_chars(str(info.find('Summary').string)) \
+            if info.find('Summary') else None
         year = int(info.find('Year').string) if info.find('Year') else None
         month = int(info.find('Month').string) if info.find('Month') else 1 if year else None
         day = int(info.find('Day').string) if info.find('Day') else 1 if month else None
@@ -173,9 +175,64 @@ def __validate_dict(mapping: Dict[str, Any]) -> Dict[str, Any]:
     return mapping
 
 
-def save_comic_info(folder: Path, comic_info: Dict):
+def save_comic_info(folder: Path, comic_info: Dict[str, Any]):
     json_file = folder.joinpath('ComicInfo.json')
     if not json_file.exists():
         json_file.touch()
     with open(json_file, 'w', encoding='UTF-8') as file_stream:
         json.dump(comic_info, file_stream, default=str, indent=2)
+
+
+def add_manual_info(comic_info: Dict[str, Any]) -> Dict[str, Any]:
+    def str_entry(prompt: str, mapping: Dict[str, Any], key: str, default: Optional[str] = None):
+        input_value = Console.display_prompt(f"{prompt} [{mapping[key]}]")
+        if input_value == '**NONE**':
+            mapping[key] = default
+        elif input_value:
+            mapping[key] = input_value
+
+    def date_entry(prompt: str, mapping: Dict[str, Any], key: str, default: Optional[date] = None):
+        input_value = Console.display_prompt(f"{prompt} (yyyy-mm-dd) [{mapping[key]}]")
+        if input_value == '**NONE**':
+            mapping[key] = default
+        elif input_value:
+            mapping[key] = datetime.strptime(input_value, '%Y-%m-%d').date()
+
+    def int_entry(prompt: str, mapping: Dict[str, Any], key: str, default: int = 1):
+        input_value = Console.display_prompt(f"{prompt} [{mapping[key]}]")
+        if input_value == '**NONE**':
+            mapping[key] = default
+        elif input_value:
+            try:
+                mapping[key] = int(input_value)
+            except ValueError:
+                pass
+
+    def enum_entry(prompt: str, mapping: Dict[str, Any], key: str, options: List[Any], default: Optional[Any] = None):
+        selected = Console.display_menu(prompt=f"{prompt} [{mapping[key]}]", items=options,
+                                        exit_text=default or '**NONE**')
+        if selected:
+            mapping[key] = options[selected - 1]
+        elif default:
+            mapping[key] = default
+        else:
+            mapping[key] = None
+
+    str_entry('Publisher', comic_info, 'Publisher')
+    str_entry('Series Title', comic_info['Series'], 'Title')
+    int_entry('Series Volume', comic_info['Series'], 'Volume')
+    str_entry('Comic Number', comic_info['Comic'], 'Number', '1')
+    str_entry('Comic Title', comic_info['Comic'], 'Title')
+    str_entry('Variant', comic_info, 'Variant')
+    str_entry('Summary', comic_info, 'Summary')
+    date_entry('Cover Date', comic_info, 'Cover Date')
+    str_entry('Language', comic_info, 'Language', 'EN')
+    str_entry('Summary', comic_info, 'Summary')
+    enum_entry('Format', comic_info, 'Format', list(ComicFormat), ComicFormat.COMIC)
+    LOGGER.warning('Unable to manually edit Lists, will need to do it via the ComicInfo file: Genres')
+    int_entry('Page Count', comic_info, 'Page Count')
+    LOGGER.warning('Unable to manually edit Lists, will need to do it via the ComicInfo file: Creators')
+    LOGGER.warning('Unable to manually edit Lists, will need to do it via the ComicInfo file: Alternative Series')
+    LOGGER.warning('Unable to manually edit Lists, will need to do it via the ComicInfo file: Identifiers')
+    str_entry('Notes', comic_info, 'Notes')
+    return comic_info

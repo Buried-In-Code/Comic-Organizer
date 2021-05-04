@@ -1,8 +1,11 @@
+import logging
 import re
 
 from titlecase import titlecase
 
 from Common import ComicFormat
+
+LOGGER = logging.getLogger(__name__)
 
 
 def abbreviations(word, **kwargs):

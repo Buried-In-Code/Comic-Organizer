@@ -12,7 +12,7 @@ DEFAULT_CONFIG = {
         'Key': None
     },
     'Comicvine Key': None,
-    # 'Root Folder': str(Path(__file__).resolve().parent.parent.joinpath("Comics"))
+    'Root Folder': str(Path(__file__).resolve().parent.parent.joinpath("Comics"))
 }
 
 

@@ -1,66 +1,69 @@
 import logging
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import List
 
 import PyLogger
 from ComicInfo import load_comic_info, save_comic_info, add_league_info
-from Common import get_files, del_folder, pack, slug_comic, slug_publisher, slug_series, unpack
+from Common import get_files, del_folder, pack, slug_comic, slug_publisher, slug_series, unpack, CONFIG, Console
 
 LOGGER = logging.getLogger('ComicInfo')
-PROCESSING = Path(__file__).parent.parent.joinpath('Processing')
+PROCESSING = Path(CONFIG['Root Folder']).joinpath('Processing')
 
 
-def main(folder: List[str] = None, keep_xml: bool = False, add_league_data: bool = False, show_variants: bool = False,
-         manual_edit: bool = False, debug: bool = False):
-    convert_files = set()
-    for file in folder:
-        convert_files |= get_files(file)
-    LOGGER.debug(convert_files)
-    for file in convert_files:
+def main(input_folder: str, manual_image_check: bool = False, add_league_data: bool = False,
+         show_variants: bool = False, debug: bool = False):
+    for file in get_files(input_folder):
         LOGGER.info(f"Converting {file.stem}")
         unpacked_folder = unpack(file, PROCESSING)
         if not unpacked_folder:
             continue
-        comic_info = load_comic_info(unpacked_folder, keep_xml)
+        comic_info = load_comic_info(unpacked_folder)
         if add_league_data:
-            add_league_info(comic_info, show_variants)
-            # TODO: Add League of Comic Geeks data to ComicInfo
-            pass
-        if manual_edit:
-            # TODO: Manually Edit fields in ComicInfo
-            pass
+            if not comic_info['Series']['Title']:
+                comic_info['Series']['Title'] = Console.display_prompt('Series Title')
+            if not comic_info['Comic']['Number']:
+                comic_info['Comic']['Number'] = Console.display_prompt('Comic Number') or '1'
+            comic_info = add_league_info(comic_info, show_variants)
 
         save_comic_info(unpacked_folder, comic_info)
 
         publisher_slug = slug_publisher(comic_info['Publisher'])
         series_slug = slug_series(comic_info['Series']['Title'], comic_info['Series']['Volume'])
         issue_slug = slug_comic(series_slug, comic_info['Format'], comic_info['Comic']['Number'])
-        cleaned_file = pack(unpacked_folder, issue_slug, keep_xml)
-        if not cleaned_file:
+
+        if manual_image_check:
+            Console.display_prompt('Press <ENTER> to continue')
+
+        packed_file = pack(unpacked_folder, issue_slug)
+        if not packed_file:
             continue
         del_folder(unpacked_folder)
 
-        returned_file = file.parent.joinpath(cleaned_file.name)
-        if not returned_file.exists():
-            cleaned_file.rename(returned_file)
+        parent_folder = Path(CONFIG['Root Folder']).joinpath('Collection').joinpath(publisher_slug) \
+            .joinpath(series_slug)
+        parent_folder.mkdir(exist_ok=True, parents=True)
+        cleaned_file = parent_folder.joinpath(packed_file.name)
+        if not cleaned_file.exists():
+            packed_file.rename(cleaned_file)
         else:
-            LOGGER.error(f"Unable to move the result as a file with the same name already exists: {returned_file}")
+            LOGGER.error(f"Unable to move the result as a file with the same name already exists: {cleaned_file}")
 
 
 def parse_arguments() -> Namespace:
     parser = ArgumentParser(prog='Comic-Info')
-    parser.add_argument('folder', action='extend', type=str, nargs='+')
-    parser.add_argument('--keep-xml', action='store_true')
+    parser.add_argument('--input-folder', type=str, required=True)
+    parser.add_argument('--manual-image-check', action='store_true')
     parser.add_argument('--add-league-data', action='store_true')
     parser.add_argument('--show-variants', action='store_true')
-    parser.add_argument('--manual-edit', action='store_true')
     parser.add_argument('-d', '--debug', action='store_true')
     return parser.parse_args()
 
 
 if __name__ == '__main__':
-    args = parse_arguments()
-    PyLogger.init('Comic-Info', console_level=logging.DEBUG if args.debug else logging.INFO)
-    main(folder=args.folder, keep_xml=args.keep_xml, add_league_data=args.add_league_data,
-         show_variants=args.show_variants, manual_edit=args.manual_edit, debug=args.debug)
+    try:
+        args = parse_arguments()
+        PyLogger.init('Comic-Info', console_level=logging.DEBUG if args.debug else logging.INFO)
+        main(input_folder=args.input_folder, manual_image_check=args.manual_image_check,
+             add_league_data=args.add_league_data, show_variants=args.show_variants, debug=args.debug)
+    except KeyboardInterrupt:
+        pass

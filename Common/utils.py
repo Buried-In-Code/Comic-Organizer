@@ -9,13 +9,11 @@ from patoolib import create_archive, extract_archive
 LOGGER = logging.getLogger(__name__)
 
 
-def pack(src: Path, title: str, include_xml: bool = False) -> Optional[Path]:
+def pack(src: Path, title: str) -> Optional[Path]:
     files = []
     for index, img_file in enumerate(_get_folder(src, ('.jpg',))):
         files.append(img_file.rename(src.joinpath(f"{title}-{index:03}{img_file.suffix}")))
     files.append(src.joinpath('ComicInfo.json'))
-    if include_xml and src.joinpath('ComicInfo.xml').exists():
-        files.append(src.joinpath('ComicInfo.xml'))
     zip_file = src.parent.joinpath(title + '.cbz')
     if zip_file.exists():
         LOGGER.error(f"{zip_file.name} already exists in {zip_file.parent.name}")
