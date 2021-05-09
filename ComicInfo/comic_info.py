@@ -37,10 +37,11 @@ DEFAULT_INFO = {
 
 def load_comic_info(folder: Path) -> Dict[str, Any]:
     json_file = folder.joinpath('ComicInfo.json')
-    yaml_file = folder.joinpath('ComicInfo.yaml')
+    yaml_file = folder.joinpath('ComicInfo.yaml')  # TODO: Remove this once finished migrating collection to JSON
     xml_file = folder.joinpath('ComicInfo.xml')
     if json_file.exists():
         return __load_json_comic_info(json_file)
+    # TODO: Remove this once finished migrating collection to JSON
     if yaml_file.exists():
         return __load_yaml_comic_info(yaml_file)
     elif xml_file.exists():
@@ -183,7 +184,8 @@ def save_comic_info(folder: Path, comic_info: Dict[str, Any]):
     comic_info['Genres'] = sorted(comic_info['Genres'], key=lambda x: x.get_title())
     for key, value in comic_info['Creators'].copy().items():
         comic_info['Creators'][key] = sorted(comic_info['Creators'][key])
-    comic_info['Alternative Series'] = sorted(comic_info['Alternative Series'], key=lambda x: (x['Title'], x['Volume'], x['Number']))
+    comic_info['Alternative Series'] = sorted(comic_info['Alternative Series'],
+                                              key=lambda x: (x['Title'], x['Volume'], x['Number']))
     comic_info['Identifiers'] = dict(sorted(comic_info['Identifiers'].items()))
     with open(json_file, 'w', encoding='UTF-8') as file_stream:
         json.dump(comic_info, file_stream, default=str, indent=2)

@@ -1,6 +1,6 @@
 import logging
 from json.decoder import JSONDecodeError
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 from requests import get
 from requests.exceptions import ConnectionError, HTTPError
@@ -81,33 +81,32 @@ def add_league_info(comic_info: Dict[str, Any], show_variants: bool = False) -> 
     return comic_info
 
 
-def __generate_name_options(results: List[Dict[str, Any]]) -> List[str]:
-    options = []
-    for item in results:
-        series_title = item['series_name']
-        if item['series_volume'] and item['series_volume'] != '0' and item['series_volume'] != '1':
-            series_title += f" v{item['series_volume']}"
-        try:
-            series_begin = int(item['series_begin'])
-            if not series_begin:
-                series_begin = 'Present'
-        except ValueError:
-            series_begin = 'Present'
-        try:
-            series_end = int(item['series_end'])
-            if not series_end:
-                series_end = 'Present'
-        except ValueError:
-            series_end = 'Present'
-        if series_begin != series_end:
-            series_title += f" ({series_begin}-{series_end or 'Present'})"
-        else:
-            series_title += f" ({series_begin})"
-        options.append(f"{item['id']}|{item['publisher_name']}|{series_title} - {item['title']} - {item['format']}")
-    return options
-
-
 def search_comic(search_title: str, show_variants: bool = False) -> Dict[str, Any]:
+    def __generate_name_options(options: List[Dict[str, Any]]) -> List[str]:
+        str_options = []
+        for item in options:
+            series_title = item['series_name']
+            if item['series_volume'] and item['series_volume'] != '0' and item['series_volume'] != '1':
+                series_title += f" v{item['series_volume']}"
+            try:
+                series_begin = int(item['series_begin'])
+                if not series_begin:
+                    series_begin = 'Present'
+            except ValueError:
+                series_begin = 'Present'
+            try:
+                series_end = int(item['series_end'])
+                if not series_end:
+                    series_end = 'Present'
+            except ValueError:
+                series_end = 'Present'
+            if series_begin != series_end:
+                series_title += f" ({series_begin}-{series_end or 'Present'})"
+            else:
+                series_title += f" ({series_begin})"
+            str_options.append(f"{item['id']}|{item['publisher_name']}|{series_title} - {item['title']} - {item['format']}")
+        return str_options
+
     comic_id = None
     results = __get_request('/search/format/json', params=[('query', search_title)]) or []
     if results:
