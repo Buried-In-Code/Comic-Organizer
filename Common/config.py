@@ -16,7 +16,7 @@ DEFAULT_CONFIG = {
 }
 
 
-def yaml_setup() -> YAML:
+def __yaml_setup() -> YAML:
     def null_representer(self, data):
         return self.represent_scalar(u'tag:yaml.org,2002:null', u'~')
 
@@ -32,7 +32,7 @@ def yaml_setup() -> YAML:
 def save_config(data: CommentedMap, testing: bool = False):
     config_file = TOP_DIR.joinpath('config-test.yaml' if testing else 'config.yaml')
     with open(config_file, 'w', encoding='UTF-8') as yaml_file:
-        yaml_setup().dump(data, yaml_file)
+        __yaml_setup().dump(data, yaml_file)
 
 
 def load_config(testing: bool = False) -> CommentedMap:
@@ -49,7 +49,7 @@ def load_config(testing: bool = False) -> CommentedMap:
     config_file = TOP_DIR.joinpath('config-test.yaml' if testing else 'config.yaml')
     if config_file.exists():
         with open(config_file, 'r', encoding='UTF-8') as yaml_file:
-            data = yaml_setup().load(yaml_file) or DEFAULT_CONFIG
+            data = __yaml_setup().load(yaml_file) or DEFAULT_CONFIG
     else:
         config_file.touch()
         data = DEFAULT_CONFIG

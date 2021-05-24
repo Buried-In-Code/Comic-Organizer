@@ -10,7 +10,7 @@ LOGGER = logging.getLogger('ComicInfo')
 PROCESSING = Path(CONFIG['Root Folder']).joinpath('Processing')
 
 
-def main(input_folder: str, manual_image_check: bool = False, add_manual_data: bool = False,
+def main(input_folder: str, use_yaml: bool = False, manual_image_check: bool = False, add_manual_data: bool = False,
          add_league_data: bool = False, add_comicvine_data: bool = False, show_variants: bool = False,
          debug: bool = False):
     for file in get_files(input_folder):
@@ -30,7 +30,7 @@ def main(input_folder: str, manual_image_check: bool = False, add_manual_data: b
         if add_manual_data:
             comic_info = add_manual_info(comic_info)
 
-        save_comic_info(unpacked_folder, comic_info)
+        save_comic_info(unpacked_folder, comic_info, use_yaml=use_yaml)
 
         publisher_slug = slug_publisher(comic_info['Publisher'])
         series_slug = slug_series(comic_info['Series']['Title'], comic_info['Series']['Volume'])
@@ -39,7 +39,7 @@ def main(input_folder: str, manual_image_check: bool = False, add_manual_data: b
         if manual_image_check:
             Console.display_prompt('Press <ENTER> to continue')
 
-        packed_file = pack(unpacked_folder, issue_slug)
+        packed_file = pack(unpacked_folder, issue_slug, use_yaml=use_yaml)
         if not packed_file:
             continue
         del_folder(unpacked_folder)
@@ -57,6 +57,7 @@ def main(input_folder: str, manual_image_check: bool = False, add_manual_data: b
 def parse_arguments() -> Namespace:
     parser = ArgumentParser(prog='Comic-Info')
     parser.add_argument('--input-folder', type=str, required=True)
+    parser.add_argument('--use-yaml', action='store_true')
     parser.add_argument('--manual-image-check', action='store_true')
     parser.add_argument('--add-manual-data', action='store_true')
     parser.add_argument('--add-league-data', action='store_true')
@@ -70,7 +71,7 @@ if __name__ == '__main__':
     try:
         args = parse_arguments()
         PyLogger.init('Comic-Info', console_level=logging.DEBUG if args.debug else logging.INFO)
-        main(input_folder=args.input_folder, manual_image_check=args.manual_image_check,
+        main(input_folder=args.input_folder, use_yaml=args.use_yaml, manual_image_check=args.manual_image_check,
              add_manual_data=args.add_manual_data, add_league_data=args.add_league_data,
              add_comicvine_data=args.add_comicvine_data, show_variants=args.show_variants, debug=args.debug)
     except KeyboardInterrupt:

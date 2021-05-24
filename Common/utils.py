@@ -5,15 +5,19 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from patoolib import create_archive, extract_archive
+from ruamel.yaml import YAML
 
 LOGGER = logging.getLogger(__name__)
 
 
-def pack(src: Path, title: str) -> Optional[Path]:
+def pack(src: Path, title: str, use_yaml: bool = False) -> Optional[Path]:
     files = []
     for index, img_file in enumerate(_get_folder(src, ('.jpg',))):
         files.append(img_file.rename(src.joinpath(f"{title}-{index:03}{img_file.suffix}")))
-    files.append(src.joinpath('ComicInfo.json'))
+    if use_yaml:
+        files.append(src.joinpath('ComicInfo.yaml'))
+    else:
+        files.append(src.joinpath('ComicInfo.json'))
     zip_file = src.parent.joinpath(title + '.cbz')
     if zip_file.exists():
         LOGGER.error(f"{zip_file.name} already exists in {zip_file.parent.name}")
@@ -81,3 +85,16 @@ def safe_dict_get(data: Dict[str, Any], key: str) -> Optional[Any]:
 def remove_annoying_chars(value: str) -> str:
     tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
     return ' '.join(html.unescape(tag_re.sub('', value)).split())
+
+
+def yaml_setup() -> YAML:
+    def null_representer(self, data):
+        return self.represent_scalar(u'tag:yaml.org,2002:null', u'~')
+
+    yaml = YAML(pure=True)
+    yaml.default_flow_style = False
+    yaml.width = 2147483647
+    yaml.representer.add_representer(type(None), null_representer)
+    # yaml.emitter.alt_null = '~'
+    yaml.version = (1, 2)
+    return yaml

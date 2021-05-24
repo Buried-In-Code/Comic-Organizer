@@ -6,9 +6,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from bs4 import BeautifulSoup
-from ruamel.yaml import YAML
 
-from Common import ComicFormat, ComicGenre, remove_annoying_chars, Console
+from Common import ComicFormat, ComicGenre, Console, remove_annoying_chars, yaml_setup
 
 LOGGER = logging.getLogger(__name__)
 DEFAULT_INFO = {
@@ -37,15 +36,15 @@ DEFAULT_INFO = {
 
 def load_comic_info(folder: Path) -> Dict[str, Any]:
     json_file = folder.joinpath('ComicInfo.json')
-    yaml_file = folder.joinpath('ComicInfo.yaml')  # TODO: Remove this once finished migrating collection to JSON
+    yaml_file = folder.joinpath('ComicInfo.yaml')
     xml_file = folder.joinpath('ComicInfo.xml')
     if json_file.exists():
-        return __load_json_comic_info(json_file)
+        return __load_json_info(json_file)
     # TODO: Remove this once finished migrating collection to JSON
     if yaml_file.exists():
-        return __load_yaml_comic_info(yaml_file)
+        return __load_yaml_info(yaml_file)
     elif xml_file.exists():
-        comic_info = __load_xml_comic_info(xml_file)
+        comic_info = __load_xml_info(xml_file)
         xml_file.unlink(missing_ok=True)
         comic_info['Format'] = list(ComicFormat)[Console.display_menu(list(ComicFormat), prompt='Select Format') - 1]
         return comic_info
@@ -54,7 +53,7 @@ def load_comic_info(folder: Path) -> Dict[str, Any]:
     return comic_info
 
 
-def __load_xml_comic_info(xml_file: Path) -> Dict[str, Any]:
+def __load_xml_info(xml_file: Path) -> Dict[str, Any]:
     def str_to_list(soup, key: str) -> List[str]:
         return [x.strip() for x in (str(soup.find(key).string) if soup.find(key) else '').split(',') if x]
 
@@ -104,28 +103,15 @@ def __load_xml_comic_info(xml_file: Path) -> Dict[str, Any]:
     return comic_info
 
 
-def __load_json_comic_info(json_file: Path) -> Dict[str, Any]:
+def __load_json_info(json_file: Path) -> Dict[str, Any]:
     with open(json_file, 'r', encoding='UTF-8') as json_info:
         comic_info = json.load(json_info)
         comic_info['Format'] = ComicFormat.from_string(comic_info['Format']) or ComicFormat.COMIC
         comic_info['Genres'] = [x for x in [ComicGenre.from_string(x) for x in comic_info['Genres'].copy()] if x]
-        return __validate_dict(comic_info)
+        return _validate_dict(comic_info)
 
 
-# TODO: Remove this once finished migrating collection to JSON
-def __load_yaml_comic_info(yaml_file: Path) -> Dict[str, Any]:
-    def yaml_setup() -> YAML:
-        def null_representer(self, data):
-            return self.represent_scalar(u'tag:yaml.org,2002:null', u'~')
-
-        yaml = YAML(pure=True)
-        yaml.default_flow_style = False
-        yaml.width = 2147483647
-        yaml.representer.add_representer(type(None), null_representer)
-        # yaml.emitter.alt_null = '~'
-        yaml.version = (1, 2)
-        return yaml
-
+def __load_yaml_info(yaml_file: Path) -> Dict[str, Any]:
     with open(yaml_file, 'r', encoding='UTF-8') as yaml_info:
         comic_info = yaml_setup().load(yaml_info)['Comic Info']
         comic_info['Series']['Volume'] = comic_info['Series']['Volume'] or 1
@@ -154,10 +140,10 @@ def __load_yaml_comic_info(yaml_file: Path) -> Dict[str, Any]:
                     creators_dict[role] = [creator['Name']]
         del comic_info['Creators']
         comic_info['Creators'] = creators_dict
-        return __validate_dict(comic_info)
+        return _validate_dict(comic_info)
 
 
-def __validate_dict(mapping: Dict[str, Any]) -> Dict[str, Any]:
+def _validate_dict(mapping: Dict[str, Any]) -> Dict[str, Any]:
     temp_dict = copy.deepcopy(DEFAULT_INFO)
     for key, value in temp_dict.items():
         if key not in mapping:
@@ -175,20 +161,6 @@ def __validate_dict(mapping: Dict[str, Any]) -> Dict[str, Any]:
                 if sub_key not in DEFAULT_INFO[key]:
                     mapping[key].pop(sub_key, None)
     return mapping
-
-
-def save_comic_info(folder: Path, comic_info: Dict[str, Any]):
-    json_file = folder.joinpath('ComicInfo.json')
-    if not json_file.exists():
-        json_file.touch()
-    comic_info['Genres'] = sorted(comic_info['Genres'], key=lambda x: x.get_title())
-    for key, value in comic_info['Creators'].copy().items():
-        comic_info['Creators'][key] = sorted(comic_info['Creators'][key])
-    comic_info['Alternative Series'] = sorted(comic_info['Alternative Series'],
-                                              key=lambda x: (x['Title'], x['Volume'], x['Number']))
-    comic_info['Identifiers'] = dict(sorted(comic_info['Identifiers'].items()))
-    with open(json_file, 'w', encoding='UTF-8') as file_stream:
-        json.dump(comic_info, file_stream, default=str, indent=2)
 
 
 def add_manual_info(comic_info: Dict[str, Any]) -> Dict[str, Any]:
@@ -244,3 +216,32 @@ def add_manual_info(comic_info: Dict[str, Any]) -> Dict[str, Any]:
     LOGGER.warning('Unable to manually edit Lists, will need to do it via the ComicInfo file: Identifiers')
     str_entry('Notes', comic_info, 'Notes')
     return comic_info
+
+
+def save_comic_info(folder: Path, comic_info: Dict[str, Any], use_yaml: bool = False):
+    if use_yaml:
+        __save_yaml_info(folder, comic_info)
+    else:
+        __save_json_info(folder, comic_info)
+
+
+def __save_json_info(folder: Path, comic_info: Dict[str, Any]):
+    json_file = folder.joinpath('ComicInfo.json')
+    if not json_file.exists():
+        json_file.touch()
+    comic_info['Genres'] = sorted(comic_info['Genres'], key=lambda x: x.get_title())
+    for key, value in comic_info['Creators'].copy().items():
+        comic_info['Creators'][key] = sorted(comic_info['Creators'][key])
+    comic_info['Alternative Series'] = sorted(comic_info['Alternative Series'],
+                                              key=lambda x: (x['Title'], x['Volume'], x['Number']))
+    comic_info['Identifiers'] = dict(sorted(comic_info['Identifiers'].items()))
+    with open(json_file, 'w', encoding='UTF-8') as file_stream:
+        json.dump(comic_info, file_stream, default=str, indent=2)
+
+
+def __save_yaml_info(folder: Path, comic_info: Dict[str, Any]):
+    yaml_file = folder.joinpath('ComicInfo.yaml')
+    if not yaml_file.exists():
+        yaml_file.touch()
+    with open(yaml_file, 'w', encoding='UTF-8') as info_yaml:
+        yaml_setup().dump({'Comic Info': comic_info}, info_yaml)
