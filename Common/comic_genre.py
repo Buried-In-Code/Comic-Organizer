@@ -12,11 +12,11 @@ class ComicGenre(Enum):
     ROMANCE = auto()
     VIDEO_GAMES = auto()
 
-    def __str__(self):
-        return self.get_title()
+    def __repr__(self):
+        return self.__str__()
 
-    def get_title(self) -> str:
-        return ' '.join([x.title() for x in self.name.split('_')])
+    def __str__(self):
+        return f"{type(self).__name__}({self.name})"
 
     @classmethod
     def from_string(cls, value: str) -> Optional['ComicGenre']:
