@@ -1,6 +1,7 @@
 import html
 import logging
 import re
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -98,3 +99,7 @@ def yaml_setup() -> YAML:
     # yaml.emitter.alt_null = '~'
     yaml.version = (1, 2)
     return yaml
+
+
+def get_enum_title(item: Enum) -> str:
+    return ' '.join([x.title() for x in item.name.split('_')])

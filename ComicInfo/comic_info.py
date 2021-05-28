@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from bs4 import BeautifulSoup
 
-from Common import ComicFormat, ComicGenre, Console, remove_annoying_chars, yaml_setup
+from Common import ComicFormat, ComicGenre, Console, remove_annoying_chars, yaml_setup, get_enum_title
 
 LOGGER = logging.getLogger(__name__)
 DEFAULT_INFO = {
@@ -46,10 +46,12 @@ def load_comic_info(folder: Path) -> Dict[str, Any]:
     elif xml_file.exists():
         comic_info = __load_xml_info(xml_file)
         xml_file.unlink(missing_ok=True)
-        comic_info['Format'] = list(ComicFormat)[Console.display_menu([x.name for x in ComicFormat], prompt='Select Format') - 1]
+        comic_info['Format'] = list(ComicFormat)[
+            Console.display_menu([x.name for x in ComicFormat], prompt='Select Format') - 1]
         return comic_info
     comic_info = copy.deepcopy(DEFAULT_INFO)
-    comic_info['Format'] = list(ComicFormat)[Console.display_menu([x.name for x in ComicFormat], prompt='Select Format') - 1]
+    comic_info['Format'] = list(ComicFormat)[
+        Console.display_menu([x.name for x in ComicFormat], prompt='Select Format') - 1]
     return comic_info
 
 
@@ -219,6 +221,8 @@ def add_manual_info(comic_info: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def save_comic_info(folder: Path, comic_info: Dict[str, Any], use_yaml: bool = False):
+    comic_info['Genres'] = [get_enum_title(x) for x in comic_info['Genres']]
+    comic_info['Format'] = get_enum_title(comic_info['Format'])
     if use_yaml:
         __save_yaml_info(folder, comic_info)
     else:
@@ -229,7 +233,7 @@ def __save_json_info(folder: Path, comic_info: Dict[str, Any]):
     json_file = folder.joinpath('ComicInfo.json')
     if not json_file.exists():
         json_file.touch()
-    comic_info['Genres'] = sorted(comic_info['Genres'], key=lambda x: x.name)
+    comic_info['Genres'] = sorted(comic_info['Genres'])
     for key, value in comic_info['Creators'].copy().items():
         comic_info['Creators'][key] = sorted(comic_info['Creators'][key])
     comic_info['Alternative Series'] = sorted(comic_info['Alternative Series'],
