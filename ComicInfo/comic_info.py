@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from bs4 import BeautifulSoup
 
-from Common import ComicFormat, ComicGenre, Console, remove_annoying_chars, yaml_setup, get_enum_title
+from Common import ComicFormat, ComicGenre, Console, get_enum_title, remove_annoying_chars, yaml_setup
 
 LOGGER = logging.getLogger(__name__)
 DEFAULT_INFO = {
@@ -46,12 +46,12 @@ def load_comic_info(folder: Path) -> Dict[str, Any]:
     elif xml_file.exists():
         comic_info = __load_xml_info(xml_file)
         xml_file.unlink(missing_ok=True)
-        comic_info['Format'] = list(ComicFormat)[
-            Console.display_menu([x.name for x in ComicFormat], prompt='Select Format') - 1]
+        format_option = Console.display_menu([get_enum_title(x) for x in ComicFormat], prompt='Select Format')
+        comic_info['Format'] = list(ComicFormat)[format_option - 1]
         return comic_info
     comic_info = copy.deepcopy(DEFAULT_INFO)
-    comic_info['Format'] = list(ComicFormat)[
-        Console.display_menu([x.name for x in ComicFormat], prompt='Select Format') - 1]
+    format_option = Console.display_menu([get_enum_title(x) for x in ComicFormat], prompt='Select Format')
+    comic_info['Format'] = list(ComicFormat)[format_option - 1]
     return comic_info
 
 

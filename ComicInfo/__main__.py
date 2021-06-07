@@ -3,8 +3,8 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 import PyLogger
-from ComicInfo import load_comic_info, save_comic_info, add_manual_info, add_league_info, add_comicvine_info
-from Common import get_files, del_folder, pack, slug_comic, slug_publisher, slug_series, unpack, CONFIG, Console
+from ComicInfo import add_comicvine_info, add_league_info, add_manual_info, load_comic_info, save_comic_info
+from Common import CONFIG, Console, del_folder, get_files, pack, slug_comic, slug_publisher, slug_series, unpack
 
 LOGGER = logging.getLogger('ComicInfo')
 PROCESSING = Path(CONFIG['Root Folder']).joinpath('Processing')
@@ -43,8 +43,11 @@ def main(input_folder: str, use_yaml: bool = False, manual_image_check: bool = F
         if not packed_file:
             continue
         del_folder(unpacked_folder)
+        file.unlink(missing_ok=True)
 
-        parent_folder = Path(CONFIG['Root Folder']).joinpath('Collection').joinpath(publisher_slug) \
+        parent_folder = Path(CONFIG['Root Folder']) \
+            .joinpath('Collection') \
+            .joinpath(publisher_slug) \
             .joinpath(series_slug)
         parent_folder.mkdir(exist_ok=True, parents=True)
         cleaned_file = parent_folder.joinpath(packed_file.name)

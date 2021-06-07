@@ -3,7 +3,7 @@ import logging
 import re
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from patoolib import create_archive, extract_archive
 from ruamel.yaml import YAML
@@ -41,13 +41,13 @@ def unpack(src: Path, dest: Path) -> Optional[Path]:
     return process_folder
 
 
-def get_files(file: str, filter: Tuple[str, ...] = ('.cbz', '.cbr')) -> Set[Path]:
+def get_files(file: str, filter: Tuple[str, ...] = ('.cbz', '.cbr')) -> List[Path]:
     path_file = Path(file)
     if not path_file.exists():
-        return set()
+        return []
     if path_file.is_dir():
-        return set(_get_folder(path_file, filter))
-    return {path_file}
+        return _get_folder(path_file, filter)
+    return [path_file]
 
 
 def del_folder(folder: Path):

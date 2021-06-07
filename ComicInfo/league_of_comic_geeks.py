@@ -78,6 +78,8 @@ def add_league_info(comic_info: Dict[str, Any], show_variants: bool = False) -> 
                     comic_info['Creators'][role].append(creator['name'])
                 else:
                     comic_info['Creators'][role] = [creator['name']]
+    for role, names in comic_info['Creators'].items():
+        comic_info['Creators'][role] = list(set(names))
     return comic_info
 
 

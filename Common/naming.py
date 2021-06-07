@@ -35,15 +35,14 @@ def slug_series(series_title: str, series_vol: str) -> str:
 
 
 def slug_comic(series_slug: str, comic_format: ComicFormat, comic_num: str) -> str:
-    if comic_format == ComicFormat.TRADE_PAPERBACK:
+    if comic_format == ComicFormat.TRADE_PAPERBACK or comic_format == 'Trade Paperback':
         comic_slug = f"{series_slug}-Vol.{comic_num}-TP"
-    elif comic_format == ComicFormat.HARDCOVER:
+    elif comic_format == ComicFormat.HARDCOVER or comic_format == 'Hardcover':
         comic_slug = f"{series_slug}-Vol.{comic_num}-HC"
-    elif comic_format == ComicFormat.ANNUAL:
+    elif comic_format == ComicFormat.ANNUAL or comic_format == 'Annual':
         comic_slug = f"{series_slug}-Annual-#{comic_num}"
-    elif comic_format == ComicFormat.DIGITAL_CHAPTER:
+    elif comic_format == ComicFormat.DIGITAL_CHAPTER or comic_format == 'Digital Chapter':
         comic_slug = f"{series_slug}-Chapter-#{comic_num}"
     else:
         comic_slug = f"{series_slug}-#{comic_num}"
-
     return comic_slug
