@@ -8,7 +8,10 @@ from typing import Any, Dict, List, Optional
 
 from bs4 import BeautifulSoup
 
-from Common import ComicFormat, ComicGenre, Console, get_enum_title, remove_annoying_chars, yaml_setup
+from .comic_format import ComicFormat
+from .comic_genre import ComicGenre
+from .console import Console
+from .utils import get_enum_title, remove_annoying_chars, yaml_setup
 
 LOGGER = logging.getLogger(__name__)
 DEFAULT_INFO = {

@@ -3,7 +3,7 @@ import re
 
 from titlecase import titlecase
 
-from Common import ComicFormat
+from .comic_format import ComicFormat
 
 LOGGER = logging.getLogger(__name__)
 

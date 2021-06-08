@@ -3,8 +3,8 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 import PyLogger
-from ComicInfo import add_comicvine_info, add_league_info, add_manual_info, load_comic_info, save_comic_info
-from Common import CONFIG, Console, del_folder, get_files, pack, slug_comic, slug_publisher, slug_series, unpack
+from ComicInfo import add_comicvine_info, add_league_info, add_manual_info, CONFIG, Console, del_folder, get_files, \
+    load_comic_info, pack, save_comic_info, slug_comic, slug_publisher, slug_series, unpack
 
 LOGGER = logging.getLogger('ComicInfo')
 PROCESSING = Path(CONFIG['Root Folder']).joinpath('Processing')

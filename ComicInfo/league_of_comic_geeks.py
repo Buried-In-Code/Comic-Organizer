@@ -5,7 +5,10 @@ from typing import Any, Dict, List, Tuple, Union
 from requests import get
 from requests.exceptions import ConnectionError, HTTPError
 
-from Common import ComicFormat, CONFIG, Console, remove_annoying_chars, safe_dict_get, safe_list_get
+from .comic_format import ComicFormat
+from .config import CONFIG
+from .console import Console
+from .utils import remove_annoying_chars, safe_dict_get, safe_list_get
 
 LOGGER = logging.getLogger(__name__)
 BASE_URL = 'https://leagueofcomicgeeks.com/api'
@@ -106,7 +109,8 @@ def search_comic(search_title: str, show_variants: bool = False) -> Dict[str, An
                 series_title += f" ({series_begin}-{series_end or 'Present'})"
             else:
                 series_title += f" ({series_begin})"
-            str_options.append(f"{item['id']}|{item['publisher_name']}|{series_title} - {item['title']} - {item['format']}")
+            str_options.append(
+                f"{item['id']}|{item['publisher_name']}|{series_title} - {item['title']} - {item['format']}")
         return str_options
 
     comic_id = None

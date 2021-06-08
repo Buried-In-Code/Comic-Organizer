@@ -1,10 +1,12 @@
 import logging
 from json.decoder import JSONDecodeError
-from typing import Any, Dict, List, Tuple, Union, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from requests import get
 
-from Common import CONFIG, Console, safe_dict_get, safe_list_get
+from .config import CONFIG
+from .console import Console
+from .utils import safe_dict_get, safe_list_get
 
 LOGGER = logging.getLogger(__name__)
 BASE_URL = 'https://comicvine.gamespot.com/api'
