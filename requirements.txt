@@ -1,4 +1,4 @@
-ruamel.yaml ==0.17.4
+ruamel.yaml ==0.17.7
 titlecase == 2.0.0
 requests == 2.25.1
 beautifulsoup4 == 4.9.3
