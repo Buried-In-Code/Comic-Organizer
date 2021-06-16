@@ -5,14 +5,17 @@
 [![Contributors](https://img.shields.io/github/contributors/Macro303/Comic-Organizer.svg?style=flat-square)](https://github.com/Macro303/Comic-Organizer/graphs/contributors)
 [![License](https://img.shields.io/github/license/Macro303/Comic-Organizer.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
+
+[![Code Analysis](https://img.shields.io/github/workflow/status/Macro303/Comic-Organizer/Code-Analysis?label=Code-Analysis&logo=github&style=flat-square)](https://github.com/Macro303/Comic-Organizer/actions/workflows/code-analysis.yml)
+
 *TODO*
 
 ## Built Using
 
 - [Python: 3.9.2](https://www.python.org/)
 - [pip: 21.0.1](https://pypi.org/project/pip/)
-- [ruamel.yaml: 0.17.4](https://pypi.org/project/ruamel.yaml)
-- [titlecase: 2.0.0](https://pypi.org/project/titlecase)
+- [ruamel.yaml: 0.17.9](https://pypi.org/project/ruamel.yaml)
+- [titlecase: 2.1.0](https://pypi.org/project/titlecase)
 - [requests: 2.25.1](https://pypi.org/project/requests)
 - [beautifulsoup4: 4.9.3](https://pypi.org/project/beautifulsoup4)
 - [lxml: 4.6.3](https://pypi.org/project/lxml)
