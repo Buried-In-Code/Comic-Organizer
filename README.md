@@ -5,6 +5,9 @@
 [![Contributors](https://img.shields.io/github/contributors/Macro303/Comic-Organizer.svg?style=flat-square)](https://github.com/Macro303/Comic-Organizer/graphs/contributors)
 [![License](https://img.shields.io/github/license/Macro303/Comic-Organizer.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
+
+[![Code Analysis](https://img.shields.io/github/workflow/status/Macro303/Comic-Organizer/Code-Analysis?label=Code-Analysis&logo=github&style=flat-square)](https://github.com/Macro303/Comic-Organizer/actions/workflows/code-analysis.yml)
+
 *TODO*
 
 ## Built Using
