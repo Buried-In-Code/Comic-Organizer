@@ -8,26 +8,33 @@ from requests.exceptions import ConnectionError, HTTPError
 from .comic_format import ComicFormat
 from .config import CONFIG
 from .console import Console
-from .utils import remove_annoying_chars, safe_dict_get, safe_list_get
+from .utils import get_enum_title, remove_annoying_chars, safe_dict_get, safe_list_get
 
 LOGGER = logging.getLogger(__name__)
 BASE_URL = 'https://leagueofcomicgeeks.com/api'
 TIMEOUT = 100
 
 
-def _calculate_search_term(comic_info: Dict[str, Any]) -> str:
+def _calculate_search_terms(comic_info: Dict[str, Any]) -> Tuple[str, str]:
     search_series = comic_info['Series']['Title']
     if comic_info['Comic']['Number'] and comic_info['Comic']['Number'] != '1':
+        item_1 = f"{search_series} #{comic_info['Comic']['Number']}"
+    else:
+        item_1 = search_series
+    if comic_info['Comic']['Number'] and comic_info['Comic']['Number'] != '1':
         if comic_info['Format'] == ComicFormat.TRADE_PAPERBACK:
-            return f"{search_series} Vol. {comic_info['Comic']['Number']} TP"
-        if comic_info['Format'] == ComicFormat.HARDCOVER:
-            return f"{search_series} Vol. {comic_info['Comic']['Number']} HC"
-        if comic_info['Format'] == ComicFormat.ANNUAL:
-            return f"{search_series} Annual #{comic_info['Comic']['Number']}"
-        if comic_info['Format'] == ComicFormat.DIGITAL_CHAPTER:
-            return f"{search_series} Chapter #{comic_info['Comic']['Number']}"
-        return f"{search_series} #{comic_info['Comic']['Number']}"
-    return search_series
+            item_2 = f"{search_series} Vol. {comic_info['Comic']['Number']} TP"
+        elif comic_info['Format'] == ComicFormat.HARDCOVER:
+            item_2 = f"{search_series} Vol. {comic_info['Comic']['Number']} HC"
+        elif comic_info['Format'] == ComicFormat.ANNUAL:
+            item_2 = f"{search_series} Annual #{comic_info['Comic']['Number']}"
+        elif comic_info['Format'] == ComicFormat.DIGITAL_CHAPTER:
+            item_2 = f"{search_series} Chapter #{comic_info['Comic']['Number']}"
+        else:
+            item_2 = f"{search_series} #{comic_info['Comic']['Number']}"
+    else:
+        item_2 = search_series
+    return item_1, item_2
 
 
 def add_league_info(comic_info: Dict[str, Any], show_variants: bool = False) -> Dict[str, Any]:
@@ -35,7 +42,7 @@ def add_league_info(comic_info: Dict[str, Any], show_variants: bool = False) -> 
     if league_id:
         response = select_comic(league_id)
     else:
-        response = search_comic(_calculate_search_term(comic_info), show_variants)
+        response = search_comic(_calculate_search_terms(comic_info), comic_info['Format'], show_variants)
     if not response:
         return comic_info
     if 'details' in response and 'publisher_name' in response['details'] and response['details']['publisher_name']:
@@ -86,7 +93,7 @@ def add_league_info(comic_info: Dict[str, Any], show_variants: bool = False) -> 
     return comic_info
 
 
-def search_comic(search_title: str, show_variants: bool = False) -> Dict[str, Any]:
+def search_comic(search_titles: Tuple[str, str], comic_format: ComicFormat, show_variants: bool = False) -> Dict[str, Any]:
     def __generate_name_options(options: List[Dict[str, Any]]) -> List[str]:
         str_options = []
         for item in options:
@@ -114,8 +121,14 @@ def search_comic(search_title: str, show_variants: bool = False) -> Dict[str, An
         return str_options
 
     comic_id = None
-    results = __get_request('/search/format/json', params=[('query', search_title)]) or []
+    results_1 = __get_request('/search/format/json', params=[('query', search_titles[0])]) or []
+    if search_titles[0] != search_titles[1]:
+        results_2 = __get_request('/search/format/json', params=[('query', search_titles[1])]) or []
+    else:
+        results_2 = []
+    results = results_1 + results_2
     if results:
+        results = filter(lambda x: x['format'] == get_enum_title(comic_format), results)
         results = sorted(
             results if show_variants else filter(lambda x: x['variant'] == '0', results),
             key=lambda x: (x['publisher_name'], x['series_name'], x['series_volume'], x['title'])
@@ -162,7 +175,8 @@ def __get_request(url: str, params: List[Tuple[str, str]] = None) -> Union[Dict[
         try:
             return response.json()
         except (JSONDecodeError, KeyError):
-            LOGGER.critical(f'Unable to parse the response message: {response.text}')
+            if response.text:
+                LOGGER.critical(f'Unable to parse the response message: {response.text}')
             return {}
     except (HTTPError, ConnectionError) as err:
         LOGGER.error(err)

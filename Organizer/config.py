@@ -29,13 +29,13 @@ def __yaml_setup() -> YAML:
     return yaml
 
 
-def save_config(data: CommentedMap, testing: bool = False):
-    config_file = TOP_DIR.joinpath('config-test.yaml' if testing else 'config.yaml')
+def save_config(data: CommentedMap):
+    config_file = TOP_DIR.joinpath('config.yaml')
     with open(config_file, 'w', encoding='UTF-8') as yaml_file:
         __yaml_setup().dump(data, yaml_file)
 
 
-def load_config(testing: bool = False) -> CommentedMap:
+def load_config() -> CommentedMap:
     def validate_config(config: CommentedMap) -> CommentedMap:
         for key, value in DEFAULT_CONFIG.copy().items():
             if key not in config:
@@ -46,7 +46,7 @@ def load_config(testing: bool = False) -> CommentedMap:
                         config[key][sub_key] = sub_value
         return config
 
-    config_file = TOP_DIR.joinpath('config-test.yaml' if testing else 'config.yaml')
+    config_file = TOP_DIR.joinpath('config.yaml')
     if config_file.exists():
         with open(config_file, 'r', encoding='UTF-8') as yaml_file:
             data = __yaml_setup().load(yaml_file) or DEFAULT_CONFIG
@@ -54,7 +54,7 @@ def load_config(testing: bool = False) -> CommentedMap:
         config_file.touch()
         data = DEFAULT_CONFIG
     validate_config(data)
-    save_config(data, testing)
+    save_config(data)
     return data
 
 

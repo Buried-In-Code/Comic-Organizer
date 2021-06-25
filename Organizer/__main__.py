@@ -3,10 +3,10 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 import PyLogger
-from ComicInfo import add_comicvine_info, add_league_info, add_manual_info, CONFIG, Console, del_folder, get_files, \
+from Organizer import add_comicvine_info, add_league_info, add_manual_info, CONFIG, Console, del_folder, get_files, \
     load_comic_info, pack, save_comic_info, slug_comic, slug_publisher, slug_series, unpack
 
-LOGGER = logging.getLogger('ComicInfo')
+LOGGER = logging.getLogger('Comic-Organizer')
 PROCESSING = Path(CONFIG['Root Folder']).joinpath('Processing')
 
 
@@ -15,6 +15,7 @@ def main(input_folder: str, use_yaml: bool = False, manual_image_check: bool = F
          debug: bool = False):
     for file in get_files(input_folder):
         LOGGER.info(f"Converting {file.stem}")
+        Console.display(f"Converting `{file.stem}`")
         unpacked_folder = unpack(file, PROCESSING)
         if not unpacked_folder:
             continue
@@ -24,10 +25,13 @@ def main(input_folder: str, use_yaml: bool = False, manual_image_check: bool = F
         if not comic_info['Comic']['Number']:
             comic_info['Comic']['Number'] = Console.display_prompt('Comic Number') or '1'
         if add_comicvine_data:
+            Console.display(f"Looking up `{file.stem}` in Comicvine DB")
             comic_info = add_comicvine_info(comic_info, show_variants)
         if add_league_data:
+            Console.display(f"Looking up `{file.stem}` in League of Comic Geeks DB")
             comic_info = add_league_info(comic_info, show_variants)
         if add_manual_data:
+            Console.display(f"Preparing Manual steps for `{file.stem}` data entry")
             comic_info = add_manual_info(comic_info)
 
         save_comic_info(unpacked_folder, comic_info, use_yaml=use_yaml)
@@ -42,7 +46,9 @@ def main(input_folder: str, use_yaml: bool = False, manual_image_check: bool = F
         packed_file = pack(unpacked_folder, issue_slug, use_yaml=use_yaml)
         if not packed_file:
             continue
+        Console.display(f"Cleaning up `{unpacked_folder}`")
         del_folder(unpacked_folder)
+        Console.display(f"Cleaning up `{file}`")
         file.unlink(missing_ok=True)
 
         parent_folder = Path(CONFIG['Root Folder']) \
@@ -52,13 +58,14 @@ def main(input_folder: str, use_yaml: bool = False, manual_image_check: bool = F
         parent_folder.mkdir(exist_ok=True, parents=True)
         cleaned_file = parent_folder.joinpath(packed_file.name)
         if not cleaned_file.exists():
+            Console.display(f"Moving `{cleaned_file}` to Collection")
             packed_file.rename(cleaned_file)
         else:
             LOGGER.error(f"Unable to move the result as a file with the same name already exists: {cleaned_file}")
 
 
 def parse_arguments() -> Namespace:
-    parser = ArgumentParser(prog='Comic-Info')
+    parser = ArgumentParser(prog='Comic-Organizer')
     parser.add_argument('--input-folder', type=str, required=True)
     parser.add_argument('--use-yaml', action='store_true')
     parser.add_argument('--manual-image-check', action='store_true')
@@ -73,7 +80,7 @@ def parse_arguments() -> Namespace:
 if __name__ == '__main__':
     try:
         args = parse_arguments()
-        PyLogger.init('Comic-Info', console_level=logging.DEBUG if args.debug else logging.INFO)
+        PyLogger.init('Comic-Organizer', console_level=logging.INFO if args.debug else logging.WARNING)
         main(input_folder=args.input_folder, use_yaml=args.use_yaml, manual_image_check=args.manual_image_check,
              add_manual_data=args.add_manual_data, add_league_data=args.add_league_data,
              add_comicvine_data=args.add_comicvine_data, show_variants=args.show_variants, debug=args.debug)

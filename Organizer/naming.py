@@ -14,7 +14,10 @@ def abbreviations(word, **kwargs):
 
 
 def slugify(value):
-    value = ' '.join(titlecase(re.sub(r"[\\/:*?\"<>|.]+", '', value).replace('-', ' '), callback=abbreviations).split())
+    value = ' '.join(titlecase(
+        text=re.sub(r"[\\/:*?\"<>|.']+", '', value).replace('-', ' '),
+        callback=abbreviations
+    ).split())
     return value.replace(' ', '-')
 
 
