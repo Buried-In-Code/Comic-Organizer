@@ -1,6 +1,6 @@
 ruamel.yaml == 0.17.9
 titlecase == 2.1.0
-requests == 2.25.1
+requests == 2.26.0
 beautifulsoup4 == 4.9.3
 lxml == 4.6.3
 patool == 1.12
