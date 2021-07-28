@@ -12,11 +12,11 @@
 
 ## Built Using
 
-- [Python: 3.9.5](https://www.python.org/)
-- [pip: 21.1.2](https://pypi.org/project/pip/)
-- [ruamel.yaml: 0.17.9](https://pypi.org/project/ruamel.yaml)
-- [titlecase: 2.2.0](https://pypi.org/project/titlecase)
-- [requests: 2.25.1](https://pypi.org/project/requests)
+- [Python: 3.9.6](https://www.python.org/)
+- [pip: 21.1.3](https://pypi.org/project/pip/)
+- [ruamel.yaml: 0.17.10](https://pypi.org/project/ruamel.yaml)
+- [titlecase: 2.3](https://pypi.org/project/titlecase)
+- [requests: 2.26.0](https://pypi.org/project/requests)
 - [beautifulsoup4: 4.9.3](https://pypi.org/project/beautifulsoup4)
 - [lxml: 4.6.3](https://pypi.org/project/lxml)
 - [patool: 1.12](https://pypi.org/project/patool)
@@ -44,9 +44,9 @@
     "Summary": <String|null>,
     "Cover Date": <Date|yyyy-mm-dd|null>,
     "Language": <String|EN>,
-    "Format": <ComicFormat|Comic>,
+    "Format": <String|Comic>,
     "Genres": [
-        <ComicGenre>
+        <String>
     ],
     "Page Count": <Integer|1>,
     "Creators": {
@@ -71,17 +71,13 @@
 }
 ```
 
-Possible Formats:
+Common Formats:
 
 - Comic
 - Annual
 - Digital Chapter
 - Trade Paperback
 - Hardcover
-
-Possible Genres:
-
-- Superhero
 
 ## Socials
 
