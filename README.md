@@ -1,12 +1,11 @@
 # Comic Organizer
 
-[![Version](https://img.shields.io/github/tag-pre/Macro303/Comic-Organizer.svg?label=version&style=flat-square)](https://github.com/Macro303/Comic-Organizer/releases)
-[![Issues](https://img.shields.io/github/issues/Macro303/Comic-Organizer.svg?style=flat-square)](https://github.com/Macro303/Comic-Organizer/issues)
-[![Contributors](https://img.shields.io/github/contributors/Macro303/Comic-Organizer.svg?style=flat-square)](https://github.com/Macro303/Comic-Organizer/graphs/contributors)
-[![License](https://img.shields.io/github/license/Macro303/Comic-Organizer.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/github/tag-pre/Buried-In-Code/Comic-Organizer.svg?label=version&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/releases)
+[![Issues](https://img.shields.io/github/issues/Buried-In-Code/Comic-Organizer.svg?style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/issues)
+[![Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Comic-Organizer.svg?style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/graphs/contributors)
+[![License](https://img.shields.io/github/license/Buried-In-Code/Comic-Organizer.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
-
-[![Code Analysis](https://img.shields.io/github/workflow/status/Macro303/Comic-Organizer/Code-Analysis?label=Code-Analysis&logo=github&style=flat-square)](https://github.com/Macro303/Comic-Organizer/actions/workflows/code-analysis.yml)
+[![Code Analysis](https://img.shields.io/github/workflow/status/Buried-In-Code/Comic-Organizer/Code-Analysis?label=Code-Analysis&logo=github&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/actions/workflows/code-analysis.yml)
 
 *TODO*
 
@@ -29,7 +28,7 @@
 
 ## ComicInfo Json Schema
 
-```json
+```
 {
     "Publisher": <String>,
     "Series": {
@@ -50,7 +49,7 @@
     ],
     "Page Count": <Integer|1>,
     "Creators": {
-        <Role>: [
+        "<Role>": [
             <String>
         ]
     },
@@ -62,7 +61,7 @@
         }
     ],
     "Identifiers": {
-        <Website>: {
+        "<Website>": {
             "Id": <String|null>,
             "Url": <String|null>
         }
@@ -81,4 +80,4 @@ Common Formats:
 
 ## Socials
 
-[![Discord | The DEV Environment](https://invidget.switchblade.xyz/618581423070117932)](https://discord.gg/nqGMeGg)
+[![Discord | The DEV Environment](https://discordapp.com/api/guilds/618581423070117932/widget.png?style=banner2)](https://discord.gg/nqGMeGg)
