@@ -4,16 +4,15 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from requests import get
 
-from .config import CONFIG
 from .console import Console
-from .utils import safe_dict_get, safe_list_get
+from .utils import safe_dict_get, safe_list_get, CONFIG
 
 LOGGER = logging.getLogger(__name__)
 BASE_URL = 'https://comicvine.gamespot.com/api'
 TIMEOUT = 100
 
 
-def add_comicvine_info(comic_info: Dict[str, Any], show_variants: bool = False) -> Dict[str, Any]:
+def add_info(comic_info: Dict[str, Any], show_variants: bool = False) -> Dict[str, Any]:
     comicvine_id = safe_dict_get(safe_dict_get(comic_info['Identifiers'], 'Comicvine'), 'Id')
     if comicvine_id:
         response = select_comic(comicvine_id)
@@ -115,14 +114,14 @@ def select_comic(comic_id: int) -> Dict[str, Any]:
     return {}
 
 
-def __get_request(url: str, params: List[Tuple[str, str]] = None) -> Optional[
-    Union[Dict[str, Any], List[Dict[str, Any]]]]:
-    if not CONFIG['Comicvine Key']:
+def __get_request(url: str, params: List[Tuple[str, str]] = None) -> \
+    Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]:
+    if not CONFIG['Comicvine']['API Key']:
         LOGGER.warning('Unable to access Comicvine check the `config.yaml`')
         return None
     if not params:
         params = []
-    params.extend([('format', 'json'), ('api_key', CONFIG['Comicvine Key'])])
+    params.extend([('format', 'json'), ('api_key', CONFIG['Comicvine']['API Key'])])
     response = get(url=BASE_URL + url, timeout=TIMEOUT, params=params)
     LOGGER.info(f"{response.status_code}: GET - {response.url}")
     if response.status_code == 200:

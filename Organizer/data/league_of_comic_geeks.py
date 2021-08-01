@@ -6,9 +6,8 @@ from requests import get
 from requests.exceptions import ConnectionError, HTTPError
 
 from .comic_format import ComicFormat
-from .config import CONFIG
 from .console import Console
-from .utils import get_enum_title, remove_annoying_chars, safe_dict_get, safe_list_get
+from .utils import get_enum_title, remove_annoying_chars, safe_dict_get, safe_list_get, CONFIG
 
 LOGGER = logging.getLogger(__name__)
 BASE_URL = 'https://leagueofcomicgeeks.com/api'
@@ -37,7 +36,7 @@ def _calculate_search_terms(comic_info: Dict[str, Any]) -> Tuple[str, str]:
     return item_1, item_2
 
 
-def add_league_info(comic_info: Dict[str, Any], show_variants: bool = False) -> Dict[str, Any]:
+def add_info(comic_info: Dict[str, Any], show_variants: bool = False) -> Dict[str, Any]:
     league_id = safe_dict_get(safe_dict_get(comic_info['Identifiers'], 'League of Comic Geeks'), 'Id')
     if league_id:
         response = select_comic(league_id)
@@ -93,7 +92,8 @@ def add_league_info(comic_info: Dict[str, Any], show_variants: bool = False) -> 
     return comic_info
 
 
-def search_comic(search_titles: Tuple[str, str], comic_format: ComicFormat, show_variants: bool = False) -> Dict[str, Any]:
+def search_comic(search_titles: Tuple[str, str], comic_format: ComicFormat, show_variants: bool = False) -> Dict[
+    str, Any]:
     def __generate_name_options(options: List[Dict[str, Any]]) -> List[str]:
         str_options = []
         for item in options:
@@ -157,18 +157,18 @@ def select_comic(comic_id: int) -> Dict[str, Any]:
 
 
 def __get_request(url: str, params: List[Tuple[str, str]] = None) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
-    if not CONFIG['League of Comic Geeks']['Client']:
-        LOGGER.warning('Unable to access League of Comics without the `League of Comics - Client Config`')
+    if not CONFIG['League of Comic Geeks']['API Key']:
+        LOGGER.warning('Unable to access League of Comics without an `API Key`')
         return {}
-    if not CONFIG['League of Comic Geeks']['Key']:
-        LOGGER.warning('Unable to access League of Comics without the `League of Comics - Key Config`')
+    if not CONFIG['League of Comic Geeks']['Client ID']:
+        LOGGER.warning('Unable to access League of Comics without a `Client ID`')
         return {}
     if not params:
         params = []
     try:
         response = get(url=BASE_URL + url, headers={
-            'X-API-KEY': CONFIG['League of Comic Geeks']['Key'],
-            'X-API-CLIENT': CONFIG['League of Comic Geeks']['Client']
+            'X-API-KEY': CONFIG['League of Comic Geeks']['API Key'],
+            'X-API-CLIENT': CONFIG['League of Comic Geeks']['Client ID']
         }, timeout=TIMEOUT, params=params)
         response.raise_for_status()
         LOGGER.info(f"{response.status_code}: GET - {response.url}")

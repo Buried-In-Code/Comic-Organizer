@@ -1,6 +1,7 @@
 import html
 import logging
 import re
+from configparser import ConfigParser
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -9,6 +10,11 @@ from patoolib import create_archive, extract_archive
 from ruamel.yaml import YAML
 
 LOGGER = logging.getLogger(__name__)
+TOP_DIR = Path(__file__).resolve().parent.parent
+
+CONFIG = ConfigParser()
+CONFIG.read('config.ini')
+ROOT_FOLDER = Path(CONFIG['General']['Root']).resolve()
 
 
 def pack(src: Path, title: str, use_yaml: bool = False) -> Optional[Path]:
