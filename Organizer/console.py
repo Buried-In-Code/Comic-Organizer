@@ -43,34 +43,61 @@ class Colour(Enum):
 
 class Console:
     @classmethod
-    def display(cls, text: str):
-        cls.__coloured_print(text=text)
+    def display_heading(cls, text: str):
+        cls.__colour_console(text='=' * (len(text) + 4), colour=Colour.BLUE)
+        cls.__colour_console(text=text, colour=Colour.BLUE)
+        cls.__colour_console(text='=' * (len(text) + 4), colour=Colour.BLUE)
 
     @classmethod
-    def display_item_value(cls, item: str, value: str):
-        cls.__coloured_print(text=f"{item}: ", colour=Colour.BLUE, end='')
-        cls.__coloured_print(text=value)
+    def display_sub_heading(cls, text: str):
+        cls.__colour_console(text=f"  {text}  ", colour=Colour.BLUE)
 
     @classmethod
-    def display_prompt(cls, prompt: Optional[str] = None) -> str:
+    def request_str(cls, prompt: Optional[str] = None) -> str:
         prompt = f"{prompt} >> " if prompt else '>> '
-        cls.__coloured_print(text=prompt, colour=Colour.BLUE, end='')
+        cls.__colour_console(text=prompt, colour=Colour.GREEN, end='')
         return input()
 
     @classmethod
-    def display_menu(cls, items: List[str], exit_text: Optional[str] = None, prompt: Optional[str] = None) -> int:
-        if len(items) == 0:
-            return 0
-        for count in range(0, len(items)):
-            cls.display_item_value(item=str(count + 1), value=items[count])
-        if exit_text is not None:
-            cls.display_item_value(item="0", value=exit_text)
+    def request_int(cls, prompt: Optional[str] = None) -> Optional[int]:
         try:
-            return int(cls.display_prompt(prompt))
-        except ValueError as err:
-            LOGGER.error(f"Invalid Number: {err}")
-            return 0
+            return int(cls.request_str(prompt))
+        except ValueError:
+            LOGGER.error('Invalid Integer')
+            return None
 
     @classmethod
-    def __coloured_print(cls, text: str, colour: Colour = Colour.WHITE, end: Optional[str] = None):
+    def request_float(cls, prompt: Optional[str] = None) -> Optional[float]:
+        try:
+            return float(cls.request_str(prompt))
+        except ValueError:
+            LOGGER.error('Invalid Float')
+            return None
+
+    @classmethod
+    def request_bool(cls, prompt: Optional[str] = None) -> bool:
+        prompt = f"{prompt} [Y/N]" if prompt else '[Y/N]'
+        return cls.request_str(prompt=prompt).lower() == 'y'
+
+    @classmethod
+    def display_text(cls, text: str):
+        cls.__colour_console(text=text)
+
+    @classmethod
+    def display_item_value(cls, item: str, value: str):
+        cls.__colour_console(text=f"{item}: ", colour=Colour.MAGENTA, end='')
+        cls.__colour_console(text=value)
+
+    @classmethod
+    def display_menu(cls, items: List[str], prompt: Optional[str] = None, exit_text: Optional[str] = None) -> int:
+        if len(items) == 0:
+            return 0
+        for index, item in enumerate(items):
+            cls.display_item_value(item=str(index + 1), value=item)
+        if exit_text:
+            cls.display_item_value(item="0", value=exit_text)
+        return cls.request_int(prompt) or 0
+
+    @classmethod
+    def __colour_console(cls, text: str, colour: Colour = Colour.WHITE, end: Optional[str] = None):
         print(f"{colour.style}{text}{Style.RESET_ALL}", end=end)

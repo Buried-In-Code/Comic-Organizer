@@ -1,111 +1,73 @@
-import html
 import logging
 import re
 from configparser import ConfigParser
-from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Tuple, List
 
-from patoolib import create_archive, extract_archive
-from ruamel.yaml import YAML
+from .comic_format import ComicFormat
 
 LOGGER = logging.getLogger(__name__)
 TOP_DIR = Path(__file__).resolve().parent.parent
 
-CONFIG = ConfigParser()
+CONFIG = ConfigParser(allow_no_value=True)
 CONFIG.read('config.ini')
+# General
 ROOT_FOLDER = Path(CONFIG['General']['Root']).resolve()
+ROOT_FOLDER.mkdir(parents=True, exist_ok=True)
+
+PROCESSING_FOLDER = ROOT_FOLDER.joinpath('Processing')
+PROCESSING_FOLDER.mkdir(parents=True, exist_ok=True)
+
+COLLECTION_FOLDER = ROOT_FOLDER.joinpath('Collection')
+COLLECTION_FOLDER.mkdir(parents=True, exist_ok=True)
+
+# Comicvine
+COMICVINE_API_KEY = CONFIG['Comicvine']['API Key']
+
+# League of Comic Geeks
+LOCG_API_KEY = CONFIG['League of Comic Geeks']['API Key']
+LOCG_CLIENT_ID = CONFIG['League of Comic Geeks']['Client ID']
+
+# Metron
+METRON_USERNAME = CONFIG['Metron']['Username']
+METRON_PASSWORD = CONFIG['Metron']['Password']
 
 
-def pack(src: Path, title: str, use_yaml: bool = False) -> Optional[Path]:
-    files = []
-    for index, img_file in enumerate(_get_folder(src, ('.jpg',))):
-        files.append(img_file.rename(src.joinpath(f"{title}-{index:03}{img_file.suffix}")))
-    if use_yaml:
-        files.append(src.joinpath('ComicInfo.yaml'))
-    else:
-        files.append(src.joinpath('ComicInfo.json'))
-    zip_file = src.parent.joinpath(title + '.cbz')
-    if zip_file.exists():
-        LOGGER.error(f"{zip_file.name} already exists in {zip_file.parent.name}")
-        return None
-    LOGGER.debug(f"Started packing of `{zip_file}`")
-    create_archive(str(zip_file), [str(x) for x in files], verbosity=-1, interactive=False)
-    LOGGER.debug(f"Finished packing of `{zip_file}`")
-    return zip_file
-
-
-def unpack(src: Path, dest: Path) -> Optional[Path]:
-    process_folder = dest.joinpath(src.stem)
-    if process_folder.exists():
-        LOGGER.error(f"{process_folder.name} already exists in {process_folder.parent.name}")
-        return None
-    process_folder.mkdir(parents=True)
-    LOGGER.debug(f"Started unpacking of `{src}` to `{process_folder}`")
-    extract_archive(str(src), outdir=str(process_folder), verbosity=-1, interactive=False)
-    LOGGER.debug(f"Finished unpacking of `{src}` to `{process_folder}`")
-    return process_folder
-
-
-def get_files(file: str, filter: Tuple[str, ...] = ('.cbz', '.cbr')) -> List[Path]:
-    path_file = Path(file)
-    if not path_file.exists():
-        return []
-    if path_file.is_dir():
-        return _get_folder(path_file, filter)
-    return [path_file]
-
-
-def del_folder(folder: Path):
-    for child in folder.iterdir():
-        if child.is_file():
-            child.unlink(missing_ok=True)
-        else:
-            del_folder(child)
-    folder.rmdir()
-
-
-def _get_folder(folder: Path, filter: Tuple[str, ...]) -> List[Path]:
+def list_files(folder: Path, filter: Tuple[str, ...] = ()) -> List[Path]:
     files = []
     for file in folder.iterdir():
-        if not file.is_file():
-            files.extend(_get_folder(file, filter))
-        elif file.name.endswith(filter):
+        if file.is_dir():
+            files.extend(list_files(file, filter))
+        elif file.suffix in filter:
             files.append(file)
     return files
 
 
-def safe_list_get(data: List[Any], index: int) -> Optional[Any]:
-    try:
-        return data[index]
-    except (IndexError, KeyError, TypeError):
-        return None
+def slugify(value: str) -> str:
+    value = ' '.join(re.sub(r"[^a-zA-Z0-9\s\-]+", '', value.strip().lower()).replace('-', ' ').split())
+    return value.title().replace(' ', '-')
 
 
-def safe_dict_get(data: Dict[str, Any], key: str) -> Optional[Any]:
-    try:
-        return data[key]
-    except (IndexError, KeyError, TypeError):
-        return None
+def slugify_publisher(title: str) -> str:
+    return slugify(title)
 
 
-def remove_annoying_chars(value: str) -> str:
-    tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
-    return ' '.join(html.unescape(tag_re.sub('', value)).split())
+def slugify_series(title: str, volume: int) -> str:
+    series_slug = slugify(title)
+    if volume and volume != 1:
+        series_slug += f"-v{volume}"
+    return series_slug
 
 
-def yaml_setup() -> YAML:
-    def null_representer(self, data):
-        return self.represent_scalar(u'tag:yaml.org,2002:null', u'~')
-
-    yaml = YAML(pure=True)
-    yaml.default_flow_style = False
-    yaml.width = 2147483647
-    yaml.representer.add_representer(type(None), null_representer)
-    # yaml.emitter.alt_null = '~'
-    yaml.version = (1, 2)
-    return yaml
-
-
-def get_enum_title(item: Enum) -> str:
-    return ' '.join([x.title() for x in item.name.split('_')])
+def slugify_comic(series_slug: str, comic_format: str, number: str) -> str:
+    if comic_format == ComicFormat.TRADE_PAPERBACK.get_title():
+        comic_slug = f"{series_slug}-Vol.{number}-TP"
+    elif comic_format == ComicFormat.HARDCOVER.get_title():
+        comic_slug = f"{series_slug}-Vol.{number}-HC"
+    elif comic_format == ComicFormat.ANNUAL.get_title():
+        comic_slug = f"{series_slug}-Annual-#{number}"
+    elif comic_format == ComicFormat.DIGITAL_CHAPTER.get_title():
+        comic_slug = f"{series_slug}-Chapter-#{number}"
+    else:
+        comic_slug = f"{series_slug}-#{number}"
+    return comic_slug

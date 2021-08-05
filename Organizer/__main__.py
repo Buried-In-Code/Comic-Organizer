@@ -3,74 +3,107 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 import PyLogger
-from Organizer import add_comicvine_info, add_league_info, add_manual_info, CONFIG, Console, del_folder, get_files, \
-    load_comic_info, pack, save_comic_info, slug_comic, slug_publisher, slug_series, unpack, add_metron_info
+from Organizer import Console, PROCESSING_FOLDER, COLLECTION_FOLDER, list_files, extract_archive, create_archive, \
+    PublisherInfo, SeriesInfo, ComicInfo, load_info, save_info, slugify_publisher, slugify_series, slugify_comic, \
+    add_comicvine_info, add_league_info, add_metron_info, COMICVINE_API_KEY, LOCG_API_KEY, LOCG_CLIENT_ID, \
+    METRON_USERNAME, METRON_PASSWORD
 
-LOGGER = logging.getLogger('Comic-Organizer')
-PROCESSING = Path(CONFIG['Root Folder']).joinpath('Processing')
+LOGGER = logging.getLogger('Organizer')
 
 
-def main(input_folder: str, manual_image_check: bool = False, add_manual_data: bool = False, show_variants: bool = False, debug: bool = False):
-    for file in get_files(input_folder):
-        LOGGER.info(f"Converting {file.stem}")
-        unpacked_folder = unpack(file, PROCESSING)
-        if not unpacked_folder:
+def main(input_path: str, pull_info: bool, show_variants: bool, manual_info: bool, image_check: bool,
+         debug: bool = False):
+    Console.display_heading('Welcome to Comic Organizer')
+    input_folder = Path(input_path).resolve()
+    if not input_folder.exists():
+        LOGGER.error(f"Invalid Input Folder: `{input_folder}`")
+        return
+    for comic_file in list_files(input_folder, ('.cbr', '.cbz',)):
+        LOGGER.info(f"Extracting {comic_file.stem}")
+        Console.display_text(f"Started organizing {comic_file.stem}")
+        comic_folder = extract_archive(src=comic_file, dest=PROCESSING_FOLDER)
+        if not comic_folder:
             continue
-        comic_info = load_comic_info(unpacked_folder)
-        if not comic_info['Series']['Title']:
-            comic_info['Series']['Title'] = Console.display_prompt('Series Title')
-        if not comic_info['Comic']['Number']:
-            comic_info['Comic']['Number'] = Console.display_prompt('Comic Number') or '1'
-        LOGGER.info(f"Looking up {file.stem} in Metron DB")
-        comic_info = add_metron_info(comic_info, show_variants)
-        continue
-        # if add_comicvine_data:
-        #     LOGGER.info(f"Looking up {file.stem} in Comicvine DB")
-        #     comic_info = add_comicvine_info(comic_info, show_variants)
-        # if add_league_data:
-        #     LOGGER.info(f"Looking up {file.stem} in League of Comic Geeks DB")
-        #     comic_info = add_league_info(comic_info, show_variants)
-        # if add_manual_data:
-        #     LOGGER.info(f"Preparing Manual steps for {file.stem} data entry")
-        #     comic_info = add_manual_info(comic_info)
-        #
-        # save_comic_info(unpacked_folder, comic_info, use_yaml=use_yaml)
-        #
-        # publisher_slug = slug_publisher(comic_info['Publisher'])
-        # series_slug = slug_series(comic_info['Series']['Title'], comic_info['Series']['Volume'])
-        # issue_slug = slug_comic(series_slug, comic_info['Format'], comic_info['Comic']['Number'])
-        #
-        # if manual_image_check:
-        #     Console.display_prompt('Press <ENTER> to continue')
-        #
-        # packed_file = pack(unpacked_folder, issue_slug, use_yaml=use_yaml)
-        # if not packed_file:
-        #     continue
-        # LOGGER.info(f"Cleaning up {unpacked_folder}")
-        # del_folder(unpacked_folder)
-        # LOGGER.info(f"Cleaning up {file}")
-        # file.unlink(missing_ok=True)
-        #
-        # parent_folder = Path(CONFIG['Root Folder']) \
-        #     .joinpath('Collection') \
-        #     .joinpath(publisher_slug) \
-        #     .joinpath(series_slug)
-        # parent_folder.mkdir(exist_ok=True, parents=True)
-        # cleaned_file = parent_folder.joinpath(packed_file.name)
-        # if not cleaned_file.exists():
-        #     Console.display(f"Moving `{cleaned_file}` to Collection")
-        #     packed_file.rename(cleaned_file)
-        # else:
-        #     LOGGER.error(f"Unable to move the result as a file with the same name already exists: {cleaned_file}")
-        # LOGGER.info(f"Finished converting {file.stem}")
+        info_files = list_files(comic_folder, ('.xml', '.json', '.yaml',))
+        if len(info_files) == 1:
+            comic_info = load_info(info_files[0])
+        elif len(info_files) > 1:
+            selected = Console.display_menu(items=[x.stem for x in info_files], exit_text='None',
+                                            prompt='Select Info File')
+            if len(info_files) >= selected >= 1:
+                comic_info = load_info(info_files[selected - 1])
+            else:
+                comic_info = None
+        else:
+            comic_info = None
+        if not comic_info:
+            publisher = PublisherInfo(
+                title=Console.request_str(prompt='Publisher Title')
+            )
+            series = SeriesInfo(
+                publisher=publisher,
+                start_year=Console.request_int(prompt='Series Start Year') or 2020,
+                title=Console.request_str(prompt='Series Title'),
+                volume=Console.request_int(prompt='Series Volume') or 1
+            )
+            comic_info = ComicInfo(
+                series=series,
+                number=Console.request_str(prompt='Issue Number') or '1'
+            )
+        else:
+            if not comic_info.series.publisher.title:
+                comic_info.series.publisher.title = Console.request_str(prompt='Publisher Title')
+            if not comic_info.series.start_year:
+                comic_info.series.start_year = Console.request_int(prompt='Series Start Year')
+            if not comic_info.series.title:
+                comic_info.series.title = Console.request_str(prompt='Series Title')
+            if not comic_info.series.volume:
+                comic_info.series.volume = Console.request_int(prompt='Series Volume')
+            if not comic_info.number:
+                comic_info.number = Console.request_str(prompt='Issue Number')
+        if pull_info:
+            if COMICVINE_API_KEY:
+                Console.display_item_value(item='Pulling info from', value='Comicvine')
+                comic_info = add_comicvine_info(comic_info=comic_info, show_variants=show_variants)
+            if LOCG_API_KEY and LOCG_CLIENT_ID:
+                Console.display_item_value(item='Pulling info from', value='League of Comic Geeks')
+                comic_info = add_league_info(comic_info=comic_info, show_variants=show_variants)
+            if METRON_USERNAME and METRON_PASSWORD:
+                Console.display_item_value(item='Pulling info from', value='Metron')
+                comic_info = add_metron_info(comic_info=comic_info, show_variants=show_variants)
+        if manual_info:
+            Console.display_text('Manually adding info')
+            # comic_info = add_manual_info(comic_info=comic_info, show_variants=show_variants)
+
+        for file in info_files:
+            file.unlink(missing_ok=True)
+
+        save_info(file=comic_folder.joinpath('ComicInfo.json'), comic_info=comic_info)
+        publisher_folder = COLLECTION_FOLDER.joinpath(slugify_publisher(title=comic_info.series.publisher.title))
+        publisher_folder.mkdir(parents=True, exist_ok=True)
+        series_folder = publisher_folder.joinpath(slugify_series(title=comic_info.series.title,
+                                                                 volume=comic_info.series.volume))
+        series_folder.mkdir(parents=True, exist_ok=True)
+        comic_file = series_folder.joinpath(slugify_comic(series_slug=series_folder.name,
+                                                          comic_format=comic_info.comic_format,
+                                                          number=comic_info.number))
+        if image_check:
+            Console.request_str(prompt='Press <ENTER> to continue')
+
+        clean_comic_file = create_archive(src=comic_folder, filename=comic_file.stem)
+        if not clean_comic_file:
+            continue
+        LOGGER.info(f"Cleaned {clean_comic_file.stem}")
+        Console.display_text(f"Finished organizing {clean_comic_file.stem}")
 
 
 def parse_arguments() -> Namespace:
     parser = ArgumentParser(prog='Comic-Organizer')
     parser.add_argument('--input-folder', type=str, required=True)
-    parser.add_argument('--manual-image-check', action='store_true')
-    parser.add_argument('--add-manual-data', action='store_true')
+    parser.add_argument('--pull-info', action='store_true')
     parser.add_argument('--show-variants', action='store_true')
+    parser.add_argument('--add-manual-info', action='store_true')
+    parser.add_argument('--manual-image-check', action='store_true')
     parser.add_argument('-d', '--debug', action='store_true')
     return parser.parse_args()
 
@@ -78,7 +111,9 @@ def parse_arguments() -> Namespace:
 if __name__ == '__main__':
     try:
         args = parse_arguments()
-        PyLogger.init('Comic-Organizer', console_level=logging.DEBUG if args.debug else logging.INFO)
-        main(input_folder=args.input_folder, manual_image_check=args.manual_image_check, add_manual_data=args.add_manual_data, show_variants=args.show_variants, debug=args.debug)
+        PyLogger.init('Comic-Organizer', file_level=logging.DEBUG if args.debug else logging.INFO,
+                      console_level=logging.INFO if args.debug else logging.WARNING)
+        main(input_path=args.input_folder, pull_info=args.pull_info, show_variants=args.show_variants,
+             manual_info=args.add_manual_info, image_check=args.manual_image_check, debug=args.debug)
     except KeyboardInterrupt:
         pass

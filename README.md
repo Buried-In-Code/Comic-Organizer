@@ -12,7 +12,7 @@
 ## Built Using
 
 - [Python: 3.9.6](https://www.python.org/)
-- [pip: 21.1.3](https://pypi.org/project/pip/)
+- [pip: 21.2.2](https://pypi.org/project/pip/)
 - [ruamel.yaml: 0.17.10](https://pypi.org/project/ruamel.yaml)
 - [titlecase: 2.3](https://pypi.org/project/titlecase)
 - [requests: 2.26.0](https://pypi.org/project/requests)
@@ -24,42 +24,55 @@
 
 | Argument | Type | Required | Default | Notes |
 | -------- | ---- | -------- | ------- | ----- |
+| `--input-folder` | str | True | | Path to folder to import the comic files. *Recursively navigates folder* |
+| `--pull-info` | bool | False | False | Pull info and updates ComicInfo from [Comicvine](), [League of Comic Geeks]() and [Metron]() |
+| `--show-variants` | bool | False | False | Add variants to the list of options |
+| `--add-manual-info` | bool | False | False | Manually enter the data for the ComicInfo |
+| `--manual-image-check` | bool | False | False | Pause the Script before creating the CBZ to allow manual removal of Ads, etc... |
 | `--debug` | bool | False | False | |
 
 ## ComicInfo Json Schema
 
 ```
 {
-    "Publisher": <String>,
     "Series": {
+        "Publisher": {
+            "Title": <String>,
+            "Identifiers": {
+                "<Website>": {
+                    "Id": <String|null>,
+                    "Url": <String|null>
+                }
+            }
+        },
+        "Start Year": <Integer>,
         "Title": <String>,
-        "Volume": <Integer|1>
+        "Volume": <Integer|1>,
+        "Identifiers": {
+            "<Website>": {
+                "Id": <String|null>,
+                "Url": <String|null>
+            }
+        }
     },
-    "Comic": {
+    "Issue": {
         "Number": <String|1>,
         "Title": <String|null>
     },
-    "Variant": <String|null>,
-    "Summary": <String|null>,
     "Cover Date": <Date|yyyy-mm-dd|null>,
-    "Language": <String|EN>,
-    "Format": <String|Comic>,
-    "Genres": [
-        <String>
-    ],
-    "Page Count": <Integer|1>,
     "Creators": {
         "<Role>": [
             <String>
         ]
     },
-    "Alternative Series": [
-        {
-            "Title": <String>,
-            "Volume": <Integer|1>,
-            "Number": <String|1>
-        }
+    "Format": <String|Comic>,
+    "Genres": [
+        <String>
     ],
+    "Language ISO": <String|EN>,
+    "Page Count": <Integer|1>,
+    "Summary": <String|null>,
+    "Variant": <String|null>,
     "Identifiers": {
         "<Website>": {
             "Id": <String|null>,

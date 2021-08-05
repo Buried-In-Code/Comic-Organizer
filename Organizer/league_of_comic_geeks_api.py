@@ -1,183 +1,140 @@
 import logging
-from json.decoder import JSONDecodeError
-from typing import Any, Dict, List, Tuple, Union
+import time
+from datetime import datetime
+from json import JSONDecodeError
+from typing import Dict, Any, List, Tuple, Optional, Union
 
 from requests import get
-from requests.exceptions import ConnectionError, HTTPError
+from requests.exceptions import HTTPError, ConnectionError
 
 from .comic_format import ComicFormat
+from .comic_info import ComicInfo, IdentifierInfo
 from .console import Console
-from .utils import get_enum_title, remove_annoying_chars, safe_dict_get, safe_list_get, CONFIG
+from .utils import LOCG_API_KEY, LOCG_CLIENT_ID
 
 LOGGER = logging.getLogger(__name__)
-BASE_URL = 'https://leagueofcomicgeeks.com/api'
-TIMEOUT = 100
 
 
-def _calculate_search_terms(comic_info: Dict[str, Any]) -> Tuple[str, str]:
-    search_series = comic_info['Series']['Title']
-    if comic_info['Comic']['Number'] and comic_info['Comic']['Number'] != '1':
-        item_1 = f"{search_series} #{comic_info['Comic']['Number']}"
+def add_info(comic_info: ComicInfo, show_variants: bool = False) -> ComicInfo:
+    # TODO: Work in Progress
+    if 'league of comic geeks' in [x.website.lower() for x in comic_info.identifiers]:
+        return parse_comic_result(
+            result=select_comic(
+                comic_id=[x.id for x in comic_info.identifiers if x.website.lower() == 'league of comic geeks'][0]),
+            comic_info=comic_info)
     else:
-        item_1 = search_series
-    if comic_info['Comic']['Number'] and comic_info['Comic']['Number'] != '1':
-        if comic_info['Format'] == ComicFormat.TRADE_PAPERBACK:
-            item_2 = f"{search_series} Vol. {comic_info['Comic']['Number']} TP"
-        elif comic_info['Format'] == ComicFormat.HARDCOVER:
-            item_2 = f"{search_series} Vol. {comic_info['Comic']['Number']} HC"
-        elif comic_info['Format'] == ComicFormat.ANNUAL:
-            item_2 = f"{search_series} Annual #{comic_info['Comic']['Number']}"
-        elif comic_info['Format'] == ComicFormat.DIGITAL_CHAPTER:
-            item_2 = f"{search_series} Chapter #{comic_info['Comic']['Number']}"
-        else:
-            item_2 = f"{search_series} #{comic_info['Comic']['Number']}"
-    else:
-        item_2 = search_series
-    return item_1, item_2
+        comic_id = search_comic(series_title=comic_info.series.title, comic_format=comic_info.comic_format,
+                                number=comic_info.number, show_variants=show_variants)
+        return parse_comic_result(result=select_comic(comic_id=comic_id), comic_info=comic_info)
 
 
-def add_info(comic_info: Dict[str, Any], show_variants: bool = False) -> Dict[str, Any]:
-    league_id = safe_dict_get(safe_dict_get(comic_info['Identifiers'], 'League of Comic Geeks'), 'Id')
-    if league_id:
-        response = select_comic(league_id)
-    else:
-        response = search_comic(_calculate_search_terms(comic_info), comic_info['Format'], show_variants)
-    if not response:
-        return comic_info
-    if 'details' in response and 'publisher_name' in response['details'] and response['details']['publisher_name']:
-        comic_info['Publisher'] = response['details']['publisher_name']
-    if 'series' in response and 'title' in response['series'] and response['series']['title']:
-        comic_info['Series']['Title'] = response['series']['title']
-    if 'series' in response and 'volume' in response['series'] and response['series']['volume']:
-        try:
-            comic_info['Series']['Volume'] = int(response['series']['volume']) or 1
-        except ValueError:
-            pass
-    if 'details' in response and 'title' in response['details'] and response['details']['title']:
-        pass  # TODO Regex out the Comic Number from the response
-    if 'details' in response and 'title' in response['details'] and response['details']['title']:
-        comic_info['Comic']['Title'] = response['details']['title']
-    if 'details' in response and 'date_release' in response['details'] and response['details']['date_release']:
-        comic_info['Cover Date'] = response['details']['date_release']
-    if 'details' in response and 'description' in response['details'] and response['details']['description']:
-        comic_info['Summary'] = remove_annoying_chars(response['details']['description'])
-    if 'details' in response and 'pages' in response['details'] and response['details']['pages']:
-        try:
-            comic_info['Page Count'] = int(response['details']['pages']) or 1
-        except ValueError:
-            pass
-    if 'Genres' in response and response['Genres']:
-        pass  # TODO Check if Genres is valid in response
-    if 'Language' in response and response['Language']:
-        pass  # TODO Check if Language is valid in response
-    if 'details' in response and 'id' in response['details'] and response['details']['id']:
-        try:
-            comic_info['Identifiers']['League of Comic Geeks'] = {
-                'Id': int(response['details']['id']),
-                'Url': None
-            }
-        except ValueError:
-            pass
-    if 'details' in response and 'format' in response['details'] and response['details']['format']:
-        comic_info['Format'] = ComicFormat.from_string(response['details']['format'])
-    if 'creators' in response and response['creators']:
-        for creator in response['creators']:
-            for role in [x.strip() for x in creator['role'].split(',')]:
-                if role in comic_info['Creators']:
-                    comic_info['Creators'][role].append(creator['name'])
-                else:
-                    comic_info['Creators'][role] = [creator['name']]
-    for role, names in comic_info['Creators'].items():
-        comic_info['Creators'][role] = list(set(names))
+def parse_comic_result(result: Dict[str, Any], comic_info: ComicInfo) -> ComicInfo:
+    LOGGER.debug('Parse Comic Results')
+    # region Publisher
+    comic_info.series.publisher.identifiers.append(IdentifierInfo(website='League of Comic Geeks',
+                                                                  identifier=result['series']['publisher_id']))
+    comic_info.series.publisher.title = result['series']['publisher_name']
+    # endregion
+    # region Series
+    comic_info.series.identifiers.append(IdentifierInfo(website='League of Comic Geeks',
+                                                        identifier=result['series']['id']))
+    comic_info.series.title = result['series']['title']
+    comic_info.series.volume = int(result['series']['volume'])
+    comic_info.series.start_year = int(result['series']['year_begin'])
+    # endregion
+    # region Comic
+    comic_info.identifiers.append(IdentifierInfo(website='League of Comic Geeks', identifier=result['details']['id']))
+    # TODO: Number
+    # TODO: Title
+    comic_info.cover_date = datetime.strptime(result['date_release'], '%Y-%m-%d').date()
+    for creator in result['creators']:
+        for role in creator['role'].split(','):
+            if role.strip() not in comic_info.creators:
+                comic_info.creators[role.strip()] = []
+            comic_info.creators[role.strip()].append(creator['name'])
+    comic_info.comic_format = ComicFormat.from_string(result['details']['format'])
+    # TODO: Genres
+    # TODO: Language ISO
+    comic_info.page_count = int(result['details']['pages'])
+    comic_info.summary = result['details']['description']
+    # TODO: Variant
+    # endregion
     return comic_info
 
 
-def search_comic(search_titles: Tuple[str, str], comic_format: ComicFormat, show_variants: bool = False) -> Dict[
-    str, Any]:
-    def __generate_name_options(options: List[Dict[str, Any]]) -> List[str]:
-        str_options = []
-        for item in options:
-            series_title = item['series_name']
-            if item['series_volume'] and item['series_volume'] != '0' and item['series_volume'] != '1':
-                series_title += f" v{item['series_volume']}"
-            try:
-                series_begin = int(item['series_begin'])
-                if not series_begin:
-                    series_begin = 'Present'
-            except ValueError:
-                series_begin = 'Present'
-            try:
-                series_end = int(item['series_end'])
-                if not series_end:
-                    series_end = 'Present'
-            except ValueError:
-                series_end = 'Present'
-            if series_begin != series_end:
-                series_title += f" ({series_begin}-{series_end or 'Present'})"
-            else:
-                series_title += f" ({series_begin})"
-            str_options.append(
-                f"{item['id']}|{item['publisher_name']}|{series_title} - {item['title']} - {item['format']}")
-        return str_options
-
-    comic_id = None
-    results_1 = __get_request('/search/format/json', params=[('query', search_titles[0])]) or []
-    if search_titles[0] != search_titles[1]:
-        results_2 = __get_request('/search/format/json', params=[('query', search_titles[1])]) or []
+def search_comic(series_title: str, comic_format: str, number: Optional[str] = None,
+                 show_variants: bool = False) -> Optional[int]:
+    search_1, search_2 = __calculate_search_terms(series_title=series_title, comic_format=comic_format, number=number)
+    results_1 = __request('/search/format/json', params=[('query', search_1)])
+    if search_1 != search_2:
+        results_2 = __request('/search/format/json', params=[('query', search_2)])
     else:
         results_2 = []
     results = results_1 + results_2
-    if results:
-        results = filter(lambda x: x['format'] == get_enum_title(comic_format), results)
-        results = sorted(
-            results if show_variants else filter(lambda x: x['variant'] == '0', results),
-            key=lambda x: (x['publisher_name'], x['series_name'], x['series_volume'], x['title'])
-        )
-        str_results = __generate_name_options(results)
-        selected = Console.display_menu(str_results, 'None of the Above')
-        if selected:
-            selected_result = safe_list_get(results, selected - 1)
-            if selected_result:
-                comic_id = int(selected_result['id'])
-    if not comic_id:
-        try:
-            comic_id = int(Console.display_prompt('Input League of Comic Geeks ID'))
-        except ValueError as err:
-            return {}
-    if comic_id:
-        return select_comic(comic_id=comic_id)
-    return {}
+    if not results:
+        return None
+    results = filter(lambda x: x['format'] == comic_format, results)
+    results = sorted(
+        results if show_variants else filter(lambda x: x['variant'] == '0', results),
+        key=lambda x: (x['publisher_name'], x['series_name'], x['series_volume'], x['title'])
+    )
+    if len(results) > 1:
+        index = Console.display_menu(
+            items=[f"{item['id']} | [{item['publisher_name']}] {item['series_name']} v{item['series_volume']} - "
+                   f"{item['title']} - {item['format']}" for item in results],
+            exit_text='None of the Above', prompt='Select Comic')
+        if 1 <= index <= len(results):
+            return results[index - 1]['id']
+    elif len(results) == 1:
+        return results[0]['id']
+    return None
 
 
 def select_comic(comic_id: int) -> Dict[str, Any]:
-    result = __get_request('/comic/format/json', params=[('comic_id', str(comic_id))]) or {}
-    if not result:
-        return {}
-    return result
+    result = __request('/comic/format/json', params=[('comic_id', str(comic_id))])
+    if result:
+        return result
+    return {}
 
 
-def __get_request(url: str, params: List[Tuple[str, str]] = None) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
-    if not CONFIG['League of Comic Geeks']['API Key']:
-        LOGGER.warning('Unable to access League of Comics without an `API Key`')
-        return {}
-    if not CONFIG['League of Comic Geeks']['Client ID']:
-        LOGGER.warning('Unable to access League of Comics without a `Client ID`')
-        return {}
+def __request(endpoint: str, params: List[Tuple[str, str]] = None) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     if not params:
         params = []
     try:
-        response = get(url=BASE_URL + url, headers={
-            'X-API-KEY': CONFIG['League of Comic Geeks']['API Key'],
-            'X-API-CLIENT': CONFIG['League of Comic Geeks']['Client ID']
-        }, timeout=TIMEOUT, params=params)
-        response.raise_for_status()
-        LOGGER.info(f"{response.status_code}: GET - {response.url}")
-        try:
-            return response.json()
-        except (JSONDecodeError, KeyError):
-            if response.text:
-                LOGGER.critical(f'Unable to parse the response message: {response.text}')
-            return {}
+        response = get(url=f"https://leagueofcomicgeeks.com/api{endpoint}", headers={
+            'X-API-KEY': LOCG_API_KEY,
+            'X-API-CLIENT': LOCG_CLIENT_ID
+        }, params=params)
+        if response.status_code == 200:
+            try:
+                LOGGER.info(f"{response.status_code}: GET - {response.url}")
+                return response.json()
+            except (JSONDecodeError, KeyError):
+                LOGGER.error(f'Unable to parse the response message: {response.text}')
+        return {}
     except (HTTPError, ConnectionError) as err:
         LOGGER.error(err)
         return {}
+    finally:
+        time.sleep(0.5)
+
+
+def __calculate_search_terms(series_title: str, comic_format: str, number: Optional[str] = None) -> Tuple[str, str]:
+    if number and number != '1':
+        item_1 = f"{series_title} #{number}"
+    else:
+        item_1 = series_title
+    if number and number != '1':
+        if comic_format == ComicFormat.TRADE_PAPERBACK.get_title():
+            item_2 = f"{series_title} Vol. {number} TP"
+        elif comic_format == ComicFormat.HARDCOVER.get_title():
+            item_2 = f"{series_title} Vol. {number} HC"
+        elif comic_format == ComicFormat.ANNUAL.get_title():
+            item_2 = f"{series_title} Annual #{number}"
+        elif comic_format == ComicFormat.DIGITAL_CHAPTER.get_title():
+            item_2 = f"{series_title} Chapter #{number}"
+        else:
+            item_2 = f"{series_title} #{number}"
+    else:
+        item_2 = series_title
+    return item_1, item_2

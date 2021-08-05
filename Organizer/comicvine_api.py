@@ -1,232 +1,181 @@
 import logging
+import time
 from json.decoder import JSONDecodeError
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 from requests import get
+from requests.exceptions import HTTPError, ConnectionError
 
+from .comic_info import ComicInfo
 from .console import Console
-from .utils import safe_dict_get, safe_list_get, CONFIG
+from .utils import COMICVINE_API_KEY
 
 LOGGER = logging.getLogger(__name__)
-BASE_URL = 'https://comicvine.gamespot.com/api'
-TIMEOUT = 100
 
 
-def add_info(comic_info: Dict[str, Any], show_variants: bool = False) -> Dict[str, Any]:
-    comicvine_id = safe_dict_get(safe_dict_get(comic_info['Identifiers'], 'Comicvine'), 'Id')
-    if comicvine_id:
-        response = select_comic(comicvine_id)
+def add_info(comic_info: ComicInfo, show_variants: bool = False) -> ComicInfo:
+    # TODO: Work in Progress
+    if 'comicvine' in [x.website.lower() for x in comic_info.identifiers]:
+        return parse_issue_result(
+            result=select_issue(issue_id=[x.id for x in comic_info.identifiers if x.website.lower() == 'comicvine'][0]),
+            comic_info=comic_info)
+    elif 'comicvine' in [x.website.lower() for x in comic_info.series.identifiers]:
+        comic_id = search_issues(
+            volume=[x.id for x in comic_info.series.identifiers if x.website.lower() == 'comicvine'][0],
+            issue_number=comic_info.number)
+        if not comic_id:
+            return comic_info
+        return parse_issue_result(result=select_issue(issue_id=comic_id), comic_info=comic_info)
+    elif 'comicvine' in [x.website.lower() for x in comic_info.series.publisher.identifiers]:
+        series_id = search_volumes(
+            publisher=[x.id for x in comic_info.series.publisher.identifiers if x.website.lower() == 'comicvine'][0],
+            name=comic_info.series.title, start_year=comic_info.series.start_year)
+        if not series_id:
+            return comic_info
+        comic_id = search_issues(volume=series_id, issue_number=comic_info.number)
+        if not comic_id:
+            return comic_info
+        return parse_issue_result(result=select_issue(issue_id=comic_id), comic_info=comic_info)
     else:
-        series_id = search_series(comic_info['Series']['Title'], show_variants)
-        if series_id:
-            response = search_comic(series_id, comic_info['Comic']['Number'], show_variants)
-        else:
-            response = None
-    if not response:
-        return comic_info
-    # TODO: Parse Comicvine response
+        publisher_id = search_publishers(name=comic_info.series.publisher.title)
+        if not publisher_id:
+            return comic_info
+        series_id = search_volumes(publisher=publisher_id, name=comic_info.series.title,
+                                   start_year=comic_info.series.start_year)
+        if not series_id:
+            return comic_info
+        comic_id = search_issues(volume=series_id, issue_number=comic_info.number)
+        if not comic_id:
+            return comic_info
+        return parse_issue_result(result=select_issue(issue_id=comic_id), comic_info=comic_info)
 
 
-def search_comic(series_id: int, comic_number: str, show_variants: bool = False) -> Dict[str, Any]:
-    def __generate_name_options(options: List[Dict[str, Any]]) -> List[str]:
-        str_options = []
-        for item in options:
-            series_title = item['name']
-            if item['aliases']:
-                series_title += f" [{item['aliases']}]"
-            if item['start_year']:
-                series_title += f" ({item['start_year']})"
-            str_options.append(f"{item['id']}|{item['publisher']['name']}|{series_title}")
-        return str_options
-
-    response = __get_request(f"issues/", params=[('filter', f"issue_number:{comic_number},volume:{series_id}")])
-    results = response['results']
-    while response['offset'] + response['limit'] > response['number_of_total_results']:
-        params = [('filter', f"issue_number:{comic_number},volume:{series_id}"),
-                  ('offset', str(response['offset'] + response['limit']))]
-        response = __get_request(f"issues/", params=params)
-        results.extend(response['results'])
-
-    comic_id = None
-    if results:
-        str_results = __generate_name_options(results)
-        selected = Console.display_menu(str_results, 'None of the Above')
-        if selected:
-            selected_result = safe_list_get(results, selected - 1)
-            if selected_result:
-                comic_id = int(selected_result['id'])
-            else:
-                try:
-                    comic_id = int(Console.display_prompt('Comic Id'))
-                except ValueError:
-                    pass
-        else:
-            try:
-                comic_id = int(Console.display_prompt('Comic Id'))
-            except ValueError:
-                pass
-    return comic_id
+def parse_issue_result(result: Dict[str, Any], comic_info: ComicInfo) -> ComicInfo:
+    return comic_info
 
 
-def search_series(series_title: str, show_variants: bool = False) -> Optional[int]:
-    def __generate_name_options(options: List[Dict[str, Any]]) -> List[str]:
-        str_options = []
-        for item in options:
-            series_title = item['name']
-            if item['aliases']:
-                series_title += f" [{item['aliases']}]"
-            if item['start_year']:
-                series_title += f" ({item['start_year']})"
-            str_options.append(f"{item['id']}|{item['publisher']['name']}|{series_title}")
-        return str_options
-
-    response = __get_request(f"volumes/", params=[('filter', f"name:{series_title}"),
-                                                  ('field_list', 'aliases,id,name,publisher,start_year')])
-    results = response['results']
-    while response['offset'] + response['limit'] > response['number_of_total_results']:
-        params = [('filter', f"name:{series_title}"), ('field_list', 'aliases,id,name,publisher,start_year'),
-                  ('offset', str(response['offset'] + response['limit']))]
-        response = __get_request(f"volumes/", params=params)
-        results.extend(response['results'])
-
-    series_id = None
-    if results:
-        str_results = __generate_name_options(results)
-        selected = Console.display_menu(str_results, 'None of the Above')
-        if selected:
-            selected_result = safe_list_get(results, selected - 1)
-            if selected_result:
-                series_id = int(selected_result['id'])
-            else:
-                try:
-                    series_id = int(Console.display_prompt('Series Id'))
-                except ValueError:
-                    pass
-        else:
-            try:
-                series_id = int(Console.display_prompt('Series Id'))
-            except ValueError:
-                pass
-    return series_id
+def search_publishers(name: str) -> Optional[int]:
+    results = []
+    offset = 0
+    params = [('filter', f"name:{name}"), ('field_list', 'id,name,api_detail_url')]
+    result = __request('/publishers', params=params)
+    if result:
+        results.extend(result['results'])
+    while result and result['offset'] + result['limit'] > result['number_of_total_results']:
+        offset += result['limit']
+        temp_params = [*params, ('offset', offset)]
+        result = __request('/publishers', params=temp_params)
+        if result:
+            results.extend(result['results'])
+    if len(results) > 1:
+        index = Console.display_menu(
+            items=[f"{item['id']} | {item['name']} - {item['api_detail_url']}" for item in results],
+            exit_text='None of the Above', prompt='Select Publisher')
+        if 1 <= index <= len(results):
+            return results[index - 1]['id']
+    elif len(results) == 1:
+        return results[0]['id']
+    return None
 
 
-def select_comic(comic_id: int) -> Dict[str, Any]:
+def select_publisher(publisher_id: int) -> Dict[str, Any]:
+    params = [('field_list', 'id,name,api_detail_url,deck,image,site_detail_url')]
+    result = __request(f"/publisher/{publisher_id}", params=params)
+    if result and result['results']:
+        return result['results']
     return {}
 
 
-def __get_request(url: str, params: List[Tuple[str, str]] = None) -> \
-    Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]:
-    if not CONFIG['Comicvine']['API Key']:
-        LOGGER.warning('Unable to access Comicvine check the `config.yaml`')
-        return None
+def search_volumes(publisher: int, name: str, start_year: Optional[int] = None) -> Optional[int]:
+    results = []
+    offset = 0
+    params = [('filter', f"publisher:{publisher},name:{name}"), ('field_list', 'id,name,api_detail_url,start_year')]
+    result = __request('/volumes', params=params)
+    if result:
+        if start_year:
+            results.extend([x for x in result['results'] if x['start_year'] == start_year])
+        else:
+            results.extend(result['results'])
+    while result and result['offset'] + result['limit'] > result['number_of_total_results']:
+        offset += result['limit']
+        temp_params = [*params, ('offset', offset)]
+        result = __request('/volumes', params=temp_params)
+        if result:
+            if start_year:
+                results.extend([x for x in result['results'] if x['start_year'] == start_year])
+            else:
+                results.extend(result['results'])
+    if len(results) > 1:
+        index = Console.display_menu(
+            items=[f"{item['id']} | {item['name']} [{item['start_year']}] - {item['api_detail_url']}"
+                   for item in results],
+            exit_text='None of the Above', prompt='Select Volume')
+        if 1 <= index <= len(results):
+            return results[index - 1]['id']
+    elif len(results) == 1:
+        return results[0]['id']
+    return None
+
+
+def select_volume(volume_id: int) -> Dict[str, Any]:
+    params = [('field_list', 'id,name,api_detail_url,deck,image,site_detail_url,start_year,publisher')]
+    result = __request(f"/volume/{volume_id}", params=params)
+    if result and result['results']:
+        return result['results']
+    return {}
+
+
+def search_issues(volume: int, issue_number: str) -> Optional[int]:
+    results = []
+    offset = 0
+    # TODO
+    params = [('filter', f"volume:{volume},issue_number:{issue_number}"),
+              ('field_list', 'id,name,api_detail_url,issue_number')]
+    result = __request('/issues', params=params)
+    if result:
+        results.extend(result['results'])
+    while result and result['offset'] + result['limit'] > result['number_of_total_results']:
+        offset += result['limit']
+        temp_params = [*params, ('offset', offset)]
+        result = __request('/issues', params=temp_params)
+        if result:
+            results.extend(result['results'])
+    if len(results) > 1:
+        index = Console.display_menu(
+            items=[f"{item['id']} - #{item['issue_number']} {item['name']} - {item['api_detail_url']}"
+                   for item in results],
+            exit_text='None of the Above', prompt='Select Issue')
+        if 1 <= index <= len(results):
+            return results[index - 1]['id']
+    elif len(results) == 1:
+        return results[0]['id']
+    return None
+
+
+def select_issue(issue_id: int) -> Dict[str, Any]:
+    # TODO
+    params = [('field_list', 'id,name,api_detail_url,deck,image,site_detail_url,volume')]
+    result = __request(f"/issue/{issue_id}", params=params)
+    if result and result['results']:
+        return result['results']
+    return {}
+
+
+def __request(endpoint: str, params: List[Tuple[str, str]] = None) -> Dict[str, Any]:
     if not params:
         params = []
-    params.extend([('format', 'json'), ('api_key', CONFIG['Comicvine']['API Key'])])
-    response = get(url=BASE_URL + url, timeout=TIMEOUT, params=params)
-    LOGGER.info(f"{response.status_code}: GET - {response.url}")
-    if response.status_code == 200:
-        try:
-            return response.json()
-        except (JSONDecodeError, KeyError):
-            LOGGER.critical(f'Unable to parse the response message: `{response.text}`')
-            return {}
-    else:
-        LOGGER.warning(f"Received unexpected error code: {response.status_code} => {response.text}")
-        return None
-
-# def _calculate_search_term(comic_info: Dict[str, Any]) -> str:
-#     search_series = comic_info['Series']['Title']
-#     if comic_info['Comic']['Number'] and comic_info['Comic']['Number'] != '1':
-#         if comic_info['Format'] == ComicFormat.TRADE_PAPERBACK:
-#             return f"{search_series} Vol. {comic_info['Comic']['Number']} TP"
-#         if comic_info['Format'] == ComicFormat.HARDCOVER:
-#             return f"{search_series} Vol. {comic_info['Comic']['Number']} HC"
-#         if comic_info['Format'] == ComicFormat.ANNUAL:
-#             return f"{search_series} Annual #{comic_info['Comic']['Number']}"
-#         if comic_info['Format'] == ComicFormat.DIGITAL_CHAPTER:
-#             return f"{search_series} Chapter #{comic_info['Comic']['Number']}"
-#         return f"{search_series} #{comic_info['Comic']['Number']}"
-#     return search_series
-#
-#
-# def __generate_name_options(results: List[Dict[str, Any]]) -> List[str]:
-#     options = []
-#     for item in results:
-#         series_title = item['series_name']
-#         if item['series_volume'] and item['series_volume'] != '0' and item['series_volume'] != '1':
-#             series_title += f" v{item['series_volume']}"
-#         try:
-#             series_begin = int(item['series_begin'])
-#             if not series_begin:
-#                 series_begin = 'Present'
-#         except ValueError:
-#             series_begin = 'Present'
-#         try:
-#             series_end = int(item['series_end'])
-#             if not series_end:
-#                 series_end = 'Present'
-#         except ValueError:
-#             series_end = 'Present'
-#         if series_begin != series_end:
-#             series_title += f" ({series_begin}-{series_end or 'Present'})"
-#         else:
-#             series_title += f" ({series_begin})"
-#         options.append(f"{item['id']}|{item['publisher_name']}|{series_title} - {item['title']} - {item['format']}")
-#     return options
-#
-#
-# def search_comic(search_title: str, show_variants: bool = False) -> Dict[str, Any]:
-#     comic_id = None
-#     results = __get_request('/search/format/json', params=[('query', search_title)]) or []
-#     if results:
-#         results = sorted(
-#             results if show_variants else filter(lambda x: x['variant'] == '0', results),
-#             key=lambda x: (x['publisher_name'], x['series_name'], x['series_volume'], x['title'])
-#         )
-#         str_results = __generate_name_options(results)
-#         selected = Console.display_menu(str_results, 'None of the Above')
-#         if selected:
-#             selected_result = safe_list_get(results, selected - 1)
-#             if selected_result:
-#                 comic_id = int(selected_result['id'])
-#     if not comic_id:
-#         try:
-#             comic_id = int(Console.display_prompt('Input League of Comic Geeks ID'))
-#         except ValueError as err:
-#             return {}
-#     if comic_id:
-#         return select_comic(comic_id=comic_id)
-#     return {}
-#
-#
-# def select_comic(comic_id: int) -> Dict[str, Any]:
-#     result = __get_request('/comic/format/json', params=[('comic_id', str(comic_id))]) or {}
-#     if not result:
-#         return {}
-#     return result
-#
-#
-# def __get_request(url: str, params: List[Tuple[str, str]] = None) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
-#     if not CONFIG['League of Comic Geeks']['Client']:
-#         LOGGER.warning('Unable to access League of Comics without the `League of Comics - Client Config`')
-#         return {}
-#     if not CONFIG['League of Comic Geeks']['Key']:
-#         LOGGER.warning('Unable to access League of Comics without the `League of Comics - Key Config`')
-#         return {}
-#     if not params:
-#         params = []
-#     try:
-#         response = get(url=BASE_URL + url, headers={
-#             'X-API-KEY': CONFIG['League of Comic Geeks']['Key'],
-#             'X-API-CLIENT': CONFIG['League of Comic Geeks']['Client']
-#         }, timeout=TIMEOUT, params=params)
-#         response.raise_for_status()
-#         LOGGER.info(f"{response.status_code}: GET - {response.url}")
-#         try:
-#             return response.json()
-#         except (JSONDecodeError, KeyError):
-#             LOGGER.critical(f'Unable to parse the response message: {response.text}')
-#             return {}
-#     except (HTTPError, ConnectionError) as err:
-#         LOGGER.error(err)
-#         return {}
+    params.extend([('format', 'json'), ('api_key', COMICVINE_API_KEY)])
+    try:
+        response = get(url=f"https://comicvine.gamespot.com/api{endpoint}", headers={}, params=params)
+        if response.status_code == 200:
+            try:
+                LOGGER.info(f"{response.status_code}: GET - {response.url}")
+                return response.json()
+            except (JSONDecodeError, KeyError):
+                LOGGER.error(f'Unable to parse the response message: {response.text}')
+        return {}
+    except (HTTPError, ConnectionError) as err:
+        LOGGER.error(err)
+        return {}
+    finally:
+        time.sleep(0.5)
