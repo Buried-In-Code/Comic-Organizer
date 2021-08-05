@@ -15,4 +15,4 @@ logs/
 *.ini
 
 # =====Project=====
-!config.ini
+!config-example.ini
