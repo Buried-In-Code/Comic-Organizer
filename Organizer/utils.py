@@ -43,6 +43,15 @@ def list_files(folder: Path, filter: Tuple[str, ...] = ()) -> List[Path]:
     return files
 
 
+def del_folder(folder: Path):
+    for child in folder.iterdir():
+        if child.is_file():
+            child.unlink(missing_ok=True)
+        else:
+            del_folder(child)
+    folder.rmdir()
+
+
 def slugify(value: str) -> str:
     value = ' '.join(re.sub(r"[^a-zA-Z0-9\s\-]+", '', value.strip().lower()).replace('-', ' ').split())
     return value.title().replace(' ', '-')

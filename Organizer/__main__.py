@@ -3,10 +3,10 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 import PyLogger
-from Organizer import Console, PROCESSING_FOLDER, COLLECTION_FOLDER, list_files, extract_archive, create_archive, \
-    PublisherInfo, SeriesInfo, ComicInfo, load_info, save_info, slugify_publisher, slugify_series, slugify_comic, \
-    add_comicvine_info, add_league_info, add_metron_info, COMICVINE_API_KEY, LOCG_API_KEY, LOCG_CLIENT_ID, \
-    METRON_USERNAME, METRON_PASSWORD
+from Organizer import Console, PROCESSING_FOLDER, COLLECTION_FOLDER, list_files, del_folder, extract_archive, \
+    create_archive, PublisherInfo, SeriesInfo, ComicInfo, load_info, save_info, slugify_publisher, slugify_series, \
+    slugify_comic, add_comicvine_info, add_league_info, add_metron_info, COMICVINE_API_KEY, LOCG_API_KEY, \
+    LOCG_CLIENT_ID, METRON_USERNAME, METRON_PASSWORD
 
 LOGGER = logging.getLogger('Organizer')
 
@@ -90,11 +90,20 @@ def main(input_path: str, pull_info: bool, show_variants: bool, manual_info: boo
         if image_check:
             Console.request_str(prompt='Press <ENTER> to continue')
 
-        clean_comic_file = create_archive(src=comic_folder, filename=comic_file.stem)
-        if not clean_comic_file:
+        clean_archive = create_archive(src=comic_folder, filename=comic_file.stem)
+        if not clean_archive:
             continue
-        LOGGER.info(f"Cleaned {clean_comic_file.stem}")
-        Console.display_text(f"Finished organizing {clean_comic_file.stem}")
+
+        del_folder(comic_folder)
+        comic_file.unlink(missing_ok=True)
+
+        clean_comic = series_folder.joinpath(f"{comic_file.stem}.cbz")
+        if not clean_comic.exists():
+            clean_archive.rename(clean_comic)
+        else:
+            LOGGER.error(f"Unable to move the result as a file with the same name already exists: {clean_comic}")
+        LOGGER.info(f"Cleaned {clean_comic.stem}")
+        Console.display_text(f"Finished organizing {clean_comic.stem}")
 
 
 def parse_arguments() -> Namespace:
