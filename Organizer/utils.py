@@ -1,8 +1,11 @@
+import html
 import logging
 import re
 from configparser import ConfigParser
 from pathlib import Path
-from typing import Tuple, List
+from typing import Tuple, List, Optional
+
+from titlecase import titlecase
 
 from .comic_format import ComicFormat
 
@@ -52,9 +55,24 @@ def del_folder(folder: Path):
     folder.rmdir()
 
 
+def remove_extra(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return value
+    tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
+    return ' '.join(html.unescape(tag_re.sub('', value.strip())).split())
+
+
+def str_to_list(soup, key: str) -> List[str]:
+    return [x.strip() for x in (str(soup.find(key).string) if soup.find(key) else '').split(',') if x]
+
+
+def abbreviations(word, **kwargs):
+    if word.upper() in ['DC', 'INC']:
+        return word.upper()
+
+
 def slugify(value: str) -> str:
-    value = ' '.join(re.sub(r"[^a-zA-Z0-9\s\-]+", '', value.strip().lower()).replace('-', ' ').split())
-    return value.title().replace(' ', '-')
+    return ' '.join(titlecase(text=re.sub(r"[^a-zA-Z0-9\s\-&]+", '', value.strip().lower()).replace('-', ' '), callback=abbreviations).split()).replace(' ', '-')
 
 
 def slugify_publisher(title: str) -> str:
@@ -79,4 +97,5 @@ def slugify_comic(series_slug: str, comic_format: str, number: str) -> str:
         comic_slug = f"{series_slug}-Chapter-#{number}"
     else:
         comic_slug = f"{series_slug}-#{number}"
+    LOGGER.info(f"{series_slug}-{comic_format}-{number} => {comic_slug}")
     return comic_slug

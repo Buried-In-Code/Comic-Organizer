@@ -45,7 +45,7 @@ class Console:
     @classmethod
     def display_heading(cls, text: str):
         cls.__colour_console(text='=' * (len(text) + 4), colour=Colour.BLUE)
-        cls.__colour_console(text=text, colour=Colour.BLUE)
+        cls.display_sub_heading(text=text)
         cls.__colour_console(text='=' * (len(text) + 4), colour=Colour.BLUE)
 
     @classmethod

@@ -1,11 +1,11 @@
 from pathlib import Path
 from typing import Optional
 
-from .zip_archive import extract_archive as extract_zip_archive, create_archive
-from .sevenz_archive import extract_archive as extract_7z_archive
 from .ace_archive import extract_archive as extract_ace_archive
 from .rar_archive import extract_archive as extract_rar_archive
+from .sevenz_archive import extract_archive as extract_7z_archive
 from .tar_archive import extract_archive as extract_tar_archive
+from .zip_archive import extract_archive as extract_zip_archive, create_archive
 
 
 def extract_archive(src: Path, dest: Path) -> Optional[Path]:
