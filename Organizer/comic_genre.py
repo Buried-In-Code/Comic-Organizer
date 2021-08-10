@@ -18,6 +18,9 @@ class ComicGenre(Enum):
     def __str__(self):
         return f"{type(self).__name__}({self.name})"
 
+    def get_title(self) -> str:
+        return ' '.join([x.title() for x in self.name.split('_')])
+
     @classmethod
     def from_string(cls, value: str) -> Optional['ComicGenre']:
         if value.lower() in ('superhero', 'super hero', 'super-hero',):
