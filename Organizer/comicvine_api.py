@@ -15,7 +15,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 def add_info(comic_info: ComicInfo, show_variants: bool = False) -> ComicInfo:
-    # TODO: Work in Progress
     comic_info.series.publisher.identifiers = [x for x in comic_info.series.publisher.identifiers if x.website.lower() != 'comicvine']
     comic_info.series.identifiers = [x for x in comic_info.series.identifiers if x.website.lower() != 'comicvine']
     comic_info.identifiers = [x for x in comic_info.identifiers if x.website.lower() != 'comicvine']
