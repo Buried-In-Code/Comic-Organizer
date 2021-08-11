@@ -1,9 +1,24 @@
-ruamel.yaml == 0.17.10
-titlecase == 2.3
-requests == 2.26.0
-beautifulsoup4 == 4.9.3
-lxml == 4.6.3
-patool == 1.12
-
-# PyLogger submodule
-colorama == 0.4.4
+attrs==21.2.0
+beautifulsoup4==4.9.3
+certifi==2021.5.30
+charset-normalizer==2.0.4
+colorama==0.4.4
+idna==3.2
+iniconfig==1.1.1
+lxml==4.6.3
+marshmallow==3.13.0
+mokkari==0.1.10
+packaging==21.0
+patool==1.12
+pluggy==0.13.1
+py==1.10.0
+pyparsing==2.4.7
+pytest==6.2.4
+ratelimit==2.2.1
+requests==2.26.0
+ruamel.yaml==0.17.10
+ruamel.yaml.clib==0.2.6
+soupsieve==2.2.1
+titlecase==2.3
+toml==0.10.2
+urllib3==1.26.6
