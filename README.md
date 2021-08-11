@@ -12,13 +12,14 @@
 ## Built Using
 
 - [Python: 3.9.6](https://www.python.org/)
-- [pip: 21.2.2](https://pypi.org/project/pip/)
+- [Poetry: 1.1.7](https://python-poetry.org)
 - [ruamel.yaml: 0.17.10](https://pypi.org/project/ruamel.yaml)
 - [titlecase: 2.3](https://pypi.org/project/titlecase)
 - [requests: 2.26.0](https://pypi.org/project/requests)
 - [beautifulsoup4: 4.9.3](https://pypi.org/project/beautifulsoup4)
 - [lxml: 4.6.3](https://pypi.org/project/lxml)
 - [patool: 1.12](https://pypi.org/project/patool)
+- [colorama: 0.4.4](https://pypi.org/project/colorama)
 
 ## Arguments
 
@@ -30,6 +31,11 @@
 | `--add-manual-info` | bool | False | False | Manually enter the data for the ComicInfo |
 | `--manual-image-check` | bool | False | False | Pause the Script before creating the CBZ to allow manual removal of Ads, etc... |
 | `--debug` | bool | False | False | |
+
+## Execution
+```bash
+$ poetry run comic-organizer --input-folder "/Comics/Import"
+```
 
 ## ComicInfo Json Schema
 
