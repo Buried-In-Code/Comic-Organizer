@@ -1,9 +1,17 @@
 [tool.poetry]
 name = "comic-organizer"
 version = "2.0.0"
-description = ""
-authors = ["Buried-In-Code"]
+description = "Helps sort and organize your comic collection by using the information stored in ComicInfo files."
 license = "MIT"
+authors = ["Buried-In-Code <6057651+Buried-In-Code@users.noreply.github.com>"]
+maintainers = ["Buried-In-Code <6057651+Buried-In-Code@users.noreply.github.com>"]
+readme = "README.md"
+homepage = "https://github.com/Buried-In-Code/Comic-Organizer"
+repository = "https://github.com/Buried-In-Code/Comic-Organizer"
+documentation = "https://github.com/Buried-In-Code/Comic-Organizer"
+packages = [
+	{ include = "Organizer" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -14,12 +22,15 @@ beautifulsoup4 = "^4.9.3"
 lxml = "^4.6.3"
 patool = "^1.12"
 colorama = "^0.4.4"
+mokkari = "^0.1.10"
 
 [tool.poetry.dev-dependencies]
+pytest = "^6.2.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poetry.scripts]
-comic-organizer = "comic-organizer:main"
+[tool.poetry.urls]
+"Issue Tracker" = "https://github.com/Buried-In-Code/Comic-Organizer/issues"
+
