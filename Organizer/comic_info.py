@@ -44,7 +44,7 @@ class PublisherInfo:
         }
 
     def reset(self):
-        pass
+        self.identifiers = []
 
 
 class SeriesInfo:
@@ -73,6 +73,7 @@ class SeriesInfo:
         self.publisher.reset()
         self.start_year = None
         self.volume = None
+        self.identifiers = []
 
 
 class ArcInfo:
@@ -135,6 +136,7 @@ class ComicInfo:
         self.genres = []
         self.page_count = 1
         self.creators = {}
+        self.identifiers = []
         self.notes = None
 
 

@@ -49,6 +49,7 @@ Supported Comic Sources:
 | `--show-variants` | bool | False | False | Add variants to the list of options |
 | `--add-manual-info` | bool | False | False | Manually enter the data for the ComicInfo |
 | `--manual-image-check` | bool | False | False | Pause the Script before creating the CBZ to allow manual removal of Ads, etc... |
+| `--reset-info` | bool | False | False | Wipe all non-essential fields (fields used in searching e.g. title, issue #...) and lookup the info fresh |
 | `--debug` | bool | False | False | |
 
 ## Execution

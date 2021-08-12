@@ -14,10 +14,7 @@ from .utils import COMICVINE_API_KEY, remove_extra
 LOGGER = logging.getLogger(__name__)
 
 
-def add_info(comic_info: ComicInfo, show_variants: bool = False) -> ComicInfo:
-    comic_info.series.publisher.identifiers = [x for x in comic_info.series.publisher.identifiers if x.website.lower() != 'comicvine']
-    comic_info.series.identifiers = [x for x in comic_info.series.identifiers if x.website.lower() != 'comicvine']
-    comic_info.identifiers = [x for x in comic_info.identifiers if x.website.lower() != 'comicvine']
+def add_info(comic_info: ComicInfo) -> ComicInfo:
     if 'comicvine' in [x.website.lower() for x in comic_info.series.publisher.identifiers]:
         publisher_id = [x.identifier for x in comic_info.series.publisher.identifiers if x.website.lower() == 'comicvine'][0]
     else:
@@ -46,7 +43,7 @@ def parse_publisher_result(result: Dict[str, Any], comic_info: ComicInfo) -> Com
     LOGGER.debug('Parse Publisher Results')
     if 'comicvine' not in [x.website.lower() for x in comic_info.series.publisher.identifiers]:
         comic_info.series.publisher.identifiers.append(IdentifierInfo(website='Comicvine', identifier=result['id'], url=result['site_detail_url']))
-    comic_info.series.publisher.title = comic_info.series.publisher.title if comic_info.series.publisher.title else result['name']
+    comic_info.series.publisher.title = comic_info.series.publisher.title or result['name']
     return comic_info
 
 
@@ -54,9 +51,9 @@ def parse_volume_result(result: Dict[str, Any], comic_info: ComicInfo) -> ComicI
     LOGGER.debug('Parse Volume Results')
     if 'comicvine' not in [x.website.lower() for x in comic_info.series.identifiers]:
         comic_info.series.identifiers.append(IdentifierInfo(website='Comicvine', identifier=result['id'], url=result['site_detail_url']))
-    comic_info.series.title = comic_info.series.title if comic_info.series.title else result['name']
+    comic_info.series.title = comic_info.series.title or result['name']
     # TODO: Volume
-    comic_info.series.start_year = comic_info.series.start_year if comic_info.series.start_year else result['start_year']
+    comic_info.series.start_year = comic_info.series.start_year or result['start_year']
     return comic_info
 
 
@@ -64,9 +61,9 @@ def parse_issue_result(result: Dict[str, Any], comic_info: ComicInfo) -> ComicIn
     LOGGER.debug('Parse Issue Results')
     if 'comicvine' not in [x.website.lower() for x in comic_info.identifiers]:
         comic_info.identifiers.append(IdentifierInfo(website='Comicvine', identifier=result['id'], url=result['site_detail_url']))
-    comic_info.number = comic_info.number if comic_info.number else result['issue_number']
-    comic_info.title = comic_info.title if comic_info.title else result['name']
-    comic_info.cover_date = comic_info.cover_date if comic_info.cover_date else datetime.strptime(result['cover_date'], '%Y-%m-%d').date()
+    comic_info.number = comic_info.number or result['issue_number']
+    comic_info.title = comic_info.title or result['name']
+    comic_info.cover_date = comic_info.cover_date or datetime.strptime(result['cover_date'], '%Y-%m-%d').date()
     for credit in result['person_credits']:
         for role in credit['role'].split(','):
             if role.strip() not in comic_info.creators:
@@ -76,7 +73,7 @@ def parse_issue_result(result: Dict[str, Any], comic_info: ComicInfo) -> ComicIn
     # TODO: Genres
     # TODO: Language ISO
     # TODO: Page Count
-    comic_info.summary = comic_info.summary if comic_info.summary else remove_extra(result['deck'])
+    comic_info.summary = comic_info.summary or remove_extra(result['deck'])
     # TODO: Variant
     return comic_info
 

@@ -11,7 +11,7 @@ from Organizer import Console, PROCESSING_FOLDER, COLLECTION_FOLDER, list_files,
 LOGGER = logging.getLogger('Organizer')
 
 
-def main(input_path: str, pull_info: bool, show_variants: bool, manual_info: bool, image_check: bool, debug: bool = False):
+def main(input_path: str, pull_info: bool, show_variants: bool, manual_info: bool, image_check: bool, reset_info: bool, debug: bool = False):
     Console.display_heading('Welcome to Comic Organizer')
     input_folder = Path(input_path).resolve()
     if not input_folder.exists():
@@ -55,7 +55,8 @@ def main(input_path: str, pull_info: bool, show_variants: bool, manual_info: boo
                 comic_info.series.title = Console.request_str(prompt='Series Title')
             if not comic_info.number:
                 comic_info.number = Console.request_str(prompt='Issue Number')
-        comic_info.reset()
+        if reset_info:
+            comic_info.reset()
         if pull_info:
             if LOCG_API_KEY and LOCG_CLIENT_ID:
                 Console.display_item_value(item='Pulling info from', value='League of Comic Geeks')
@@ -104,6 +105,7 @@ def parse_arguments() -> Namespace:
     parser.add_argument('--show-variants', action='store_true')
     parser.add_argument('--add-manual-info', action='store_true')
     parser.add_argument('--manual-image-check', action='store_true')
+    parser.add_argument('--reset-info', action='store_true')
     parser.add_argument('-d', '--debug', action='store_true')
     return parser.parse_args()
 
@@ -113,6 +115,6 @@ if __name__ == '__main__':
         args = parse_arguments()
         PyLogger.init('Comic-Organizer', file_level=logging.DEBUG if args.debug else logging.INFO, console_level=logging.INFO if args.debug else logging.WARNING)
         main(input_path=args.input_folder, pull_info=args.pull_info, show_variants=args.show_variants, manual_info=args.add_manual_info, image_check=args.manual_image_check,
-             debug=args.debug)
+             reset_info=args.reset_info, debug=args.debug)
     except KeyboardInterrupt:
         pass

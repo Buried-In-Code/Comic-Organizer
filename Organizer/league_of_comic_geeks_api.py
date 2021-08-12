@@ -26,30 +26,33 @@ def add_info(comic_info: ComicInfo, show_variants: bool = False) -> ComicInfo:
 def parse_comic_result(result: Dict[str, Any], comic_info: ComicInfo) -> ComicInfo:
     LOGGER.debug('Parse Comic Results')
     # region Publisher
-    comic_info.series.publisher.identifiers.append(IdentifierInfo(website='League of Comic Geeks', identifier=result['series']['publisher_id']))
-    comic_info.series.publisher.title = result['series']['publisher_name']
+    if 'league of comic geeks' not in [x.website.lower() for x in comic_info.series.publisher.identifiers]:
+        comic_info.series.publisher.identifiers.append(IdentifierInfo(website='League of Comic Geeks', identifier=result['series']['publisher_id']))
+    comic_info.series.publisher.title = comic_info.series.publisher.title or result['series']['publisher_name']
     # endregion
     # region Series
-    comic_info.series.identifiers.append(IdentifierInfo(website='League of Comic Geeks', identifier=result['series']['id']))
-    comic_info.series.title = result['series']['title']
-    comic_info.series.volume = int(result['series']['volume'])
-    comic_info.series.start_year = int(result['series']['year_begin'])
+    if 'league of comic geeks' not in [x.website.lower() for x in comic_info.series.identifiers]:
+        comic_info.series.identifiers.append(IdentifierInfo(website='League of Comic Geeks', identifier=result['series']['id']))
+    comic_info.series.title = comic_info.series.title or result['series']['title']
+    comic_info.series.volume = comic_info.series.volume or int(result['series']['volume'])
+    comic_info.series.start_year = comic_info.series.start_year or int(result['series']['year_begin'])
     # endregion
     # region Comic
-    comic_info.identifiers.append(IdentifierInfo(website='League of Comic Geeks', identifier=result['details']['id']))
+    if 'league of comic geeks' not in [x.website.lower() for x in comic_info.identifiers]:
+        comic_info.identifiers.append(IdentifierInfo(website='League of Comic Geeks', identifier=result['details']['id']))
     # TODO: Number
     # TODO: Title
-    comic_info.cover_date = datetime.strptime(result['details']['date_release'], '%Y-%m-%d').date()
+    comic_info.cover_date = comic_info.cover_date or datetime.strptime(result['details']['date_release'], '%Y-%m-%d').date()
     for creator in result['creators']:
         for role in creator['role'].split(','):
             if role.strip() not in comic_info.creators:
                 comic_info.creators[role.strip()] = []
             comic_info.creators[role.strip()].append(creator['name'])
-    comic_info.comic_format = ComicFormat.from_string(result['details']['format']).get_title()
+    comic_info.comic_format = comic_info.comic_format or ComicFormat.from_string(result['details']['format']).get_title()
     # TODO: Genres
     # TODO: Language ISO
-    comic_info.page_count = int(result['details']['pages'])
-    comic_info.summary = remove_extra(result['details']['description'])
+    comic_info.page_count = comic_info.page_count or int(result['details']['pages'])
+    comic_info.summary = comic_info.summary or remove_extra(result['details']['description'])
     # TODO: Variant
     # endregion
     return comic_info
