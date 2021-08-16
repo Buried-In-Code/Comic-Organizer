@@ -7,7 +7,7 @@ from mokkari.issue import Issue
 from mokkari.publisher import Publisher
 from mokkari.series import Series
 
-from .comic_info import ComicInfo, IdentifierInfo
+from .comic_info import PublisherInfo, SeriesInfo, ComicInfo, IdentifierInfo
 from .console import Console
 from .utils import METRON_USERNAME, METRON_PASSWORD, remove_extra
 
@@ -24,7 +24,7 @@ class Talker:
         LOGGER.debug('Search Publishers')
         results = self.api.publishers_list(params={"name": name})
         if results:
-            index = Console.display_menu(items=[f"{item.id} - {item.name}" for item in results], exit_text='None of the Above', prompt='Select Publisher')
+            index = Console.display_menu(items=[f"{item.id} | {item.name}" for item in results], exit_text='None of the Above', prompt='Select Publisher')
             if 1 <= index <= len(results):
                 return results[index - 1].id
         return None
@@ -40,9 +40,11 @@ class Talker:
             params['volume'] = volume
         results = self.api.series_list(params=params)
         if results:
-            index = Console.display_menu(items=[f"{item.id} - {item.display_name}" for item in results], exit_text='None of the Above', prompt='Select Series')
+            index = Console.display_menu(items=[f"{item.id} | {item.display_name}" for item in results], exit_text='None of the Above', prompt='Select Series')
             if 1 <= index <= len(results):
                 return results[index - 1].id
+        elif volume:
+            return self.search_series(publisher_id=publisher_id, name=name)
         return None
 
     def get_series(self, series_id: int) -> Series:
@@ -54,7 +56,7 @@ class Talker:
         params = {'series_id': series_id, 'number': number}
         results = self.api.issues_list(params=params)
         if results:
-            index = Console.display_menu(items=[f"{item.id} - {item.issue_name} [{item.cover_date}]" for item in results], exit_text='None of the Above', prompt='Select Issue')
+            index = Console.display_menu(items=[f"{item.id} | {item.issue_name} [{item.cover_date}]" for item in results], exit_text='None of the Above', prompt='Select Issue')
             if 1 <= index <= len(results):
                 return results[index - 1].id
         return None
@@ -82,17 +84,16 @@ def add_info(comic_info: ComicInfo) -> ComicInfo:
     if not publisher_id:
         return comic_info
 
-    comic_info = parse_publisher_result(result=talker.get_publisher(publisher_id), comic_info=comic_info)
+    comic_info.series.publisher = parse_publisher_result(result=talker.get_publisher(publisher_id), publisher_info=comic_info.series.publisher)
     if 'metron' in [x.website.lower() for x in comic_info.series.identifiers]:
         series_id = [x.identifier for x in comic_info.series.identifiers if x.website.lower() == 'metron'][0]
     else:
         series_id = talker.search_series(publisher_id=[x.identifier for x in comic_info.series.publisher.identifiers if x.website.lower() == 'metron'][0],
-                                         name=comic_info.series.title,
-                                         volume=comic_info.series.volume)
+                                         name=comic_info.series.title, volume=comic_info.series.volume)
     if not series_id:
         return comic_info
 
-    comic_info = parse_series_result(result=talker.get_series(series_id), comic_info=comic_info)
+    comic_info.series = parse_series_result(result=talker.get_series(series_id), series_info=comic_info.series)
     if 'metron' in [x.website.lower() for x in comic_info.identifiers]:
         issue_id = [x.identifier for x in comic_info.identifiers if x.website.lower() == 'metron'][0]
     else:
@@ -103,24 +104,24 @@ def add_info(comic_info: ComicInfo) -> ComicInfo:
     return parse_issue_result(result=talker.get_issue(issue_id), comic_info=comic_info)
 
 
-def parse_publisher_result(result: Publisher, comic_info: ComicInfo) -> ComicInfo:
+def parse_publisher_result(result: Publisher, publisher_info: PublisherInfo) -> PublisherInfo:
     LOGGER.debug('Parse Publisher Results')
-    if 'metron' not in [x.website.lower() for x in comic_info.series.publisher.identifiers]:
-        comic_info.series.publisher.identifiers.append(IdentifierInfo(website='Metron', identifier=result.id))
-    comic_info.series.publisher.title = comic_info.series.publisher.title or result.name
+    if 'metron' not in [x.website.lower() for x in publisher_info.identifiers]:
+        publisher_info.identifiers.append(IdentifierInfo(website='Metron', identifier=result.id))
+    publisher_info.title = publisher_info.title or result.name
 
-    return comic_info
+    return publisher_info
 
 
-def parse_series_result(result: Series, comic_info: ComicInfo) -> ComicInfo:
+def parse_series_result(result: Series, series_info: SeriesInfo) -> SeriesInfo:
     LOGGER.debug('Parse Series Results')
-    if 'metron' not in [x.website.lower() for x in comic_info.series.identifiers]:
-        comic_info.series.identifiers.append(IdentifierInfo(website='Metron', identifier=result.id))
-    comic_info.series.title = comic_info.series.title or result.name
-    comic_info.series.volume = comic_info.series.volume or result.volume
-    comic_info.series.start_year = comic_info.series.start_year or result.year_began
+    if 'metron' not in [x.website.lower() for x in series_info.identifiers]:
+        series_info.identifiers.append(IdentifierInfo(website='Metron', identifier=result.id))
+    series_info.title = series_info.title or result.name
+    series_info.volume = series_info.volume or result.volume
+    series_info.start_year = series_info.start_year or result.year_began
 
-    return comic_info
+    return series_info
 
 
 def titles_to_string(titles: List[str]) -> str:
@@ -132,10 +133,7 @@ def parse_issue_result(result: Issue, comic_info: ComicInfo) -> ComicInfo:
     if 'metron' not in [x.website.lower() for x in comic_info.identifiers]:
         comic_info.identifiers.append(IdentifierInfo(website='Metron', identifier=result.id))
     comic_info.number = comic_info.number or result.number
-    comic_info.title = comic_info.title or (
-        titles_to_string(result.story_titles) if result.story_titles else None
-    )
-
+    comic_info.title = comic_info.title or (titles_to_string(result.story_titles) if result.story_titles else None)
     comic_info.cover_date = comic_info.cover_date or result.cover_date
 
     for credit in result.credits:
@@ -149,4 +147,5 @@ def parse_issue_result(result: Issue, comic_info: ComicInfo) -> ComicInfo:
     # TODO: Page Count
     comic_info.summary = comic_info.summary or remove_extra(result.desc)
     # TODO: Variant
+
     return comic_info

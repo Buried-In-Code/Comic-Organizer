@@ -63,10 +63,10 @@ def main(input_path: str, pull_info: bool, show_variants: bool, manual_info: boo
                 comic_info = add_league_info(comic_info=comic_info, show_variants=show_variants)
             if METRON_USERNAME and METRON_PASSWORD:
                 Console.display_item_value(item='Pulling info from', value='Metron')
-                comic_info = add_metron_info(comic_info=comic_info, show_variants=show_variants)
+                comic_info = add_metron_info(comic_info=comic_info)
             if COMICVINE_API_KEY:
                 Console.display_item_value(item='Pulling info from', value='Comicvine')
-                comic_info = add_comicvine_info(comic_info=comic_info, show_variants=show_variants)
+                comic_info = add_comicvine_info(comic_info=comic_info)
         if manual_info:
             Console.display_text('Manually adding info')
             # comic_info = add_manual_info(comic_info=comic_info, show_variants=show_variants)

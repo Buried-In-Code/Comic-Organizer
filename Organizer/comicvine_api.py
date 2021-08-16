@@ -21,6 +21,7 @@ def add_info(comic_info: ComicInfo) -> ComicInfo:
         publisher_id = search_publishers(name=comic_info.series.publisher.title)
     if not publisher_id:
         return comic_info
+
     comic_info = parse_publisher_result(result=select_publisher(publisher_id=publisher_id), comic_info=comic_info)
     if 'comicvine' in [x.website.lower() for x in comic_info.series.identifiers]:
         volume_id = [x.identifier for x in comic_info.series.identifiers if x.website.lower() == 'comicvine'][0]
@@ -29,6 +30,7 @@ def add_info(comic_info: ComicInfo) -> ComicInfo:
                                    start_year=comic_info.series.start_year)
     if not volume_id:
         return comic_info
+
     comic_info = parse_volume_result(result=select_volume(volume_id=volume_id), comic_info=comic_info)
     if 'comicvine' in [x.website.lower() for x in comic_info.identifiers]:
         issue_id = [x.identifier for x in comic_info.identifiers if x.website.lower() == 'comicvine'][0]
@@ -36,6 +38,7 @@ def add_info(comic_info: ComicInfo) -> ComicInfo:
         issue_id = search_issues(volume=[x.identifier for x in comic_info.series.identifiers if x.website.lower() == 'comicvine'][0], issue_number=comic_info.number)
     if not issue_id:
         return comic_info
+
     return parse_issue_result(result=select_issue(issue_id=issue_id), comic_info=comic_info)
 
 

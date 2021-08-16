@@ -20,6 +20,9 @@ def add_info(comic_info: ComicInfo, show_variants: bool = False) -> ComicInfo:
         comic_id = [x.identifier for x in comic_info.identifiers if x.website.lower() == 'league of comic geeks'][0]
     else:
         comic_id = search_comic(series_title=comic_info.series.title, comic_format=comic_info.comic_format, number=comic_info.number, show_variants=show_variants)
+    if not comic_id:
+        return comic_info
+
     return parse_comic_result(result=select_comic(comic_id=comic_id), comic_info=comic_info)
 
 
