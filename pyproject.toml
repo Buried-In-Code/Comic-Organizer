@@ -22,7 +22,7 @@ beautifulsoup4 = "^4.9.3"
 lxml = "^4.6.3"
 patool = "^1.12"
 colorama = "^0.4.4"
-mokkari = "^0.1.10"
+mokkari = "^0.2.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
