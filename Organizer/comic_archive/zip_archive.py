@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
-from typing import Optional, Tuple, List
-from zipfile import ZipFile, ZIP_DEFLATED
+from typing import List, Optional, Tuple
+from zipfile import ZIP_DEFLATED, ZipFile
 
 LOGGER = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ def extract_archive(src: Path, dest: Path) -> Optional[Path]:
         return None
     dest_folder.mkdir(parents=True)
     LOGGER.debug(f"Started unpacking of `{src}` to `{dest_folder}`")
-    with ZipFile(src, 'r') as zip_stream:
+    with ZipFile(src, "r") as zip_stream:
         zip_stream.extractall(path=dest_folder)
     LOGGER.debug(f"Finished unpacking of `{src}` to `{dest_folder}`")
     return dest_folder
@@ -21,16 +21,16 @@ def extract_archive(src: Path, dest: Path) -> Optional[Path]:
 
 def create_archive(src: Path, filename: str) -> Optional[Path]:
     files = []
-    for index, img_file in enumerate(list_files(src, ('.jpg',))):
+    for index, img_file in enumerate(list_files(src, (".jpg",))):
         files.append(img_file.rename(src.joinpath(f"{filename}-{index:03}{img_file.suffix}")))
-    if src.joinpath('ComicInfo.json').exists():
-        files.append(src.joinpath('ComicInfo.json'))
+    if src.joinpath("ComicInfo.json").exists():
+        files.append(src.joinpath("ComicInfo.json"))
     zip_file = src.parent.joinpath(f"{filename}.cbz")
     if zip_file.exists():
         LOGGER.error(f"{zip_file.name} already exists in {zip_file.parent.name}")
         return None
     LOGGER.debug(f"Started packing of `{zip_file}`")
-    with ZipFile(zip_file, 'w', ZIP_DEFLATED) as zip_stream:
+    with ZipFile(zip_file, "w", ZIP_DEFLATED) as zip_stream:
         for file in files:
             zip_stream.write(file, file.relative_to(src))
     LOGGER.debug(f"Finished packing of `{zip_file}`")

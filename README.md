@@ -31,6 +31,7 @@ Supported Comic Sources:
 
 - [Poetry: 1.1.7](https://python-poetry.org)
 - [Python: 3.9.6](https://www.python.org/)
+- [Painted-Logger: 1.1.1](https://pypi.org/project/Painted-Logger)
 - [ruamel.yaml: 0.17.10](https://pypi.org/project/ruamel.yaml)
 - [titlecase: 2.3](https://pypi.org/project/titlecase)
 - [requests: 2.26.0](https://pypi.org/project/requests)
@@ -38,7 +39,8 @@ Supported Comic Sources:
 - [lxml: 4.6.3](https://pypi.org/project/lxml)
 - [patool: 1.12](https://pypi.org/project/patool)
 - [colorama: 0.4.4](https://pypi.org/project/colorama)
-- [mokkari: 0.1.10](https://pypi.org/project/mokkari)
+- [mokkari: 0.2.2](https://pypi.org/project/mokkari)
+- [simyan: 0.3.0](https://pypi.org/project/simyan)
 
 ## Arguments
 
@@ -121,4 +123,4 @@ Common Formats:
 
 ## Socials
 
-[![Discord | The DEV Environment](https://discordapp.com/api/guilds/618581423070117932/widget.png?style=banner2)](https://discord.gg/nqGMeGg)
+[![Discord | The-DEV-Environment](https://discordapp.com/api/guilds/618581423070117932/widget.png?style=banner2)](https://discord.gg/nqGMeGg)

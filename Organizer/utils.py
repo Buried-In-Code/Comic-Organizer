@@ -3,7 +3,7 @@ import logging
 import re
 from configparser import ConfigParser
 from pathlib import Path
-from typing import Tuple, List, Optional
+from typing import List, Optional, Tuple
 
 from titlecase import titlecase
 
@@ -13,27 +13,27 @@ LOGGER = logging.getLogger(__name__)
 TOP_DIR = Path(__file__).resolve().parent.parent
 
 CONFIG = ConfigParser(allow_no_value=True)
-CONFIG.read('config.ini')
+CONFIG.read("config.ini")
 # General
-ROOT_FOLDER = Path(CONFIG['General']['Root']).resolve()
+ROOT_FOLDER = Path(CONFIG["General"]["Root"]).resolve()
 ROOT_FOLDER.mkdir(parents=True, exist_ok=True)
 
-PROCESSING_FOLDER = ROOT_FOLDER.joinpath('Processing')
+PROCESSING_FOLDER = ROOT_FOLDER.joinpath("Processing")
 PROCESSING_FOLDER.mkdir(parents=True, exist_ok=True)
 
-COLLECTION_FOLDER = ROOT_FOLDER.joinpath('Collection')
+COLLECTION_FOLDER = ROOT_FOLDER.joinpath("Collection")
 COLLECTION_FOLDER.mkdir(parents=True, exist_ok=True)
 
 # Comicvine
-COMICVINE_API_KEY = CONFIG['Comicvine']['API Key']
+COMICVINE_API_KEY = CONFIG["Comicvine"]["API Key"]
 
 # League of Comic Geeks
-LOCG_API_KEY = CONFIG['League of Comic Geeks']['API Key']
-LOCG_CLIENT_ID = CONFIG['League of Comic Geeks']['Client ID']
+LOCG_API_KEY = CONFIG["League of Comic Geeks"]["API Key"]
+LOCG_CLIENT_ID = CONFIG["League of Comic Geeks"]["Client ID"]
 
 # Metron
-METRON_USERNAME = CONFIG['Metron']['Username']
-METRON_PASSWORD = CONFIG['Metron']['Password']
+METRON_USERNAME = CONFIG["Metron"]["Username"]
+METRON_PASSWORD = CONFIG["Metron"]["Password"]
 
 
 def list_files(folder: Path, filter: Tuple[str, ...] = ()) -> List[Path]:
@@ -58,21 +58,25 @@ def del_folder(folder: Path):
 def remove_extra(value: Optional[str]) -> Optional[str]:
     if not value:
         return value
-    tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
-    return ' '.join(html.unescape(tag_re.sub('', value.strip())).split())
+    tag_re = re.compile(r"(<!--.*?-->|<[^>]*>)")
+    return " ".join(html.unescape(tag_re.sub("", value.strip())).split())
 
 
 def str_to_list(soup, key: str) -> List[str]:
-    return [x.strip() for x in (str(soup.find(key).string) if soup.find(key) else '').split(',') if x]
+    return [x.strip() for x in (str(soup.find(key).string) if soup.find(key) else "").split(",") if x]
 
 
 def abbreviations(word, **kwargs):
-    if word.upper() in ['DC', 'INC']:
+    if word.upper() in ["DC", "INC"]:
         return word.upper()
 
 
 def slugify(value: str) -> str:
-    return ' '.join(titlecase(text=re.sub(r"[^a-zA-Z0-9\s\-&]+", '', value.strip().lower()).replace('-', ' '), callback=abbreviations).split()).replace(' ', '-')
+    return " ".join(
+        titlecase(
+            text=re.sub(r"[^a-zA-Z0-9\s\-&]+", "", value.strip().lower()).replace("-", " "), callback=abbreviations
+        ).split()
+    ).replace(" ", "-")
 
 
 def slugify_publisher(title: str) -> str:

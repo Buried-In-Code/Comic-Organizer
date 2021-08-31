@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "comic-organizer"
+name = "Comic-Organizer"
 version = "2.2.0"
 description = "Helps sort and organize your comic collection by using the information stored in ComicInfo files."
 license = "MIT"
@@ -12,20 +12,32 @@ documentation = "https://github.com/Buried-In-Code/Comic-Organizer"
 packages = [
 	{ include = "Organizer" }
 ]
+include = [
+    { path = "tests", format = "sdist" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-"ruamel.yaml" = "^0.17.10"
+Painted-Logger = "^1.1.1"
+"ruamel.yaml" = "^0.17.14"
 titlecase = "^2.3"
 requests = "^2.26.0"
 beautifulsoup4 = "^4.9.3"
 lxml = "^4.6.3"
 patool = "^1.12"
 colorama = "^0.4.4"
-mokkari = "^0.1.10"
+mokkari = "^0.2.2"
+simyan = "^0.3.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.4"
+pytest = "^6.2.5"
+pytest-cov = "^2.12.1"
+flake8 = "^3.9.2"
+black = "^21.8b0"
+isort = "^5.9.3"
+pre-commit = "^2.14.1"
+pyupgrade = "^2.25.0"
+seed-isort-config = "^2.2.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -33,4 +45,22 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.urls]
 "Issue Tracker" = "https://github.com/Buried-In-Code/Comic-Organizer/issues"
+
+[tool.black]
+line-length = 120
+target-version = ['py39']
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 120
+default_section = "THIRDPARTY"
+known_first_party = []
+known_third_party = ["Simyan", "bs4", "colorama", "mokkari", "painted_logger", "patoolib", "pytest", "requests", "ruamel", "titlecase"]
+
+[tool.coverage.run]
+source = ["Organizer"]
+
+[tool.coverage.report]
+show_missing = true
 
