@@ -301,11 +301,11 @@ pyparsing = ">=2.0.2"
 
 [[package]]
 name = "painted-logger"
-version = "1.1.1"
+version = "1.1.2"
 description = "A customized, coloured Logger for Python projects."
 category = "main"
 optional = false
-python-versions = ">=3.9,<4.0"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
 colorama = ">=0.4.4,<0.5.0"
@@ -524,11 +524,11 @@ python-versions = ">=3.6.1"
 
 [[package]]
 name = "simyan"
-version = "0.3.0"
+version = "0.4.0"
 description = "A Python wrapper for the Comicvine API."
 category = "main"
 optional = false
-python-versions = ">=3.9,<4.0"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
 marshmallow = ">=3.13.0,<4.0.0"
@@ -588,6 +588,28 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "tox"
+version = "3.24.3"
+description = "tox is a generic virtualenv management and test command line tool"
+category = "dev"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
+
+[package.dependencies]
+colorama = {version = ">=0.4.1", markers = "platform_system == \"Windows\""}
+filelock = ">=3.0.0"
+packaging = ">=14"
+pluggy = ">=0.12.0"
+py = ">=1.4.17"
+six = ">=1.14.0"
+toml = ">=0.9.4"
+virtualenv = ">=16.0.0,<20.0.0 || >20.0.0,<20.0.1 || >20.0.1,<20.0.2 || >20.0.2,<20.0.3 || >20.0.3,<20.0.4 || >20.0.4,<20.0.5 || >20.0.5,<20.0.6 || >20.0.6,<20.0.7 || >20.0.7"
+
+[package.extras]
+docs = ["pygments-github-lexers (>=0.0.5)", "sphinx (>=2.0.0)", "sphinxcontrib-autoprogram (>=0.1.5)", "towncrier (>=18.5.0)"]
+testing = ["flaky (>=3.4.0)", "freezegun (>=0.3.11)", "psutil (>=5.6.1)", "pytest (>=4.0.0)", "pytest-cov (>=2.5.1)", "pytest-mock (>=1.10.0)", "pytest-randomly (>=1.0.0)", "pytest-xdist (>=1.22.2)", "pathlib2 (>=2.3.3)"]
+
+[[package]]
 name = "typing-extensions"
 version = "3.10.0.2"
 description = "Backported and Experimental Type Hints for Python 3.5+"
@@ -629,8 +651,8 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.9"
-content-hash = "2efa804fd66c3844a72f1a00182ae930e127d32f12c43690ccdc5af60df8fd4e"
+python-versions = "^3.8"
+content-hash = "13bee5cd2c2919c330cc7a7cda0e999b990ba30018b077c208bb8fdf2cf71510"
 
 [metadata.files]
 "aspy.refactor-imports" = [
@@ -837,8 +859,8 @@ packaging = [
     {file = "packaging-21.0.tar.gz", hash = "sha256:7dc96269f53a4ccec5c0670940a4281106dd0bb343f47b7471f779df49c2fbe7"},
 ]
 painted-logger = [
-    {file = "Painted-Logger-1.1.1.tar.gz", hash = "sha256:57a953723044437f14d905416eccacdba27ada5e840e44becb8f2838a4fc7985"},
-    {file = "Painted_Logger-1.1.1-py3-none-any.whl", hash = "sha256:84a5e8f6210c6a0d6dfd16362ab3d0e125bf2369a4fe76c05b201fa13a7904d1"},
+    {file = "Painted-Logger-1.1.2.tar.gz", hash = "sha256:6fb40945d6bb9f5ced11980f7eaee6c7940022cd45e72cfb72fefdad81f58b5b"},
+    {file = "Painted_Logger-1.1.2-py3-none-any.whl", hash = "sha256:0470ed5da124db6c769e89c851524ba77862d8dc5e5e88d909e23f109e1923cc"},
 ]
 pathspec = [
     {file = "pathspec-0.9.0-py2.py3-none-any.whl", hash = "sha256:7d15c4ddb0b5c802d161efc417ec1a2558ea2653c2e8ad9c19098201dc1c993a"},
@@ -1001,8 +1023,8 @@ seed-isort-config = [
     {file = "seed_isort_config-2.2.0.tar.gz", hash = "sha256:be4cfef8f9a3fe8ea1817069c6b624538ac0b429636ec746edeb27e98ed628c8"},
 ]
 simyan = [
-    {file = "Simyan-0.3.0-py3-none-any.whl", hash = "sha256:6ec808ce872d096740c9baff003218fc84779fdacc1bb286d3fb3cfda95a89ee"},
-    {file = "Simyan-0.3.0.tar.gz", hash = "sha256:1b971901f2411b03ee7ed1804fb1740754c6a30e486f19f6902bd4f4496ef66d"},
+    {file = "Simyan-0.4.0-py3-none-any.whl", hash = "sha256:9da7c40578eef5eb7b39a9ba641046a0cf100b2c46daa1abc8996afbdc5c895b"},
+    {file = "Simyan-0.4.0.tar.gz", hash = "sha256:7956c2b92c77bce8c031e00f74b381253d224449469bae8198092ed9e6c5c003"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
@@ -1027,6 +1049,10 @@ toml = [
 tomli = [
     {file = "tomli-1.2.1-py3-none-any.whl", hash = "sha256:8dd0e9524d6f386271a36b41dbf6c57d8e32fd96fd22b6584679dc569d20899f"},
     {file = "tomli-1.2.1.tar.gz", hash = "sha256:a5b75cb6f3968abb47af1b40c1819dc519ea82bcc065776a866e8d74c5ca9442"},
+]
+tox = [
+    {file = "tox-3.24.3-py2.py3-none-any.whl", hash = "sha256:9fbf8e2ab758b2a5e7cb2c72945e4728089934853076f67ef18d7575c8ab6b88"},
+    {file = "tox-3.24.3.tar.gz", hash = "sha256:c6c4e77705ada004283610fd6d9ba4f77bc85d235447f875df9f0ba1bc23b634"},
 ]
 typing-extensions = [
     {file = "typing_extensions-3.10.0.2-py2-none-any.whl", hash = "sha256:d8226d10bc02a29bcc81df19a26e56a9647f8b0a6d4a83924139f4a8b01f17b7"},

@@ -13,12 +13,28 @@ packages = [
 	{ include = "Organizer" }
 ]
 include = [
-    { path = "tests", format = "sdist" }
+	{ path = "tests", format = "sdist" }
 ]
+classifiers = [
+	"Development Status :: 4 - Beta",
+	"Environment :: Console",
+	"Intended Audience :: End Users/Desktop",
+	"License :: OSI Approved :: MIT License",
+	"Natural Language :: English",
+	"Operating System :: MacOS :: MacOS X",
+	"Operating System :: Microsoft :: Windows",
+	"Operating System :: POSIX :: Linux",
+	"Programming Language :: Python :: 3.8",
+	"Programming Language :: Python :: 3.9",
+	"Topic :: Utilities",
+	"Topic :: Other/Nonlisted Topic",
+	"Typing :: Typed"
+]
+keywords = ["comics", "comic", "metadata", "tagging", "tagger"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-Painted-Logger = "^1.1.1"
+python = "^3.8"
+Painted-Logger = "^1.1.2"
 "ruamel.yaml" = "^0.17.14"
 titlecase = "^2.3"
 requests = "^2.26.0"
@@ -27,7 +43,7 @@ lxml = "^4.6.3"
 patool = "^1.12"
 colorama = "^0.4.4"
 mokkari = "^0.2.2"
-simyan = "^0.3.0"
+simyan = "^0.4.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
@@ -38,6 +54,7 @@ isort = "^5.9.3"
 pre-commit = "^2.14.1"
 pyupgrade = "^2.25.0"
 seed-isort-config = "^2.2.0"
+tox = "^3.24.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -48,7 +65,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 120
-target-version = ['py39']
+target-version = ['py38']
 
 [tool.isort]
 profile = "black"
