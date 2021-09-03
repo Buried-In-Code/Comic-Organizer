@@ -147,7 +147,7 @@ if __name__ == "__main__":
     try:
         args = parse_arguments()
         painted_logger.init(
-            "Comic-Organizer",
+            root_path=Path(__file__).resolve().parent.parent,
             file_level=logging.DEBUG if args.debug else logging.INFO,
             console_level=logging.INFO if args.debug else logging.WARNING,
         )

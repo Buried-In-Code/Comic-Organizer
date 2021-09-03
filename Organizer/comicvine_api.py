@@ -22,7 +22,7 @@ class Talker:
 
     def search_publishers(self, name: str) -> Optional[int]:
         LOGGER.debug("Search Publishers")
-        results = self.session.publisher_list(params={"name": name})
+        results = self.session.publisher_list(params={"filter": f"name:{name}"})
         if results:
             index = Console.display_menu(
                 items=[f"{item.id} | {item.name}" for item in results],
@@ -41,8 +41,7 @@ class Talker:
         self, name: str, publisher_id: Optional[int] = None, start_year: Optional[int] = None
     ) -> Optional[int]:
         LOGGER.debug("Search Volumes")
-        params = {"name": name}
-        results = self.session.volume_list(params=params)
+        results = self.session.volume_list(params={"filter": f"name:{name}"})
         if results and publisher_id:
             results = [x for x in results if x.publisher.id == publisher_id]
         if results and start_year:
@@ -63,8 +62,7 @@ class Talker:
 
     def search_issues(self, volume_id: int, number: str) -> Optional[int]:
         LOGGER.debug("Search Issues")
-        params = {"volume": volume_id, "number": number}
-        results = self.session.issue_list(params=params)
+        results = self.session.issue_list(params={"filter": f"volume:{volume_id},issue_number:{number}"})
         if results:
             index = Console.display_menu(
                 items=[

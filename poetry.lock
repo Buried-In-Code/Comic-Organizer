@@ -301,7 +301,7 @@ pyparsing = ">=2.0.2"
 
 [[package]]
 name = "painted-logger"
-version = "1.1.2"
+version = "1.2.0"
 description = "A customized, coloured Logger for Python projects."
 category = "main"
 optional = false
@@ -352,7 +352,7 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "pre-commit"
-version = "2.14.1"
+version = "2.15.0"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
 category = "dev"
 optional = false
@@ -524,7 +524,7 @@ python-versions = ">=3.6.1"
 
 [[package]]
 name = "simyan"
-version = "0.4.0"
+version = "0.4.1"
 description = "A Python wrapper for the Comicvine API."
 category = "main"
 optional = false
@@ -652,7 +652,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "18621ca2bf76b5d33417f3724e7680b90d8d20ffb2405df5a4ada5091903cc2a"
+content-hash = "a61afd50658cdf88cbe86c7d905e100ce4b0daa56c47d0a8664f4c6304ddab44"
 
 [metadata.files]
 "aspy.refactor-imports" = [
@@ -859,8 +859,8 @@ packaging = [
     {file = "packaging-21.0.tar.gz", hash = "sha256:7dc96269f53a4ccec5c0670940a4281106dd0bb343f47b7471f779df49c2fbe7"},
 ]
 painted-logger = [
-    {file = "Painted-Logger-1.1.2.tar.gz", hash = "sha256:6fb40945d6bb9f5ced11980f7eaee6c7940022cd45e72cfb72fefdad81f58b5b"},
-    {file = "Painted_Logger-1.1.2-py3-none-any.whl", hash = "sha256:0470ed5da124db6c769e89c851524ba77862d8dc5e5e88d909e23f109e1923cc"},
+    {file = "Painted-Logger-1.2.0.tar.gz", hash = "sha256:25a88d2976c73843775627c6a1ba2cd3966bdf96640d650747ba793fb6fd87ff"},
+    {file = "Painted_Logger-1.2.0-py3-none-any.whl", hash = "sha256:aecfdbc8951fa077cbbc49b1cb21f1672242cc138018ef790cd5f81283f7ec39"},
 ]
 pathspec = [
     {file = "pathspec-0.9.0-py2.py3-none-any.whl", hash = "sha256:7d15c4ddb0b5c802d161efc417ec1a2558ea2653c2e8ad9c19098201dc1c993a"},
@@ -879,8 +879,8 @@ pluggy = [
     {file = "pluggy-1.0.0.tar.gz", hash = "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159"},
 ]
 pre-commit = [
-    {file = "pre_commit-2.14.1-py2.py3-none-any.whl", hash = "sha256:a22d12a02da4d8df314187dfe7a61bda6291d57992060522feed30c8cd658b68"},
-    {file = "pre_commit-2.14.1.tar.gz", hash = "sha256:7977a3103927932d4823178cbe4719ab55bb336f42a9f3bb2776cff99007a117"},
+    {file = "pre_commit-2.15.0-py2.py3-none-any.whl", hash = "sha256:a4ed01000afcb484d9eb8d504272e642c4c4099bbad3a6b27e519bd6a3e928a6"},
+    {file = "pre_commit-2.15.0.tar.gz", hash = "sha256:3c25add78dbdfb6a28a651780d5c311ac40dd17f160eb3954a0c59da40a505a7"},
 ]
 py = [
     {file = "py-1.10.0-py2.py3-none-any.whl", hash = "sha256:3b80836aa6d1feeaa108e046da6423ab8f6ceda6468545ae8d02d9d58d18818a"},
@@ -1023,8 +1023,8 @@ seed-isort-config = [
     {file = "seed_isort_config-2.2.0.tar.gz", hash = "sha256:be4cfef8f9a3fe8ea1817069c6b624538ac0b429636ec746edeb27e98ed628c8"},
 ]
 simyan = [
-    {file = "Simyan-0.4.0-py3-none-any.whl", hash = "sha256:9da7c40578eef5eb7b39a9ba641046a0cf100b2c46daa1abc8996afbdc5c895b"},
-    {file = "Simyan-0.4.0.tar.gz", hash = "sha256:7956c2b92c77bce8c031e00f74b381253d224449469bae8198092ed9e6c5c003"},
+    {file = "Simyan-0.4.1-py3-none-any.whl", hash = "sha256:902d0da6b5680d8703ba7b982ef670184aaf1bd24d4574193db7aedf72fb48a2"},
+    {file = "Simyan-0.4.1.tar.gz", hash = "sha256:29575977cff04bfadf3af6fd7d22351ca466d0c6400f2acb70091280dad80139"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
