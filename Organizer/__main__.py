@@ -7,8 +7,8 @@ import painted_logger
 from Organizer import (
     COLLECTION_FOLDER,
     COMICVINE_API_KEY,
-    LOCG_API_KEY,
-    LOCG_CLIENT_ID,
+    LEAGUE_API_KEY,
+    LEAGUE_CLIENT_ID,
     METRON_PASSWORD,
     METRON_USERNAME,
     PROCESSING_FOLDER,
@@ -85,7 +85,7 @@ def main(
         if reset_info:
             comic_info.reset()
         if pull_info:
-            if LOCG_API_KEY and LOCG_CLIENT_ID:
+            if LEAGUE_API_KEY and LEAGUE_CLIENT_ID:
                 Console.display_item_value(item="Pulling info from", value="League of Comic Geeks")
                 comic_info = add_league_info(comic_info=comic_info, show_variants=show_variants)
             if METRON_USERNAME and METRON_PASSWORD:

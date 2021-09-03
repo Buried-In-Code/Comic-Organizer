@@ -38,6 +38,7 @@ Painted-Logger = "^1.1.2"
 "ruamel.yaml" = "^0.17.14"
 titlecase = "^2.3"
 requests = "^2.26.0"
+ratelimit = "^2.2.1"
 beautifulsoup4 = "^4.9.3"
 lxml = "^4.6.3"
 patool = "^1.12"
@@ -73,7 +74,7 @@ multi_line_output = 3
 line_length = 120
 default_section = "THIRDPARTY"
 known_first_party = []
-known_third_party = ["Simyan", "bs4", "colorama", "mokkari", "painted_logger", "patoolib", "pytest", "requests", "ruamel", "titlecase"]
+known_third_party = ["Simyan", "bs4", "colorama", "mokkari", "painted_logger", "patoolib", "pytest", "ratelimit", "requests", "ruamel", "titlecase"]
 
 [tool.coverage.run]
 source = ["Organizer"]

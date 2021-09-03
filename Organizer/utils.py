@@ -28,8 +28,8 @@ COLLECTION_FOLDER.mkdir(parents=True, exist_ok=True)
 COMICVINE_API_KEY = CONFIG["Comicvine"]["API Key"]
 
 # League of Comic Geeks
-LOCG_API_KEY = CONFIG["League of Comic Geeks"]["API Key"]
-LOCG_CLIENT_ID = CONFIG["League of Comic Geeks"]["Client ID"]
+LEAGUE_API_KEY = CONFIG["League of Comic Geeks"]["API Key"]
+LEAGUE_CLIENT_ID = CONFIG["League of Comic Geeks"]["Client ID"]
 
 # Metron
 METRON_USERNAME = CONFIG["Metron"]["Username"]
@@ -66,17 +66,19 @@ def str_to_list(soup, key: str) -> List[str]:
     return [x.strip() for x in (str(soup.find(key).string) if soup.find(key) else "").split(",") if x]
 
 
+def to_titlecase(text: str) -> str:
+    return titlecase(
+        text=re.sub(r"[^a-zA-Z0-9\s\-&]+", "", text.strip().lower()).replace("-", " "), callback=abbreviations
+    )
+
+
 def abbreviations(word, **kwargs):
     if word.upper() in ["DC", "INC"]:
         return word.upper()
 
 
-def slugify(value: str) -> str:
-    return " ".join(
-        titlecase(
-            text=re.sub(r"[^a-zA-Z0-9\s\-&]+", "", value.strip().lower()).replace("-", " "), callback=abbreviations
-        ).split()
-    ).replace(" ", "-")
+def slugify(text: str) -> str:
+    return " ".join(to_titlecase(text=text).split()).replace(" ", "-")
 
 
 def slugify_publisher(title: str) -> str:

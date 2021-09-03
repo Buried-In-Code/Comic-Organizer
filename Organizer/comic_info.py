@@ -7,42 +7,39 @@ from typing import Any, Dict, List, Optional
 from bs4 import BeautifulSoup
 from ruamel.yaml import YAML
 
-from .comic_format import ComicFormat
-from .comic_genre import ComicGenre
-from .utils import remove_extra, str_to_list
+from Organizer.comic_format import ComicFormat
+from Organizer.comic_genre import ComicGenre
+from Organizer.utils import remove_extra, str_to_list, to_titlecase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class IdentifierInfo:
-    def __init__(self, website: str, identifier: Optional[str] = None, url: Optional[str] = None):
-        self.website = website
-        self.identifier = identifier
+    def __init__(self, site: str, _id: Optional[str] = None, url: Optional[str] = None):
+        self.site = site
+        self._id = _id
         self.url = url
 
     def __hash__(self):
-        return hash(self.website)
+        return hash(self.site)
 
     def __lt__(self, other):
-        return self.website < other.website
+        return self.site < other.site
 
 
 class PublisherInfo:
     def __init__(self, title: str):
         self.title = title
-        self.identifiers = []
+        self.identifiers = {}
 
     def to_output(self) -> Dict[str, Any]:
         return {
             "Title": self.title,
-            "Identifiers": {
-                x.website: {"Id": str(x.identifier), "Url": x.url}
-                for x in sorted(list(dict.fromkeys(self.identifiers)))
-            },
+            "Identifiers": {site: {"Id": str(x._id), "Url": x.url} for site, x in sorted(self.identifiers.items())},
         }
 
     def reset(self):
-        self.identifiers = []
+        self.identifiers = {}
 
 
 class SeriesInfo:
@@ -53,7 +50,7 @@ class SeriesInfo:
         self.start_year = start_year
         self.title = title
         self.volume = volume
-        self.identifiers = []
+        self.identifiers = {}
 
     def to_output(self) -> Dict[str, Any]:
         return {
@@ -61,17 +58,14 @@ class SeriesInfo:
             "Start Year": self.start_year,
             "Title": self.title,
             "Volume": self.volume,
-            "Identifiers": {
-                x.website: {"Id": str(x.identifier), "Url": x.url}
-                for x in sorted(list(dict.fromkeys(self.identifiers)))
-            },
+            "Identifiers": {site: {"Id": str(x._id), "Url": x.url} for site, x in sorted(self.identifiers.items())},
         }
 
     def reset(self):
         self.publisher.reset()
         self.start_year = None
         self.volume = None
-        self.identifiers = []
+        self.identifiers = {}
 
 
 class ArcInfo:
@@ -106,7 +100,7 @@ class ComicInfo:
         self.page_count = page_count
         self.summary = summary
         self.variant = variant
-        self.identifiers = []
+        self.identifiers = {}
         self.notes = notes
 
     def to_output(self) -> Dict[str, Any]:
@@ -121,10 +115,7 @@ class ComicInfo:
             "Page Count": self.page_count,
             "Summary": self.summary,
             "Variant": self.variant,
-            "Identifiers": {
-                x.website: {"Id": str(x.identifier), "Url": x.url}
-                for x in sorted(list(dict.fromkeys(self.identifiers)))
-            },
+            "Identifiers": {site: {"Id": str(x._id), "Url": x.url} for site, x in sorted(self.identifiers.items())},
             "Notes": self.notes,
         }
 
@@ -139,7 +130,7 @@ class ComicInfo:
         self.genres = []
         self.page_count = 1
         self.creators = {}
-        self.identifiers = []
+        self.identifiers = {}
         self.notes = None
 
 
@@ -165,9 +156,9 @@ def load_json_info(file: Path) -> Optional[ComicInfo]:
         )
         # region Identifiers
         if "Series" in info and "Publisher" in info["Series"] and "Identifiers" in info["Series"]["Publisher"]:
-            for website, details in info["Series"]["Publisher"]["Identifiers"].items():
-                publisher.identifiers.append(
-                    IdentifierInfo(website=website, identifier=details["Id"], url=details["Url"])
+            for site, details in info["Series"]["Publisher"]["Identifiers"].items():
+                publisher.identifiers[to_titlecase(site)] = IdentifierInfo(
+                    site=to_titlecase(site), _id=details["Id"], url=details["Url"]
                 )
         # endregion
         series = SeriesInfo(
@@ -178,8 +169,10 @@ def load_json_info(file: Path) -> Optional[ComicInfo]:
         )
         # region Identifiers
         if "Series" in info and "Identifiers" in info["Series"]:
-            for website, details in info["Series"]["Identifiers"].items():
-                series.identifiers.append(IdentifierInfo(website=website, identifier=details["Id"], url=details["Url"]))
+            for site, details in info["Series"]["Identifiers"].items():
+                series.identifiers[to_titlecase(site)] = IdentifierInfo(
+                    site=to_titlecase(site), _id=details["Id"], url=details["Url"]
+                )
         # endregion
         comic_info = ComicInfo(
             series=series,
@@ -199,9 +192,9 @@ def load_json_info(file: Path) -> Optional[ComicInfo]:
         )
         # region Identifiers
         if "Identifiers" in info:
-            for website, details in info["Identifiers"].items():
-                comic_info.identifiers.append(
-                    IdentifierInfo(website=website, identifier=details["Id"], url=details["Url"])
+            for site, details in info["Identifiers"].items():
+                comic_info.identifiers[to_titlecase(site)] = IdentifierInfo(
+                    site=to_titlecase(site), _id=details["Id"], url=details["Url"]
                 )
         # endregion
         return comic_info
@@ -249,7 +242,7 @@ def load_xml_info(file: Path) -> Optional[ComicInfo]:
         )
         # region Identifiers
         if info.find("Web") and "comixology" in info.find("Web").string.lower():
-            comic_info.identifiers.append(IdentifierInfo(website="Comixology", url=info.find("Web").string))
+            comic_info.identifiers["Comixology"] = IdentifierInfo(site="Comixology", url=info.find("Web").string)
         # endregion
         return comic_info
 
@@ -261,8 +254,10 @@ def load_yaml_info(file: Path) -> Optional[ComicInfo]:
 
         publisher = PublisherInfo(title=info["Series"]["Publisher"]["Title"])
         # region Identifiers
-        for website, details in info["Series"]["Publisher"]["Identifiers"].items():
-            publisher.identifiers.append(IdentifierInfo(website=website, identifier=details["Id"], url=details["Url"]))
+        for site, details in info["Series"]["Publisher"]["Identifiers"].items():
+            publisher.identifiers[to_titlecase(site)] = IdentifierInfo(
+                site=to_titlecase(site), _id=details["Id"], url=details["Url"]
+            )
         # endregion
         series = SeriesInfo(
             publisher=publisher,
@@ -271,8 +266,10 @@ def load_yaml_info(file: Path) -> Optional[ComicInfo]:
             volume=info["Series"]["Volume"],
         )
         # region Identifiers
-        for website, details in info["Series"]["Identifiers"].items():
-            series.identifiers.append(IdentifierInfo(website=website, identifier=details["Id"], url=details["Url"]))
+        for site, details in info["Series"]["Identifiers"].items():
+            series.identifiers[to_titlecase(site)] = IdentifierInfo(
+                site=to_titlecase(site), _id=details["Id"], url=details["Url"]
+            )
         # endregion
         comic_info = ComicInfo(
             series=series,
@@ -289,8 +286,10 @@ def load_yaml_info(file: Path) -> Optional[ComicInfo]:
             notes=info["Notes"],
         )
         # region Identifiers
-        for website, details in info["Identifiers"].items():
-            comic_info.identifiers.append(IdentifierInfo(website=website, identifier=details["Id"], url=details["Url"]))
+        for site, details in info["Identifiers"].items():
+            comic_info.identifiers[to_titlecase(site)] = IdentifierInfo(
+                site=to_titlecase(site), _id=details["Id"], url=details["Url"]
+            )
         # endregion
         return comic_info
 

@@ -8,9 +8,9 @@ from mokkari.publisher import Publisher
 from mokkari.series import Series
 from Simyan import SqliteCache
 
-from .comic_info import ComicInfo, IdentifierInfo, PublisherInfo, SeriesInfo
-from .console import Console
-from .utils import METRON_PASSWORD, METRON_USERNAME, remove_extra
+from Organizer.comic_info import ComicInfo, IdentifierInfo, PublisherInfo, SeriesInfo
+from Organizer.console import Console
+from Organizer.utils import METRON_PASSWORD, METRON_USERNAME, remove_extra
 
 LOGGER = logging.getLogger(__name__)
 
@@ -90,10 +90,8 @@ class Talker:
 def add_info(comic_info: ComicInfo) -> ComicInfo:
     talker = Talker(METRON_USERNAME, METRON_PASSWORD, SqliteCache("Comic-Organizer.sqlite"))
 
-    if "metron" in [x.website.lower() for x in comic_info.series.publisher.identifiers]:
-        publisher_id = [x.identifier for x in comic_info.series.publisher.identifiers if x.website.lower() == "metron"][
-            0
-        ]
+    if "Metron" in comic_info.series.publisher.identifiers.keys():
+        publisher_id = comic_info.series.publisher.identifiers["Metron"]._id
     else:
         publisher_id = talker.search_publishers(name=comic_info.series.publisher.title)
     if not publisher_id:
@@ -102,13 +100,11 @@ def add_info(comic_info: ComicInfo) -> ComicInfo:
     comic_info.series.publisher = parse_publisher_result(
         result=talker.get_publisher(publisher_id), publisher_info=comic_info.series.publisher
     )
-    if "metron" in [x.website.lower() for x in comic_info.series.identifiers]:
-        series_id = [x.identifier for x in comic_info.series.identifiers if x.website.lower() == "metron"][0]
+    if "Metron" in comic_info.series.identifiers.keys():
+        series_id = comic_info.series.identifiers["Metron"]._id
     else:
         series_id = talker.search_series(
-            publisher_id=[
-                x.identifier for x in comic_info.series.publisher.identifiers if x.website.lower() == "metron"
-            ][0],
+            publisher_id=comic_info.series.publisher.identifiers["Metron"]._id,
             name=comic_info.series.title,
             volume=comic_info.series.volume,
         )
@@ -116,11 +112,11 @@ def add_info(comic_info: ComicInfo) -> ComicInfo:
         return comic_info
 
     comic_info.series = parse_series_result(result=talker.get_series(series_id), series_info=comic_info.series)
-    if "metron" in [x.website.lower() for x in comic_info.identifiers]:
-        issue_id = [x.identifier for x in comic_info.identifiers if x.website.lower() == "metron"][0]
+    if "Metron" in comic_info.identifiers.keys():
+        issue_id = comic_info.identifiers["Metron"]._id
     else:
         issue_id = talker.search_issues(
-            series_id=[x.identifier for x in comic_info.series.identifiers if x.website.lower() == "metron"][0],
+            series_id=comic_info.series.identifiers["Metron"]._id,
             number=comic_info.number,
         )
     if not issue_id:
@@ -131,8 +127,8 @@ def add_info(comic_info: ComicInfo) -> ComicInfo:
 
 def parse_publisher_result(result: Publisher, publisher_info: PublisherInfo) -> PublisherInfo:
     LOGGER.debug("Parse Publisher Results")
-    if "metron" not in [x.website.lower() for x in publisher_info.identifiers]:
-        publisher_info.identifiers.append(IdentifierInfo(website="Metron", identifier=result.id))
+    if "Metron" not in publisher_info.identifiers.keys():
+        publisher_info.identifiers["Metron"] = IdentifierInfo(site="Metron", _id=result.id)
     publisher_info.title = publisher_info.title or result.name
 
     return publisher_info
@@ -140,8 +136,8 @@ def parse_publisher_result(result: Publisher, publisher_info: PublisherInfo) -> 
 
 def parse_series_result(result: Series, series_info: SeriesInfo) -> SeriesInfo:
     LOGGER.debug("Parse Series Results")
-    if "metron" not in [x.website.lower() for x in series_info.identifiers]:
-        series_info.identifiers.append(IdentifierInfo(website="Metron", identifier=result.id))
+    if "Metron" not in series_info.identifiers.keys():
+        series_info.identifiers["Metron"] = IdentifierInfo(site="Metron", _id=result.id)
     series_info.title = series_info.title or result.name
     series_info.volume = series_info.volume or result.volume
     series_info.start_year = series_info.start_year or result.year_began
@@ -155,8 +151,8 @@ def titles_to_string(titles: List[str]) -> str:
 
 def parse_issue_result(result: Issue, comic_info: ComicInfo) -> ComicInfo:
     LOGGER.debug("Parse Comic Results")
-    if "metron" not in [x.website.lower() for x in comic_info.identifiers]:
-        comic_info.identifiers.append(IdentifierInfo(website="Metron", identifier=result.id))
+    if "Metron" not in comic_info.identifiers.keys():
+        comic_info.identifiers["Metron"] = IdentifierInfo(site="Metron", _id=result.id)
     comic_info.number = comic_info.number or result.number
     comic_info.title = comic_info.title or (titles_to_string(result.story_titles) if result.story_titles else None)
     comic_info.cover_date = comic_info.cover_date or result.cover_date
