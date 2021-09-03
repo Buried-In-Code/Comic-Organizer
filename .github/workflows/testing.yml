@@ -55,6 +55,8 @@ jobs:
         run: poetry install --no-interaction
       #----------------------------------------------
       #    Run tox testing
+      #    Currently unable to include text config files
       #----------------------------------------------
       - name: Test with tox
-        run: poetry run tox -e py
+        run: poetry run tox --version
+      #  run: poetry run tox -e py
