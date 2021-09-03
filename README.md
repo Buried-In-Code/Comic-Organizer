@@ -1,11 +1,15 @@
 # Comic Organizer
 
-[![Version](https://img.shields.io/github/tag-pre/Buried-In-Code/Comic-Organizer.svg?label=version&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/releases)
-[![Issues](https://img.shields.io/github/issues/Buried-In-Code/Comic-Organizer.svg?style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/issues)
-[![Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Comic-Organizer.svg?style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/graphs/contributors)
-[![License](https://img.shields.io/github/license/Buried-In-Code/Comic-Organizer.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![PyPI - Python](https://img.shields.io/pypi/pyversions/Comic-Organizer.svg?logo=Python&label=Python&style=flat-square)](https://pypi.python.org/pypi/Comic-Organizer/)
+[![PyPI - Status](https://img.shields.io/pypi/status/Comic-Organizer.svg?logo=PyPI&label=Status&style=flat-square)](https://pypi.python.org/pypi/Comic-Organizer/)
+[![PyPI - Version](https://img.shields.io/pypi/v/Comic-Organizer.svg?logo=PyPI&label=Version&style=flat-square)](https://pypi.python.org/pypi/Comic-Organizer/)
+[![PyPI - License](https://img.shields.io/pypi/l/Comic-Organizer.svg?logo=PyPI&label=License&style=flat-square)](https://opensource.org/licenses/MIT)
 
-[![Code Analysis](https://img.shields.io/github/workflow/status/Buried-In-Code/Comic-Organizer/Code-Analysis?label=Code-Analysis&logo=github&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/actions/workflows/code-analysis.yml)
+[![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Comic-Organizer.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/graphs/contributors)
+[![Github Action - Code Analysis](https://img.shields.io/github/workflow/status/Buried-In-Code/Comic-Organizer/Code-Analysis?logo=Github-Actions&label=Code-Analysis&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/actions/workflows/code-analysis.yml)
+[![Github Action - Testing](https://img.shields.io/github/workflow/status/Buried-In-Code/Comic-Organizer/Testing?logo=Github-Actions&label=Tests&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/actions/workflows/testing.yml)
+
+[![Code Style - Black](https://img.shields.io/badge/Code%20Style-Black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
 Comic-Organizer helps sort and organize your comic collection by using the information stored in ComicInfo files. It also formats all your digital comics into a single format (CBZ)
 and transforms the `ComicInfo.xml` inside most digital comic files into `ComicInfo.json` using the below schema. Comic-Organizer can also fill in any blanks in the ComicInfo by
@@ -27,19 +31,6 @@ Supported Comic Sources:
 - ComicInfo
 - User Input
 
-## Built Using
-
-- [Poetry: 1.1.7](https://python-poetry.org)
-- [Python: 3.9.6](https://www.python.org/)
-- [ruamel.yaml: 0.17.10](https://pypi.org/project/ruamel.yaml)
-- [titlecase: 2.3](https://pypi.org/project/titlecase)
-- [requests: 2.26.0](https://pypi.org/project/requests)
-- [beautifulsoup4: 4.9.3](https://pypi.org/project/beautifulsoup4)
-- [lxml: 4.6.3](https://pypi.org/project/lxml)
-- [patool: 1.12](https://pypi.org/project/patool)
-- [colorama: 0.4.4](https://pypi.org/project/colorama)
-- [mokkari: 0.1.10](https://pypi.org/project/mokkari)
-
 ## Arguments
 
 | Argument | Type | Required | Default | Notes |
@@ -49,6 +40,7 @@ Supported Comic Sources:
 | `--show-variants` | bool | False | False | Add variants to the list of options |
 | `--add-manual-info` | bool | False | False | Manually enter the data for the ComicInfo |
 | `--manual-image-check` | bool | False | False | Pause the Script before creating the CBZ to allow manual removal of Ads, etc... |
+| `--reset-info` | bool | False | False | Wipe all non-essential fields (fields used in searching e.g. title, issue #...) and lookup the info fresh |
 | `--debug` | bool | False | False | |
 
 ## Execution
@@ -120,4 +112,4 @@ Common Formats:
 
 ## Socials
 
-[![Discord | The DEV Environment](https://discordapp.com/api/guilds/618581423070117932/widget.png?style=banner2)](https://discord.gg/nqGMeGg)
+[![Social - Discord](https://img.shields.io/discord/618581423070117932.svg?logo=Discord&label=The-DEV-Environment&style=flat-square&colorB=7289da)](https://discord.gg/nqGMeGg)
