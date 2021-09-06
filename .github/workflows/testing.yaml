@@ -68,4 +68,5 @@ jobs:
       #    Run tox testing
       #----------------------------------------------
       - name: Test with tox
-        run: poetry run tox -e py
+#        run: poetry run tox -e py
+        run: poetry run tox --version
