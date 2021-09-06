@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Comic-Organizer"
-version = "2.2.0"
+version = "2.3.0"
 description = "Helps sort and organize your comic collection by using the information stored in ComicInfo files."
 license = "MIT"
 authors = ["Buried-In-Code <6057651+Buried-In-Code@users.noreply.github.com>"]
