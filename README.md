@@ -16,22 +16,6 @@ also formats all your digital comics into a single format (CBZ)
 and transforms the `ComicInfo.xml` inside most digital comic files into `ComicInfo.json` using the below schema.
 Comic-Organizer can also fill in any blanks in the ComicInfo by pulling from a list of supported sources.
 
-Supported Comic Formats:
-
-- `.ace`/`.cba`
-- `.rar`/`.cbr`
-- `.7z`/`.cb7`
-- `.tar`/`.cbt`
-- `.zip`/`.cbz`
-
-Supported Comic Sources:
-
-- [Comicvine](https://comicvine.gamespot.com/api/)
-- [Metron](https://metron.cloud/)
-- [League of Comic Geeks](https://leagueofcomicgeeks.com/)
-- ComicInfo
-- User Input
-
 ## Arguments
 
 | Argument | Type | Required | Default | Notes |
@@ -52,9 +36,36 @@ Supported Comic Sources:
 4. Run: `poetry install`
 5. Run: `poetry run python -m Organizer`
 
+All settings can be found in `~/.comic-organizer/settings.ini`
+**Requires restart for changes to take effect**
+
+## Supported Sources:
+
+- [Comicvine](https://comicvine.gamespot.com/api/)
+- [Metron](https://metron.cloud/)
+- [League of Comic Geeks](https://leagueofcomicgeeks.com/)
+- ComicInfo File
+- User Input
+
+## Supported File Formats:
+
+- `.ace`/`.cba`
+- `.rar`/`.cbr`
+- `.7z`/`.cb7`
+- `.tar`/`.cbt`
+- `.zip`/`.cbz`
+
+## Supported Comic Formats:
+
+- Comic
+- Annual
+- Digital Chapter
+- Trade Paperback
+- Hardcover
+
 ## Comic Collection Folder Structure
 
-The Root folder location is defined in `~/.comic-organizer/settings.ini`
+Root folder location is defined in `~/.comic-organizer/settings.ini`
 
 ```
 Root Folder
@@ -129,14 +140,6 @@ Root Folder
     "Notes": <String|null>
 }
 ```
-
-Common Formats:
-
-- Comic
-- Annual
-- Digital Chapter
-- Trade Paperback
-- Hardcover
 
 ## Socials
 
