@@ -11,7 +11,9 @@ from Organizer import (
     PublisherInfo,
     SeriesInfo,
     Settings,
-    add_info,
+    add_comicvine_info,
+    add_league_info,
+    add_metron_info,
     create_archive,
     extract_archive,
     load_info,
@@ -33,6 +35,19 @@ def list_files(folder: Path, filter: Tuple[str, ...] = ()) -> List[Path]:
         elif file.suffix in filter:
             files.append(file)
     return files
+
+
+def add_info(comic_info: ComicInfo, show_variants: bool = False) -> ComicInfo:
+    if SETTINGS.league_api_key and SETTINGS.league_client_id:
+        Console.display_item_value(item="Pulling info from", value="League of Comic Geeks")
+        comic_info = add_league_info(settings=SETTINGS, comic_info=comic_info, show_variants=show_variants)
+    if SETTINGS.metron_username and SETTINGS.metron_password:
+        Console.display_item_value(item="Pulling info from", value="Metron")
+        comic_info = add_metron_info(settings=SETTINGS, comic_info=comic_info)
+    if SETTINGS.comicvine_api_key:
+        Console.display_item_value(item="Pulling info from", value="Comicvine")
+        comic_info = add_comicvine_info(settings=SETTINGS, comic_info=comic_info)
+    return comic_info
 
 
 def del_folder(folder: Path):

@@ -142,3 +142,4 @@ cython_debug/
 config.ini
 logs/
 Comic-Organizer.sqlite
+!tests/Comic-Organizer.sqlite

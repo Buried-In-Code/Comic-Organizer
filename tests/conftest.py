@@ -3,9 +3,9 @@ import os
 import pytest
 from Simyan import SqliteCache
 
-from Organizer.external.comicvine_api import Talker as Comicvine
-from Organizer.external.league_of_comic_geeks_api import Talker as League
-from Organizer.external.metron_api import Talker as Metron
+from Organizer.comicvine_api import Talker as Comicvine
+from Organizer.league_of_comic_geeks_api import Talker as League
+from Organizer.metron_api import Talker as Metron
 
 
 @pytest.fixture(scope="session")
