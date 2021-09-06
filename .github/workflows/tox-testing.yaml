@@ -1,4 +1,4 @@
-name: 'Testing'
+name: 'Tox Testing'
 
 on:
   push:
@@ -68,5 +68,4 @@ jobs:
       #    Run tox testing
       #----------------------------------------------
       - name: Test with tox
-#        run: poetry run tox -e py
-        run: poetry run tox --version
+        run: poetry run tox -e py
