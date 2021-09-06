@@ -1,7 +1,7 @@
 from datetime import date
 
-from Organizer.comic_info import ComicInfo, PublisherInfo, SeriesInfo
-from Organizer.league_of_comic_geeks_api import parse_comic_result
+from Organizer import ComicInfo, PublisherInfo, SeriesInfo
+from Organizer.external.league_of_comic_geeks_api import parse_comic_result
 
 PUBLISHER_ID = 1
 PUBLISHER_TITLE = "DC Comics"

@@ -32,7 +32,7 @@ keywords = ["comics", "comic", "metadata", "tagging", "tagger"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-Painted-Logger = "^1.2.0"
+Painted-Logger = "^1.2.1"
 "ruamel.yaml" = "^0.17.14"
 titlecase = "^2.3"
 requests = "^2.26.0"
@@ -42,7 +42,7 @@ lxml = "^4.6.3"
 patool = "^1.12"
 colorama = "^0.4.4"
 mokkari = "^0.2.2"
-simyan = "^0.4.1"
+simyan = "^0.4.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"

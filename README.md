@@ -11,9 +11,10 @@
 
 [![Code Style - Black](https://img.shields.io/badge/Code%20Style-Black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
-Comic-Organizer helps sort and organize your comic collection by using the information stored in ComicInfo files. It also formats all your digital comics into a single format (CBZ)
-and transforms the `ComicInfo.xml` inside most digital comic files into `ComicInfo.json` using the below schema. Comic-Organizer can also fill in any blanks in the ComicInfo by
-pulling from a list of supported sources.
+Comic-Organizer helps sort and organize your comic collection by using the information stored in ComicInfo files. It
+also formats all your digital comics into a single format (CBZ)
+and transforms the `ComicInfo.xml` inside most digital comic files into `ComicInfo.json` using the below schema.
+Comic-Organizer can also fill in any blanks in the ComicInfo by pulling from a list of supported sources.
 
 Supported Comic Formats:
 
@@ -49,7 +50,33 @@ Supported Comic Sources:
 2. Clone the repo: `git clone https://github.com/Buried-In-Code/Comic-Organizer`
 3. Navigate to the folder: `cd Comic-Organizer/`
 4. Run: `poetry install`
-5. Run: `poetry run python -m Organizer --input-folder "<path>"`
+5. Run: `poetry run python -m Organizer`
+
+## Comic Collection Folder Structure
+
+The Root folder location is defined in `~/.comic-organizer/settings.ini`
+
+```
+Root Folder
++-- Collection
+|  +-- Publisher
+|  |  +-- Series
+|  |  |  +-- Comic.cbz
+|  |  |  +-- Comic.cbz
+|  |  +-- Series
+|  |  |  +-- Comic.cbz
+|  |  |  +-- Comic.cbz
+|  +-- Publisher
+|  |  +-- Series
+|  |  |  +-- Comic.cbz
+|  |  |  +-- Comic.cbz
+|  |  +-- Series
+|  |  |  +-- Comic.cbz
+|  |  |  +-- Comic.cbz
++-- Import
+|  +-- New-Comic.cbr
++-- Processing
+```
 
 ## ComicInfo Json Schema
 
