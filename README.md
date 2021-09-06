@@ -6,8 +6,8 @@
 [![PyPI - License](https://img.shields.io/pypi/l/Comic-Organizer.svg?logo=PyPI&label=License&style=flat-square)](https://opensource.org/licenses/MIT)
 
 [![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Comic-Organizer.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/graphs/contributors)
-[![Github Action - Code Analysis](https://img.shields.io/github/workflow/status/Buried-In-Code/Comic-Organizer/Code-Analysis?logo=Github-Actions&label=Code-Analysis&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/actions/workflows/code-analysis.yml)
-[![Github Action - Testing](https://img.shields.io/github/workflow/status/Buried-In-Code/Comic-Organizer/Testing?logo=Github-Actions&label=Tests&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/actions/workflows/testing.yml)
+[![Github Action - Code Analysis](https://img.shields.io/github/workflow/status/Buried-In-Code/Comic-Organizer/Code-Analysis?logo=Github-Actions&label=Code-Analysis&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/actions/workflows/code-analysis.yaml)
+[![Github Action - Testing](https://img.shields.io/github/workflow/status/Buried-In-Code/Comic-Organizer/Testing?logo=Github-Actions&label=Tests&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/actions/workflows/testing.yaml)
 
 [![Code Style - Black](https://img.shields.io/badge/Code%20Style-Black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
@@ -46,9 +46,10 @@ Supported Comic Sources:
 ## Execution
 
 1. Make sure you have [Poetry](https://python-poetry.org) installed
-2. Rename **config-example.ini** to **config.ini**
-3. Fill out **config.ini**
-4. Run: `poetry run python -m Organizer --input-folder "<path>"`
+2. Clone the repo: `git clone https://github.com/Buried-In-Code/Comic-Organizer`
+3. Navigate to the folder: `cd Comic-Organizer/`
+4. Run: `poetry install`
+5. Run: `poetry run python -m Organizer --input-folder "<path>"`
 
 ## ComicInfo Json Schema
 
