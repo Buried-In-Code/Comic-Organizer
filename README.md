@@ -7,7 +7,7 @@
 
 [![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Comic-Organizer.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/graphs/contributors)
 [![Github Action - Code Analysis](https://img.shields.io/github/workflow/status/Buried-In-Code/Comic-Organizer/Code-Analysis?logo=Github-Actions&label=Code-Analysis&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/actions/workflows/code-analysis.yaml)
-[![Github Action - Testing](https://img.shields.io/github/workflow/status/Buried-In-Code/Comic-Organizer/Testing?logo=Github-Actions&label=Tests&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/actions/workflows/testing.yaml)
+[![Github Action - Tox Testing](https://img.shields.io/github/workflow/status/Buried-In-Code/Comic-Organizer/Tox-Testing?logo=Github-Actions&label=Tox-Tests&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/actions/workflows/tox-testing.yaml)
 
 [![Code Style - Black](https://img.shields.io/badge/Code%20Style-Black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
@@ -20,7 +20,6 @@ Comic-Organizer can also fill in any blanks in the ComicInfo by pulling from a l
 
 | Argument | Type | Required | Default | Notes |
 | -------- | ---- | -------- | ------- | ----- |
-| `--input-folder` | str | True | | Path to folder to import the comic files. *Recursively navigates folder* |
 | `--pull-info` | bool | False | False | Pull info and updates ComicInfo from available sources |
 | `--show-variants` | bool | False | False | Add variants to the list of options |
 | `--add-manual-info` | bool | False | False | Manually enter the data for the ComicInfo |
