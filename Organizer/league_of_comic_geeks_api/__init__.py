@@ -1,3 +1,5 @@
-__all__ = ["Talker", "add_info", "parse_comic_result"]
+__all__ = ["add_info", "parse_comic_result", "Talker"]
 
-from Organizer.league_of_comic_geeks_api.league_info import Talker, add_info, parse_comic_result
+from Organizer.league_of_comic_geeks_api.talker import Talker
+
+from Organizer.league_of_comic_geeks_api.league_info import add_info, parse_comic_result  # isort: skip

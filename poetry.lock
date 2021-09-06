@@ -301,7 +301,7 @@ pyparsing = ">=2.0.2"
 
 [[package]]
 name = "painted-logger"
-version = "1.2.0"
+version = "1.2.1"
 description = "A customized, coloured Logger for Python projects."
 category = "main"
 optional = false
@@ -524,7 +524,7 @@ python-versions = ">=3.6.1"
 
 [[package]]
 name = "simyan"
-version = "0.4.1"
+version = "0.4.2"
 description = "A Python wrapper for the Comicvine API."
 category = "main"
 optional = false
@@ -652,7 +652,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "a61afd50658cdf88cbe86c7d905e100ce4b0daa56c47d0a8664f4c6304ddab44"
+content-hash = "e31c0bb088984bbc209bf7fa342d1ff21c5e4a0740189dae3a0931172f7f2125"
 
 [metadata.files]
 "aspy.refactor-imports" = [
@@ -859,8 +859,8 @@ packaging = [
     {file = "packaging-21.0.tar.gz", hash = "sha256:7dc96269f53a4ccec5c0670940a4281106dd0bb343f47b7471f779df49c2fbe7"},
 ]
 painted-logger = [
-    {file = "Painted-Logger-1.2.0.tar.gz", hash = "sha256:25a88d2976c73843775627c6a1ba2cd3966bdf96640d650747ba793fb6fd87ff"},
-    {file = "Painted_Logger-1.2.0-py3-none-any.whl", hash = "sha256:aecfdbc8951fa077cbbc49b1cb21f1672242cc138018ef790cd5f81283f7ec39"},
+    {file = "Painted-Logger-1.2.1.tar.gz", hash = "sha256:dcbfe9b559cdd102a78de8e06ae331aaddd6c8eb8c07dad8bbe023a93e74a936"},
+    {file = "Painted_Logger-1.2.1-py3-none-any.whl", hash = "sha256:86fd5596bfb32463994ff8548a3e0a93e356be01927cb52ec678e499b5c99b51"},
 ]
 pathspec = [
     {file = "pathspec-0.9.0-py2.py3-none-any.whl", hash = "sha256:7d15c4ddb0b5c802d161efc417ec1a2558ea2653c2e8ad9c19098201dc1c993a"},
@@ -1023,8 +1023,8 @@ seed-isort-config = [
     {file = "seed_isort_config-2.2.0.tar.gz", hash = "sha256:be4cfef8f9a3fe8ea1817069c6b624538ac0b429636ec746edeb27e98ed628c8"},
 ]
 simyan = [
-    {file = "Simyan-0.4.1-py3-none-any.whl", hash = "sha256:902d0da6b5680d8703ba7b982ef670184aaf1bd24d4574193db7aedf72fb48a2"},
-    {file = "Simyan-0.4.1.tar.gz", hash = "sha256:29575977cff04bfadf3af6fd7d22351ca466d0c6400f2acb70091280dad80139"},
+    {file = "Simyan-0.4.2-py3-none-any.whl", hash = "sha256:448a23038f2d66228984926ffff69128a495d89ded8d19d2079e4d1359e52915"},
+    {file = "Simyan-0.4.2.tar.gz", hash = "sha256:6e68762323b5d1e48b3e4258732f389164454919c672e0e94daaad88eb925e66"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},

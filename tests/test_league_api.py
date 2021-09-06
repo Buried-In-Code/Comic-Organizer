@@ -1,6 +1,6 @@
 from datetime import date
 
-from Organizer.comic_info import ComicInfo, PublisherInfo, SeriesInfo
+from Organizer import ComicInfo, PublisherInfo, SeriesInfo
 from Organizer.league_of_comic_geeks_api import parse_comic_result
 
 PUBLISHER_ID = 1

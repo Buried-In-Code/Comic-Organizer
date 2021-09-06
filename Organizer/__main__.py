@@ -1,28 +1,21 @@
 import logging
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
+from typing import List, Tuple
 
 import painted_logger
 
 from Organizer import (
-    COLLECTION_FOLDER,
-    COMICVINE_API_KEY,
-    LEAGUE_API_KEY,
-    LEAGUE_CLIENT_ID,
-    METRON_PASSWORD,
-    METRON_USERNAME,
-    PROCESSING_FOLDER,
     ComicInfo,
     Console,
     PublisherInfo,
     SeriesInfo,
+    Settings,
     add_comicvine_info,
     add_league_info,
     add_metron_info,
     create_archive,
-    del_folder,
     extract_archive,
-    list_files,
     load_info,
     save_info,
     slugify_comic,
@@ -31,10 +24,53 @@ from Organizer import (
 )
 
 LOGGER = logging.getLogger("Organizer")
+SETTINGS = Settings()
+
+
+def list_files(folder: Path, filter: Tuple[str, ...] = ()) -> List[Path]:
+    files = []
+    for file in folder.iterdir():
+        if file.is_dir():
+            files.extend(list_files(folder=file, filter=filter))
+        elif file.suffix in filter:
+            files.append(file)
+    return files
+
+
+def add_info(comic_info: ComicInfo, show_variants: bool = False) -> ComicInfo:
+    if SETTINGS.league_api_key and SETTINGS.league_client_id:
+        Console.display_item_value(item="Pulling info from", value="League of Comic Geeks")
+        comic_info = add_league_info(settings=SETTINGS, comic_info=comic_info, show_variants=show_variants)
+    if SETTINGS.metron_username and SETTINGS.metron_password:
+        Console.display_item_value(item="Pulling info from", value="Metron")
+        comic_info = add_metron_info(settings=SETTINGS, comic_info=comic_info)
+    if SETTINGS.comicvine_api_key:
+        Console.display_item_value(item="Pulling info from", value="Comicvine")
+        comic_info = add_comicvine_info(settings=SETTINGS, comic_info=comic_info)
+    return comic_info
+
+
+def del_folder(folder: Path):
+    for child in folder.iterdir():
+        if child.is_file():
+            child.unlink(missing_ok=True)
+        else:
+            del_folder(folder=child)
+    folder.rmdir()
+
+
+def slugify(comic_info: ComicInfo) -> Tuple[Path, Path, Path]:
+    publisher_folder = SETTINGS.collection_folder.joinpath(slugify_publisher(title=comic_info.series.publisher.title))
+    series_folder = publisher_folder.joinpath(
+        slugify_series(title=comic_info.series.title, volume=comic_info.series.volume)
+    )
+    comic_path = series_folder.joinpath(
+        slugify_comic(series_slug=series_folder.name, comic_format=comic_info.comic_format, number=comic_info.number)
+    )
+    return publisher_folder, series_folder, comic_path
 
 
 def main(
-    input_path: str,
     pull_info: bool,
     show_variants: bool,
     manual_info: bool,
@@ -43,14 +79,12 @@ def main(
     debug: bool = False,
 ):
     Console.display_heading("Welcome to Comic Organizer")
-    input_folder = Path(input_path).resolve()
-    if not input_folder.exists():
-        LOGGER.error(f"Invalid Input Folder: `{input_folder}`")
-        return
-    for comic_file in list_files(input_folder, (".cbr", ".cbz")):
+    for comic_file in list_files(
+        SETTINGS.import_folder, (".cbz", ".zip", ".cb7", ".7z", ".cba", ".ace", ".cbr", ".rar", ".cbt", ".tar")
+    ):
         LOGGER.info(f"Extracting {comic_file.stem}")
         Console.display_sub_heading(comic_file.stem)
-        comic_folder = extract_archive(src=comic_file, dest=PROCESSING_FOLDER)
+        comic_folder = extract_archive(src=comic_file, dest=SETTINGS.processing_folder)
         if not comic_folder:
             continue
         info_files = list_files(comic_folder, (".xml", ".json", ".yaml"))
@@ -68,12 +102,7 @@ def main(
             comic_info = None
         if not comic_info:
             publisher = PublisherInfo(title=Console.request_str(prompt="Publisher Title"))
-            series = SeriesInfo(
-                publisher=publisher,
-                start_year=Console.request_int(prompt="Series Start Year") or 2020,
-                title=Console.request_str(prompt="Series Title"),
-                volume=Console.request_int(prompt="Series Volume") or 1,
-            )
+            series = SeriesInfo(publisher=publisher, title=Console.request_str(prompt="Series Title"))
             comic_info = ComicInfo(series=series, number=Console.request_str(prompt="Issue Number") or "1")
         else:
             if not comic_info.series.publisher.title:
@@ -85,15 +114,7 @@ def main(
         if reset_info:
             comic_info.reset()
         if pull_info:
-            if LEAGUE_API_KEY and LEAGUE_CLIENT_ID:
-                Console.display_item_value(item="Pulling info from", value="League of Comic Geeks")
-                comic_info = add_league_info(comic_info=comic_info, show_variants=show_variants)
-            if METRON_USERNAME and METRON_PASSWORD:
-                Console.display_item_value(item="Pulling info from", value="Metron")
-                comic_info = add_metron_info(comic_info=comic_info)
-            if COMICVINE_API_KEY:
-                Console.display_item_value(item="Pulling info from", value="Comicvine")
-                comic_info = add_comicvine_info(comic_info=comic_info)
+            add_info(settings=SETTINGS, comic_info=comic_info, show_variants=show_variants)
         if manual_info:
             Console.display_text("Manually adding info")
             # comic_info = add_manual_info(comic_info=comic_info, show_variants=show_variants)
@@ -102,28 +123,21 @@ def main(
             file.unlink(missing_ok=True)
 
         save_info(file=comic_folder.joinpath("ComicInfo.json"), comic_info=comic_info)
-        publisher_folder = COLLECTION_FOLDER.joinpath(slugify_publisher(title=comic_info.series.publisher.title))
-        series_folder = publisher_folder.joinpath(
-            slugify_series(title=comic_info.series.title, volume=comic_info.series.volume)
-        )
-        comic_file_path = series_folder.joinpath(
-            slugify_comic(
-                series_slug=series_folder.name, comic_format=comic_info.comic_format, number=comic_info.number
-            )
-        )
+
         if image_check:
             Console.request_str(prompt="Press <ENTER> to continue")
 
-        clean_archive = create_archive(src=comic_folder, filename=comic_file_path.name)
+        publisher_path, series_path, comic_path = slugify(comic_info=comic_info)
+        clean_archive = create_archive(src=comic_folder, filename=comic_path.name)
         if not clean_archive:
             continue
 
         del_folder(comic_folder)
         comic_file.unlink(missing_ok=True)
 
-        publisher_folder.mkdir(parents=True, exist_ok=True)
-        series_folder.mkdir(parents=True, exist_ok=True)
-        clean_comic = series_folder.joinpath(f"{comic_file_path.name}.cbz")
+        publisher_path.mkdir(parents=True, exist_ok=True)
+        series_path.mkdir(parents=True, exist_ok=True)
+        clean_comic = series_path.joinpath(f"{comic_path.name}.cbz")
         if not clean_comic.exists():
             clean_archive.rename(clean_comic)
         else:
@@ -133,7 +147,6 @@ def main(
 
 def parse_arguments() -> Namespace:
     parser = ArgumentParser(prog="Comic-Organizer")
-    parser.add_argument("--input-folder", type=str, required=True)
     parser.add_argument("--pull-info", action="store_true")
     parser.add_argument("--show-variants", action="store_true")
     parser.add_argument("--add-manual-info", action="store_true")
@@ -152,7 +165,6 @@ if __name__ == "__main__":
             console_level=logging.INFO if args.debug else logging.WARNING,
         )
         main(
-            input_path=args.input_folder,
             pull_info=args.pull_info,
             show_variants=args.show_variants,
             manual_info=args.add_manual_info,

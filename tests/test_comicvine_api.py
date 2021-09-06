@@ -1,6 +1,6 @@
 from datetime import date
 
-from Organizer.comic_info import ComicInfo, PublisherInfo, SeriesInfo
+from Organizer import ComicInfo, PublisherInfo, SeriesInfo
 from Organizer.comicvine_api import parse_issue_result, parse_publisher_result, parse_volume_result
 
 PUBLISHER_ID = 10

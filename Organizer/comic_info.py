@@ -9,7 +9,7 @@ from ruamel.yaml import YAML
 
 from Organizer.comic_format import ComicFormat
 from Organizer.comic_genre import ComicGenre
-from Organizer.utils import remove_extra, str_to_list, to_titlecase
+from Organizer.utils import remove_extra, to_titlecase
 
 LOGGER = logging.getLogger(__name__)
 
@@ -292,6 +292,10 @@ def load_yaml_info(file: Path) -> Optional[ComicInfo]:
             )
         # endregion
         return comic_info
+
+
+def str_to_list(soup, key: str) -> List[str]:
+    return [x.strip() for x in (str(soup.find(key).string) if soup.find(key) else "").split(",") if x]
 
 
 def yaml_setup() -> YAML:

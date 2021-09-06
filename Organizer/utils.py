@@ -1,58 +1,13 @@
 import html
 import logging
 import re
-from configparser import ConfigParser
-from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Optional
 
 from titlecase import titlecase
 
-from .comic_format import ComicFormat
+from Organizer.comic_format import ComicFormat
 
 LOGGER = logging.getLogger(__name__)
-TOP_DIR = Path(__file__).resolve().parent.parent
-
-CONFIG = ConfigParser(allow_no_value=True)
-CONFIG.read("config.ini")
-# General
-ROOT_FOLDER = Path(CONFIG["General"]["Root"]).resolve()
-ROOT_FOLDER.mkdir(parents=True, exist_ok=True)
-
-PROCESSING_FOLDER = ROOT_FOLDER.joinpath("Processing")
-PROCESSING_FOLDER.mkdir(parents=True, exist_ok=True)
-
-COLLECTION_FOLDER = ROOT_FOLDER.joinpath("Collection")
-COLLECTION_FOLDER.mkdir(parents=True, exist_ok=True)
-
-# Comicvine
-COMICVINE_API_KEY = CONFIG["Comicvine"]["API Key"]
-
-# League of Comic Geeks
-LEAGUE_API_KEY = CONFIG["League of Comic Geeks"]["API Key"]
-LEAGUE_CLIENT_ID = CONFIG["League of Comic Geeks"]["Client ID"]
-
-# Metron
-METRON_USERNAME = CONFIG["Metron"]["Username"]
-METRON_PASSWORD = CONFIG["Metron"]["Password"]
-
-
-def list_files(folder: Path, filter: Tuple[str, ...] = ()) -> List[Path]:
-    files = []
-    for file in folder.iterdir():
-        if file.is_dir():
-            files.extend(list_files(file, filter))
-        elif file.suffix in filter:
-            files.append(file)
-    return files
-
-
-def del_folder(folder: Path):
-    for child in folder.iterdir():
-        if child.is_file():
-            child.unlink(missing_ok=True)
-        else:
-            del_folder(child)
-    folder.rmdir()
 
 
 def remove_extra(value: Optional[str]) -> Optional[str]:
@@ -60,10 +15,6 @@ def remove_extra(value: Optional[str]) -> Optional[str]:
         return value
     tag_re = re.compile(r"(<!--.*?-->|<[^>]*>)")
     return " ".join(html.unescape(tag_re.sub("", value.strip())).split())
-
-
-def str_to_list(soup, key: str) -> List[str]:
-    return [x.strip() for x in (str(soup.find(key).string) if soup.find(key) else "").split(",") if x]
 
 
 def to_titlecase(text: str) -> str:
