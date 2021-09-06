@@ -1,4 +1,4 @@
-name: "Testing"
+name: 'Testing'
 
 on:
   push:
@@ -9,12 +9,17 @@ on:
       - main
 
 jobs:
-  testing:
+  test:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.8, 3.9]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version:
+          - 3.8
+          - 3.9
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
       #----------------------------------------------
@@ -55,8 +60,6 @@ jobs:
         run: poetry install --no-interaction
       #----------------------------------------------
       #    Run tox testing
-      #    Currently unable to include text config files
       #----------------------------------------------
       - name: Test with tox
-        run: poetry run tox --version
-      #  run: poetry run tox -e py
+        run: poetry run tox -e py
