@@ -66,8 +66,8 @@ def parse_series_result(result: Series, series_info: SeriesInfo) -> SeriesInfo:
     if "Metron" not in series_info.identifiers.keys():
         series_info.identifiers["Metron"] = IdentifierInfo(site="Metron", _id=result.id)
     series_info.title = series_info.title or result.name
-    series_info.volume = series_info.volume or result.volume
     series_info.start_year = series_info.start_year or result.year_began
+    series_info.volume = series_info.volume or result.volume
 
     return series_info
 
@@ -83,16 +83,10 @@ def parse_issue_result(result: Issue, comic_info: ComicInfo) -> ComicInfo:
     comic_info.number = comic_info.number or result.number
     comic_info.title = comic_info.title or (titles_to_string(result.story_titles) if result.story_titles else None)
     comic_info.cover_date = comic_info.cover_date or result.cover_date
-
-    for credit in result.credits:
-        for role in credit.role:
-            if role.name not in comic_info.creators:
-                comic_info.creators[role.name] = []
-            comic_info.creators[role.name].append(credit.creator)
     # TODO: Comic Format
-    # TODO: Genres
     # TODO: Language ISO
     # TODO: Page Count
+    comic_info.store_date = comic_info.store_date or result.store_date
     comic_info.summary = comic_info.summary or remove_extra(result.desc)
     # TODO: Variant
 

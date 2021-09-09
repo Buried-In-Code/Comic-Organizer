@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Comic-Organizer"
-version = "2.3.1"
+version = "0.1.0"
 description = "Helps sort and organize your comic collection by using the information stored in ComicInfo files."
 license = "MIT"
 authors = ["Buried-In-Code <6057651+Buried-In-Code@users.noreply.github.com>"]
@@ -37,12 +37,12 @@ Painted-Logger = "^1.2.1"
 titlecase = "^2.3"
 requests = "^2.26.0"
 ratelimit = "^2.2.1"
-beautifulsoup4 = "^4.9.3"
+beautifulsoup4 = "^4.10.0"
 lxml = "^4.6.3"
 patool = "^1.12"
 colorama = "^0.4.4"
 mokkari = "^0.2.2"
-simyan = "^0.4.2"
+simyan = "^0.4.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"

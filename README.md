@@ -117,19 +117,12 @@ Root Folder
         "Title": <String|null>
     },
     "Cover Date": <Date|yyyy-mm-dd|null>,
-    "Creators": {
-        "<Role>": [
-            <String>
-        ]
-    },
+    "Store Date": <Date|yyyy-mm-dd|null>,
     "Format": <String|Comic>,
-    "Genres": [
-        <String>
-    ],
     "Language ISO": <String|EN>,
     "Page Count": <Integer|1>,
     "Summary": <String|null>,
-    "Variant": <String|null>,
+    "Variant": <Boolean>,
     "Identifiers": {
         "<Website>": {
             "Id": <String|null>,

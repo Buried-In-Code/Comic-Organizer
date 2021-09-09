@@ -114,7 +114,7 @@ def main(
         if reset_info:
             comic_info.reset()
         if pull_info:
-            add_info(settings=SETTINGS, comic_info=comic_info, show_variants=show_variants)
+            add_info(comic_info=comic_info, show_variants=show_variants)
         if manual_info:
             Console.display_text("Manually adding info")
             # comic_info = add_manual_info(comic_info=comic_info, show_variants=show_variants)

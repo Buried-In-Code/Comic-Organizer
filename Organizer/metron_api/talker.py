@@ -2,7 +2,6 @@ import logging
 from typing import Optional
 
 from mokkari import api
-from mokkari.arc import Arc
 from mokkari.issue import Issue
 from mokkari.publisher import Publisher
 from mokkari.series import Series
@@ -30,7 +29,10 @@ class Talker:
             )
             if 1 <= index <= len(results):
                 return results[index - 1].id
-        return None
+        name_search = Console.request_str("Publisher Name or `None`")
+        if name_search and name_search.lower() != "none":
+            return self.search_publishers(name=name_search)
+        return Console.request_int("Publisher ID or `None`")
 
     def get_publisher(self, publisher_id: int) -> Publisher:
         LOGGER.debug("Getting Publisher")
@@ -52,7 +54,10 @@ class Talker:
                 return results[index - 1].id
         elif volume:
             return self.search_series(publisher_id=publisher_id, name=name)
-        return None
+        name_search = Console.request_str("Series Name or `None`")
+        if name_search and name_search.lower() != "none":
+            return self.search_series(publisher_id=publisher_id, name=name_search)
+        return Console.request_int("Series ID or `None`")
 
     def get_series(self, series_id: int) -> Series:
         LOGGER.debug("Getting Series")
@@ -70,16 +75,11 @@ class Talker:
             )
             if 1 <= index <= len(results):
                 return results[index - 1].id
-        return None
+        number_search = Console.request_str("Issue Number or `None`")
+        if number_search and number_search.lower() != "none":
+            return self.search_issues(series_id=series_id, number=number_search)
+        return Console.request_int("Issue ID or `None`")
 
     def get_issue(self, issue_id: int) -> Issue:
         LOGGER.debug("Getting Issue")
         return self.api.issue(issue_id)
-
-    def search_arcs(self, name: str) -> Optional[int]:
-        LOGGER.debug("Search Arcs")
-        pass
-
-    def get_arc(self, arc_id: int) -> Arc:
-        LOGGER.debug("Getting Arc")
-        return self.api.arc(arc_id)

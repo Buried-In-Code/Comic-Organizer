@@ -64,11 +64,11 @@ def parse_volume_result(result: Volume, series_info: SeriesInfo) -> SeriesInfo:
     if "Comicvine" not in series_info.identifiers.keys():
         series_info.identifiers["Comicvine"] = IdentifierInfo(site="Comicvine", _id=result.id, url=result.site_url)
     series_info.title = series_info.title or result.name
-    # TODO: Volume
     try:
         series_info.start_year = series_info.start_year or int(result.start_year)
     except ValueError:
         series_info.start_year = None
+    # TODO: Volume
     return series_info
 
 
@@ -79,15 +79,10 @@ def parse_issue_result(result: Issue, comic_info: ComicInfo) -> ComicInfo:
     comic_info.number = comic_info.number or result.number
     comic_info.title = comic_info.title or result.name
     comic_info.cover_date = comic_info.cover_date or result.cover_date
-    for creator in result.creators:
-        for role in creator.roles.split(","):
-            if role.strip() not in comic_info.creators:
-                comic_info.creators[role.strip()] = []
-            comic_info.creators[role.strip()].append(creator.name)
     # TODO: Comic Format
-    # TODO: Genres
     # TODO: Language ISO
     # TODO: Page Count
+    comic_info.store_date = comic_info.store_date or result.store_date
     comic_info.summary = comic_info.summary or remove_extra(result.summary)
     # TODO: Variant
     return comic_info

@@ -2,20 +2,19 @@ import json
 import logging
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from bs4 import BeautifulSoup
 from ruamel.yaml import YAML
 
 from Organizer.comic_format import ComicFormat
-from Organizer.comic_genre import ComicGenre
 from Organizer.utils import remove_extra, to_titlecase
 
 LOGGER = logging.getLogger(__name__)
 
 
 class IdentifierInfo:
-    def __init__(self, site: str, _id: Optional[str] = None, url: Optional[str] = None):
+    def __init__(self, site: str, _id: Optional[Union[str, int]] = None, url: Optional[str] = None):
         self.site = site
         self._id = _id
         self.url = url
@@ -47,16 +46,16 @@ class SeriesInfo:
         self, publisher: PublisherInfo, title: str, start_year: Optional[int] = None, volume: Optional[int] = None
     ):
         self.publisher = publisher
-        self.start_year = start_year
         self.title = title
+        self.start_year = start_year
         self.volume = volume
         self.identifiers = {}
 
     def to_output(self) -> Dict[str, Any]:
         return {
             "Publisher": self.publisher.to_output(),
-            "Start Year": self.start_year,
             "Title": self.title,
+            "Start Year": self.start_year,
             "Volume": self.volume,
             "Identifiers": {site: {"Id": str(x._id), "Url": x.url} for site, x in sorted(self.identifiers.items())},
         }
@@ -79,25 +78,23 @@ class ComicInfo:
         series: SeriesInfo,
         number: str,
         title: Optional[str] = None,
-        variant: Optional[str] = None,
-        summary: Optional[str] = None,
         cover_date: Optional[date] = None,
+        comic_format: ComicFormat = ComicFormat.COMIC,
         language_iso: str = "EN",
-        comic_format: str = "Comic",
-        genres: List[str] = None,
-        page_count: int = 1,
-        creators: Dict[str, List[str]] = None,
+        page_count: int = 0,
+        store_date: Optional[date] = None,
+        summary: Optional[str] = None,
+        variant: bool = False,
         notes: str = None,
     ):
         self.series = series
         self.number = number
         self.title = title
         self.cover_date = cover_date
-        self.creators = creators or {}
         self.comic_format = comic_format
-        self.genres = genres or []
         self.language_iso = language_iso
         self.page_count = page_count
+        self.store_date = store_date
         self.summary = summary
         self.variant = variant
         self.identifiers = {}
@@ -108,11 +105,10 @@ class ComicInfo:
             "Series": self.series.to_output(),
             "Issue": {"Number": self.number, "Title": self.title},
             "Cover Date": self.cover_date.strftime("%Y-%m-%d") if self.cover_date else None,
-            "Creators": {key: sorted(list(dict.fromkeys(values))) for key, values in self.creators.items()},
-            "Format": self.comic_format,
-            "Genres": sorted(list(dict.fromkeys(self.genres))),
+            "Format": self.comic_format.get_title(),
             "Language ISO": self.language_iso,
             "Page Count": self.page_count,
+            "Store Date": self.store_date.strftime("%Y-%m-%d") if self.store_date else None,
             "Summary": self.summary,
             "Variant": self.variant,
             "Identifiers": {site: {"Id": str(x._id), "Url": x.url} for site, x in sorted(self.identifiers.items())},
@@ -122,14 +118,13 @@ class ComicInfo:
     def reset(self):
         self.series.reset()
         self.title = None
-        self.variant = None
-        self.summary = None
         self.cover_date = None
+        self.comic_format = ComicFormat.COMIC
         self.language_iso = "EN"
-        self.comic_format = "Comic"
-        self.genres = []
-        self.page_count = 1
-        self.creators = {}
+        self.page_count = 0
+        self.store_date = None
+        self.summary = None
+        self.variant = False
         self.identifiers = {}
         self.notes = None
 
@@ -176,18 +171,15 @@ def load_json_info(file: Path) -> Optional[ComicInfo]:
         # endregion
         comic_info = ComicInfo(
             series=series,
-            number=info["Issue"]["Number"] if "Issue" in info and "Number" in info["Issue"] else "",
+            number=info["Issue"]["Number"] if "Issue" in info and "Number" in info["Issue"] else "1",
             title=info["Issue"]["Title"] if "Issue" in info and "Title" in info["Issue"] else None,
-            creators=info["Creators"] if "Creators" in info else {},
             cover_date=datetime.strptime(info["Cover Date"], "%Y-%m-%d").date() if "Cover Date" in info else None,
-            comic_format=ComicFormat.from_string(info["Format"]).get_title() if "Format" in info else "Comic",
-            genres=[x.get_title() for x in [ComicGenre.from_string(x) for x in info["Genres"]] if x]
-            if "Genres" in info
-            else [],
+            comic_format=ComicFormat.from_string(info["Format"]) if "Format" in info else ComicFormat.COMIC,
             language_iso=info["Language ISO"] if "Language ISO" in info else "EN",
             page_count=info["Page Count"] if "Page Count" in info else 1,
+            store_date=datetime.strptime(info["Store Date"], "%Y-%m-%d").date() if "Store Date" in info else None,
             summary=info["Summary"] if "Summary" in info else None,
-            variant=info["Variant"] if "Variant" in info else None,
+            variant=info["Variant"] if "Variant" in info else False,
             notes=info["Notes"] if "Notes" in info else None,
         )
         # region Identifiers
@@ -211,6 +203,7 @@ def load_xml_info(file: Path) -> Optional[ComicInfo]:
             publisher=publisher,
             title=info.find("Series").string if info.find("Series") else "",
             start_year=int(info.find("Volume").string) if info.find("Volume") else None,
+            # TODO: Volume
         )
         # region Cover-Date
         year = int(info.find("Year").string) if info.find("Year") else None
@@ -228,16 +221,14 @@ def load_xml_info(file: Path) -> Optional[ComicInfo]:
         comic_info = ComicInfo(
             series=series,
             number=info.find("Number").string if info.find("Number") else "",
-            # Title
-            creators=creators,
+            # TODO: Title
             cover_date=date(year, month, day) if year else None,
-            # Format
-            genres=[x.get_title() for x in [ComicGenre.from_string(x) for x in str_to_list(info, "Genre")] if x],
+            # TODO: Format
             language_iso=info.find("LanguageISO").string.upper() if info.find("LanguageISO") else None,
             page_count=int(info.find("PageCount").string) if info.find("PageCount") else 0,
+            # TODO: Store Date
             summary=remove_extra(info.find("Summary").string) if info.find("Summary") else None,
-            # Variant
-            # notes=remove_extra(info.find('Notes').string) if info.find('Notes') else None
+            # TODO: Variant
             notes=None,
         )
         # region Identifiers
@@ -252,44 +243,50 @@ def load_yaml_info(file: Path) -> Optional[ComicInfo]:
         info = yaml_setup().load(yaml_info)["Comic Info"]
         LOGGER.debug(f"Loaded {file.stem}")
 
-        publisher = PublisherInfo(title=info["Series"]["Publisher"]["Title"])
+        publisher = PublisherInfo(
+            title=info["Series"]["Publisher"]["Title"]
+            if "Series" in info and "Publisher" in info["Series"] and "Title" in info["Series"]["Publisher"]
+            else ""
+        )
         # region Identifiers
-        for site, details in info["Series"]["Publisher"]["Identifiers"].items():
-            publisher.identifiers[to_titlecase(site)] = IdentifierInfo(
-                site=to_titlecase(site), _id=details["Id"], url=details["Url"]
-            )
+        if "Series" in info and "Publisher" in info["Series"] and "Identifiers" in info["Series"]["Publisher"]:
+            for site, details in info["Series"]["Publisher"]["Identifiers"].items():
+                publisher.identifiers[to_titlecase(site)] = IdentifierInfo(
+                    site=to_titlecase(site), _id=details["Id"], url=details["Url"]
+                )
         # endregion
         series = SeriesInfo(
             publisher=publisher,
-            start_year=info["Series"]["Start Year"],
-            title=info["Series"]["Title"],
-            volume=info["Series"]["Volume"],
+            start_year=info["Series"]["Start Year"] if "Series" in info and "Start Year" in info["Series"] else None,
+            title=info["Series"]["Title"] if "Series" in info and "Title" in info["Series"] else "",
+            volume=info["Series"]["Volume"] if "Series" in info and "Volume" in info["Series"] else None,
         )
         # region Identifiers
-        for site, details in info["Series"]["Identifiers"].items():
-            series.identifiers[to_titlecase(site)] = IdentifierInfo(
-                site=to_titlecase(site), _id=details["Id"], url=details["Url"]
-            )
+        if "Series" in info and "Identifiers" in info["Series"]:
+            for site, details in info["Series"]["Identifiers"].items():
+                series.identifiers[to_titlecase(site)] = IdentifierInfo(
+                    site=to_titlecase(site), _id=details["Id"], url=details["Url"]
+                )
         # endregion
         comic_info = ComicInfo(
             series=series,
-            number=info["Issue"]["Number"],
-            title=info["Issue"]["Title"],
-            creators=info["Creators"],
-            cover_date=datetime.strptime(info["Cover Date"], "%Y-%m-%d").date(),
-            comic_format=ComicFormat.from_string(info["Format"]).get_title(),
-            genres=[x.get_title() for x in [ComicGenre.from_string(x) for x in info["Genres"]] if x],
-            language_iso=info["Language ISO"],
-            page_count=info["Page Count"],
-            summary=info["Summary"],
-            variant=info["Variant"],
-            notes=info["Notes"],
+            number=info["Issue"]["Number"] if "Issue" in info and "Number" in info["Issue"] else "1",
+            title=info["Issue"]["Title"] if "Issue" in info and "Title" in info["Issue"] else None,
+            cover_date=datetime.strptime(info["Cover Date"], "%Y-%m-%d").date() if "Cover Date" in info else None,
+            comic_format=ComicFormat.from_string(info["Format"]) if "Format" in info else ComicFormat.COMIC,
+            language_iso=info["Language ISO"] if "Language ISO" in info else "EN",
+            page_count=info["Page Count"] if "Page Count" in info else 1,
+            store_date=datetime.strptime(info["Store Date"], "%Y-%m-%d").date() if "Store Date" in info else None,
+            summary=info["Summary"] if "Summary" in info else None,
+            variant=info["Variant"] if "Variant" in info else False,
+            notes=info["Notes"] if "Notes" in info else None,
         )
         # region Identifiers
-        for site, details in info["Identifiers"].items():
-            comic_info.identifiers[to_titlecase(site)] = IdentifierInfo(
-                site=to_titlecase(site), _id=details["Id"], url=details["Url"]
-            )
+        if "Identifiers" in info:
+            for site, details in info["Identifiers"].items():
+                comic_info.identifiers[to_titlecase(site)] = IdentifierInfo(
+                    site=to_titlecase(site), _id=details["Id"], url=details["Url"]
+                )
         # endregion
         return comic_info
 

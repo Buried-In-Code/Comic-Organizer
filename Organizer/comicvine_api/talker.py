@@ -4,7 +4,6 @@ from typing import Optional
 from Simyan import SqliteCache, api
 from Simyan.issue import Issue
 from Simyan.publisher import Publisher
-from Simyan.story_arc import StoryArc
 from Simyan.volume import Volume
 
 from Organizer import Console
@@ -29,7 +28,10 @@ class Talker:
             )
             if 1 <= index <= len(results):
                 return results[index - 1].id
-        return None
+        name_search = Console.request_str("Publisher Name or `None`")
+        if name_search and name_search.lower() != "none":
+            return self.search_publishers(name=name_search)
+        return Console.request_int("Publisher ID or `None`")
 
     def get_publisher(self, publisher_id: int) -> Publisher:
         LOGGER.debug("Getting Publisher")
@@ -52,7 +54,10 @@ class Talker:
             )
             if 1 <= index <= len(results):
                 return results[index - 1].id
-        return None
+        name_search = Console.request_str("Volume Name or `None`")
+        if name_search and name_search.lower() != "none":
+            return self.search_volumes(name=name_search, publisher_id=publisher_id)
+        return Console.request_int("Volume ID or `None`")
 
     def get_volume(self, volume_id: int) -> Volume:
         LOGGER.debug("Getting Volume")
@@ -63,25 +68,17 @@ class Talker:
         results = self.session.issue_list(params={"filter": f"volume:{volume_id},issue_number:{number}"})
         if results:
             index = Console.display_menu(
-                items=[
-                    f"{item.id} | {item.publisher.name} | {item.name} [{item.start_year}] #{item.issue_number}"
-                    for item in results
-                ],
+                items=[f"{item.id} | {item.name} [{item.start_year}] #{item.issue_number}" for item in results],
                 exit_text="None of the Above",
                 prompt="Select Issue",
             )
             if 1 <= index <= len(results):
                 return results[index - 1].id
-        return None
+        number_search = Console.request_str("Issue Number or `None`")
+        if number_search and number_search.lower() != "none":
+            return self.search_issues(volume_id=volume_id, number=number_search)
+        return Console.request_int("Issue ID or `None`")
 
     def get_issue(self, issue_id: int) -> Issue:
         LOGGER.debug("Getting Issue")
         return self.session.issue(issue_id)
-
-    def search_arcs(self, name: str) -> Optional[int]:
-        LOGGER.debug("Search Arcs")
-        pass
-
-    def get_arc(self, arc_id: int) -> StoryArc:
-        LOGGER.debug("Getting Arc")
-        return self.session.story_arc(arc_id)
