@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from Organizer.comic_format import ComicFormat
+from DexStarr.comic_format import ComicFormat
 
 PUBLISHER_ID = 1
 PUBLISHER_TITLE = "DC Comics"

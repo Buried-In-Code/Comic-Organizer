@@ -1,20 +1,20 @@
 # Comic Organizer
 
-[![PyPI - Python](https://img.shields.io/pypi/pyversions/Comic-Organizer.svg?logo=Python&label=Python&style=flat-square)](https://pypi.python.org/pypi/Comic-Organizer/)
-[![PyPI - Status](https://img.shields.io/pypi/status/Comic-Organizer.svg?logo=PyPI&label=Status&style=flat-square)](https://pypi.python.org/pypi/Comic-Organizer/)
-[![PyPI - Version](https://img.shields.io/pypi/v/Comic-Organizer.svg?logo=PyPI&label=Version&style=flat-square)](https://pypi.python.org/pypi/Comic-Organizer/)
-[![PyPI - License](https://img.shields.io/pypi/l/Comic-Organizer.svg?logo=PyPI&label=License&style=flat-square)](https://opensource.org/licenses/MIT)
+[![PyPI - Python](https://img.shields.io/pypi/pyversions/Dex-Starr.svg?logo=Python&label=Python&style=flat-square)](https://pypi.python.org/pypi/Dex-Starr/)
+[![PyPI - Status](https://img.shields.io/pypi/status/Dex-Starr.svg?logo=PyPI&label=Status&style=flat-square)](https://pypi.python.org/pypi/Dex-Starr/)
+[![PyPI - Version](https://img.shields.io/pypi/v/Dex-Starr.svg?logo=PyPI&label=Version&style=flat-square)](https://pypi.python.org/pypi/Dex-Starr/)
+[![PyPI - License](https://img.shields.io/pypi/l/Dex-Starr.svg?logo=PyPI&label=License&style=flat-square)](https://opensource.org/licenses/MIT)
 
-[![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Comic-Organizer.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/graphs/contributors)
-[![Github Action - Code Analysis](https://img.shields.io/github/workflow/status/Buried-In-Code/Comic-Organizer/Code-Analysis?logo=Github-Actions&label=Code-Analysis&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/actions/workflows/code-analysis.yaml)
-[![Github Action - Tox Testing](https://img.shields.io/github/workflow/status/Buried-In-Code/Comic-Organizer/Tox-Testing?logo=Github-Actions&label=Tox-Tests&style=flat-square)](https://github.com/Buried-In-Code/Comic-Organizer/actions/workflows/tox-testing.yaml)
+[![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Dex-Starr.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Dex-Starr/graphs/contributors)
+[![Github Action - Code Analysis](https://img.shields.io/github/workflow/status/Buried-In-Code/Dex-Starr/Code-Analysis?logo=Github-Actions&label=Code-Analysis&style=flat-square)](https://github.com/Buried-In-Code/Dex-Starr/actions/workflows/code-analysis.yaml)
+[![Github Action - Testing](https://img.shields.io/github/workflow/status/Buried-In-Code/Dex-Starr/Testing?logo=Github-Actions&label=Tests&style=flat-square)](https://github.com/Buried-In-Code/Dex-Starr/actions/workflows/testing.yaml)
 
 [![Code Style - Black](https://img.shields.io/badge/Code%20Style-Black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
-Comic-Organizer helps sort and organize your comic collection by using the information stored in ComicInfo files. It
+Dex-Starr helps sort and organize your comic collection by using the information stored in ComicInfo files. It
 also formats all your digital comics into a single format (CBZ)
 and transforms the `ComicInfo.xml` inside most digital comic files into `ComicInfo.json` using the below schema.
-Comic-Organizer can also fill in any blanks in the ComicInfo by pulling from a list of supported sources.
+Dex-Starr can also fill in any blanks in the ComicInfo by pulling from a list of supported sources.
 
 ## Arguments
 
@@ -29,14 +29,19 @@ Comic-Organizer can also fill in any blanks in the ComicInfo by pulling from a l
 
 ## Execution
 
-1. Make sure you have [Poetry](https://python-poetry.org) installed
-2. Clone the repo: `git clone https://github.com/Buried-In-Code/Comic-Organizer`
-3. Navigate to the folder: `cd Comic-Organizer/`
-4. Run: `poetry install`
-5. Run: `poetry run python -m Organizer`
-
-All settings can be found in `~/.comic-organizer/settings.ini`
+All settings can be found in `~/.dex-starr/settings.ini`
 **Requires restart for changes to take effect**
+
+### From PyPI
+1. Run: `pip install Dex-Starr`
+2. Run: `Dex-Starr`
+
+### From Source
+1. Make sure you have [Poetry](https://python-poetry.org) installed
+2. Clone the repo: `git clone https://github.com/Buried-In-Code/Dex-Starr`
+3. Navigate to the folder: `cd Dex-Starr/`
+4. Run: `poetry install`
+5. Run: `poetry run python -m DexStarr`
 
 ## Supported Sources:
 
@@ -64,7 +69,7 @@ All settings can be found in `~/.comic-organizer/settings.ini`
 
 ## Comic Collection Folder Structure
 
-Root folder location is defined in `~/.comic-organizer/settings.ini`
+Root folder location is defined in `~/.dex-starr/settings.ini`
 
 ```
 Root Folder

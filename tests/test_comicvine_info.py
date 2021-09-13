@@ -1,7 +1,7 @@
 from datetime import date
 
-from Organizer import ComicInfo, PublisherInfo, SeriesInfo
-from Organizer.comicvine_api import parse_issue_result, parse_publisher_result, parse_volume_result
+from DexStarr import ComicInfo, PublisherInfo, SeriesInfo
+from DexStarr.comicvine_api import parse_issue_result, parse_publisher_result, parse_volume_result
 
 PUBLISHER_ID = 10
 PUBLISHER_TITLE = "DC Comics"

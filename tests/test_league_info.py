@@ -1,8 +1,8 @@
 from datetime import date
 
-from Organizer import ComicInfo, PublisherInfo, SeriesInfo
-from Organizer.comic_format import ComicFormat
-from Organizer.league_of_comic_geeks_api import parse_comic_result, parse_series_result
+from DexStarr import ComicInfo, PublisherInfo, SeriesInfo
+from DexStarr.comic_format import ComicFormat
+from DexStarr.league_of_comic_geeks_api import parse_comic_result, parse_series_result
 
 PUBLISHER_ID = 1
 PUBLISHER_TITLE = "DC Comics"

@@ -301,7 +301,7 @@ pyparsing = ">=2.0.2"
 
 [[package]]
 name = "painted-logger"
-version = "1.2.1"
+version = "1.3.0"
 description = "A customized, coloured Logger for Python projects."
 category = "main"
 optional = false
@@ -437,7 +437,7 @@ testing = ["fields", "hunter", "process-tests", "six", "pytest-xdist", "virtuale
 
 [[package]]
 name = "pyupgrade"
-version = "2.25.0"
+version = "2.26.0"
 description = "A tool to automatically upgrade syntax for newer versions."
 category = "dev"
 optional = false
@@ -524,7 +524,7 @@ python-versions = ">=3.6.1"
 
 [[package]]
 name = "simyan"
-version = "0.4.3"
+version = "0.5.0"
 description = "A Python wrapper for the Comicvine API."
 category = "main"
 optional = false
@@ -652,7 +652,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "7d2f8920763c9feede3c838006076382a635d736b1e351205e3d1abc1638d0f1"
+content-hash = "3e1a923618bd29ea9b62b6d4141e5a41cb4d3f8de3b41f8cc2059516fa0d7263"
 
 [metadata.files]
 "aspy.refactor-imports" = [
@@ -858,8 +858,8 @@ packaging = [
     {file = "packaging-21.0.tar.gz", hash = "sha256:7dc96269f53a4ccec5c0670940a4281106dd0bb343f47b7471f779df49c2fbe7"},
 ]
 painted-logger = [
-    {file = "Painted-Logger-1.2.1.tar.gz", hash = "sha256:dcbfe9b559cdd102a78de8e06ae331aaddd6c8eb8c07dad8bbe023a93e74a936"},
-    {file = "Painted_Logger-1.2.1-py3-none-any.whl", hash = "sha256:86fd5596bfb32463994ff8548a3e0a93e356be01927cb52ec678e499b5c99b51"},
+    {file = "Painted-Logger-1.3.0.tar.gz", hash = "sha256:6f1a7a224acf251cacede57671965f6e5c3d5d0f495a656d370bee5f6a1111b2"},
+    {file = "Painted_Logger-1.3.0-py3-none-any.whl", hash = "sha256:44a7705669d881e9cf0df72ab54a8f404a0018da70b97c843dac8c9cac741a22"},
 ]
 pathspec = [
     {file = "pathspec-0.9.0-py2.py3-none-any.whl", hash = "sha256:7d15c4ddb0b5c802d161efc417ec1a2558ea2653c2e8ad9c19098201dc1c993a"},
@@ -906,8 +906,8 @@ pytest-cov = [
     {file = "pytest_cov-2.12.1-py2.py3-none-any.whl", hash = "sha256:261bb9e47e65bd099c89c3edf92972865210c36813f80ede5277dceb77a4a62a"},
 ]
 pyupgrade = [
-    {file = "pyupgrade-2.25.0-py2.py3-none-any.whl", hash = "sha256:8409f4a166d8fbbf475e4e63912817f8ec07c402979f9399658929ebafaa6043"},
-    {file = "pyupgrade-2.25.0.tar.gz", hash = "sha256:a61084aae26ccedd6ae98fc0cc09383ce4e11b6d519653ff5e2fd131d2023723"},
+    {file = "pyupgrade-2.26.0-py2.py3-none-any.whl", hash = "sha256:fcfde421775d356eb1e7da443fb23fad6dceca411d8c014acebaed1c2bfeed52"},
+    {file = "pyupgrade-2.26.0.tar.gz", hash = "sha256:03eba5ee3494c334d634a272774a30b0aa28af4f5f07f1d3f5d5bedee86c5bcb"},
 ]
 pyyaml = [
     {file = "PyYAML-5.4.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:3b2b1824fe7112845700f815ff6a489360226a5609b96ec2190a45e62a9fc922"},
@@ -1022,8 +1022,8 @@ seed-isort-config = [
     {file = "seed_isort_config-2.2.0.tar.gz", hash = "sha256:be4cfef8f9a3fe8ea1817069c6b624538ac0b429636ec746edeb27e98ed628c8"},
 ]
 simyan = [
-    {file = "Simyan-0.4.3-py3-none-any.whl", hash = "sha256:e43732271f5f11eaf4588de59d279a1ea2f213229b04a67d21f95798d475c27c"},
-    {file = "Simyan-0.4.3.tar.gz", hash = "sha256:db952a7823a54953d49b17eed947132b45140dde966ea64bcf5539c85c494404"},
+    {file = "Simyan-0.5.0-py3-none-any.whl", hash = "sha256:de02a500bf4493b12104cb011a6b42c5b10baab09e2a700ee4a1101aa7bdb330"},
+    {file = "Simyan-0.5.0.tar.gz", hash = "sha256:7d28d2eee87985e947dbb06b0f53c518889c7905fd16ef37cf1b83a528cf2d81"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
