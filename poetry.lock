@@ -45,14 +45,14 @@ testing = ["pytest (>=4.6)", "pytest-flake8", "pytest-cov", "pytest-black (>=0.3
 
 [[package]]
 name = "beautifulsoup4"
-version = "4.9.3"
+version = "4.10.0"
 description = "Screen-scraping library"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">3.0.0"
 
 [package.dependencies]
-soupsieve = {version = ">1.2", markers = "python_version >= \"3.0\""}
+soupsieve = ">1.2"
 
 [package.extras]
 html5lib = ["html5lib"]
@@ -181,7 +181,7 @@ pyflakes = ">=2.3.0,<2.4.0"
 
 [[package]]
 name = "identify"
-version = "2.2.13"
+version = "2.2.14"
 description = "File identification library for Python"
 category = "dev"
 optional = false
@@ -301,7 +301,7 @@ pyparsing = ">=2.0.2"
 
 [[package]]
 name = "painted-logger"
-version = "1.2.1"
+version = "1.3.0"
 description = "A customized, coloured Logger for Python projects."
 category = "main"
 optional = false
@@ -437,7 +437,7 @@ testing = ["fields", "hunter", "process-tests", "six", "pytest-xdist", "virtuale
 
 [[package]]
 name = "pyupgrade"
-version = "2.25.0"
+version = "2.26.0"
 description = "A tool to automatically upgrade syntax for newer versions."
 category = "dev"
 optional = false
@@ -524,7 +524,7 @@ python-versions = ">=3.6.1"
 
 [[package]]
 name = "simyan"
-version = "0.4.2"
+version = "0.5.1"
 description = "A Python wrapper for the Comicvine API."
 category = "main"
 optional = false
@@ -652,7 +652,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "e31c0bb088984bbc209bf7fa342d1ff21c5e4a0740189dae3a0931172f7f2125"
+content-hash = "3b8fe1067cc0921b87b6e62bd347d0a112da239ef0751b4413d0e94f421a8e87"
 
 [metadata.files]
 "aspy.refactor-imports" = [
@@ -672,9 +672,8 @@ attrs = [
     {file = "backports.entry_points_selectable-1.1.0.tar.gz", hash = "sha256:988468260ec1c196dab6ae1149260e2f5472c9110334e5d51adcb77867361f6a"},
 ]
 beautifulsoup4 = [
-    {file = "beautifulsoup4-4.9.3-py2-none-any.whl", hash = "sha256:4c98143716ef1cb40bf7f39a8e3eec8f8b009509e74904ba3a7b315431577e35"},
-    {file = "beautifulsoup4-4.9.3-py3-none-any.whl", hash = "sha256:fff47e031e34ec82bf17e00da8f592fe7de69aeea38be00523c04623c04fb666"},
-    {file = "beautifulsoup4-4.9.3.tar.gz", hash = "sha256:84729e322ad1d5b4d25f805bfa05b902dd96450f43842c4e99067d5e1369eb25"},
+    {file = "beautifulsoup4-4.10.0-py3-none-any.whl", hash = "sha256:9a315ce70049920ea4572a4055bc4bd700c940521d36fc858205ad4fcde149bf"},
+    {file = "beautifulsoup4-4.10.0.tar.gz", hash = "sha256:c23ad23c521d818955a4151a67d81580319d4bf548d3d49f4223ae041ff98891"},
 ]
 black = [
     {file = "black-21.8b0-py3-none-any.whl", hash = "sha256:2a0f9a8c2b2a60dbcf1ccb058842fb22bdbbcb2f32c6cc02d9578f90b92ce8b7"},
@@ -771,8 +770,8 @@ flake8 = [
     {file = "flake8-3.9.2.tar.gz", hash = "sha256:07528381786f2a6237b061f6e96610a4167b226cb926e2aa2b6b1d78057c576b"},
 ]
 identify = [
-    {file = "identify-2.2.13-py2.py3-none-any.whl", hash = "sha256:7199679b5be13a6b40e6e19ea473e789b11b4e3b60986499b1f589ffb03c217c"},
-    {file = "identify-2.2.13.tar.gz", hash = "sha256:7bc6e829392bd017236531963d2d937d66fc27cadc643ac0aba2ce9f26157c79"},
+    {file = "identify-2.2.14-py2.py3-none-any.whl", hash = "sha256:113a76a6ba614d2a3dd408b3504446bcfac0370da5995aa6a17fd7c6dffde02d"},
+    {file = "identify-2.2.14.tar.gz", hash = "sha256:32f465f3c48083f345ad29a9df8419a4ce0674bf4a8c3245191d65c83634bdbf"},
 ]
 idna = [
     {file = "idna-3.2-py3-none-any.whl", hash = "sha256:14475042e284991034cb48e06f6851428fb14c4dc953acd9be9a5e95c7b6dd7a"},
@@ -859,8 +858,8 @@ packaging = [
     {file = "packaging-21.0.tar.gz", hash = "sha256:7dc96269f53a4ccec5c0670940a4281106dd0bb343f47b7471f779df49c2fbe7"},
 ]
 painted-logger = [
-    {file = "Painted-Logger-1.2.1.tar.gz", hash = "sha256:dcbfe9b559cdd102a78de8e06ae331aaddd6c8eb8c07dad8bbe023a93e74a936"},
-    {file = "Painted_Logger-1.2.1-py3-none-any.whl", hash = "sha256:86fd5596bfb32463994ff8548a3e0a93e356be01927cb52ec678e499b5c99b51"},
+    {file = "Painted-Logger-1.3.0.tar.gz", hash = "sha256:6f1a7a224acf251cacede57671965f6e5c3d5d0f495a656d370bee5f6a1111b2"},
+    {file = "Painted_Logger-1.3.0-py3-none-any.whl", hash = "sha256:44a7705669d881e9cf0df72ab54a8f404a0018da70b97c843dac8c9cac741a22"},
 ]
 pathspec = [
     {file = "pathspec-0.9.0-py2.py3-none-any.whl", hash = "sha256:7d15c4ddb0b5c802d161efc417ec1a2558ea2653c2e8ad9c19098201dc1c993a"},
@@ -907,8 +906,8 @@ pytest-cov = [
     {file = "pytest_cov-2.12.1-py2.py3-none-any.whl", hash = "sha256:261bb9e47e65bd099c89c3edf92972865210c36813f80ede5277dceb77a4a62a"},
 ]
 pyupgrade = [
-    {file = "pyupgrade-2.25.0-py2.py3-none-any.whl", hash = "sha256:8409f4a166d8fbbf475e4e63912817f8ec07c402979f9399658929ebafaa6043"},
-    {file = "pyupgrade-2.25.0.tar.gz", hash = "sha256:a61084aae26ccedd6ae98fc0cc09383ce4e11b6d519653ff5e2fd131d2023723"},
+    {file = "pyupgrade-2.26.0-py2.py3-none-any.whl", hash = "sha256:fcfde421775d356eb1e7da443fb23fad6dceca411d8c014acebaed1c2bfeed52"},
+    {file = "pyupgrade-2.26.0.tar.gz", hash = "sha256:03eba5ee3494c334d634a272774a30b0aa28af4f5f07f1d3f5d5bedee86c5bcb"},
 ]
 pyyaml = [
     {file = "PyYAML-5.4.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:3b2b1824fe7112845700f815ff6a489360226a5609b96ec2190a45e62a9fc922"},
@@ -1023,8 +1022,8 @@ seed-isort-config = [
     {file = "seed_isort_config-2.2.0.tar.gz", hash = "sha256:be4cfef8f9a3fe8ea1817069c6b624538ac0b429636ec746edeb27e98ed628c8"},
 ]
 simyan = [
-    {file = "Simyan-0.4.2-py3-none-any.whl", hash = "sha256:448a23038f2d66228984926ffff69128a495d89ded8d19d2079e4d1359e52915"},
-    {file = "Simyan-0.4.2.tar.gz", hash = "sha256:6e68762323b5d1e48b3e4258732f389164454919c672e0e94daaad88eb925e66"},
+    {file = "Simyan-0.5.1-py3-none-any.whl", hash = "sha256:8e64bc1779c2b976cb484c8829ea878434a845f1db4443e914d389b7a2ceab6f"},
+    {file = "Simyan-0.5.1.tar.gz", hash = "sha256:5c3edb567e663d32f2a5d6003110530556cc4fc670eddf117ae437a2ceead0fb"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},

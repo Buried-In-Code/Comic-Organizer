@@ -3,9 +3,9 @@ import os
 import pytest
 from Simyan import SqliteCache
 
-from Organizer.comicvine_api import Talker as Comicvine
-from Organizer.league_of_comic_geeks_api import Talker as League
-from Organizer.metron_api import Talker as Metron
+from DexStarr.comicvine_api import Talker as Comicvine
+from DexStarr.league_of_comic_geeks_api import Talker as League
+from DexStarr.metron_api import Talker as Metron
 
 
 @pytest.fixture(scope="session")
@@ -15,7 +15,7 @@ def comicvine_api_key():
 
 @pytest.fixture(scope="session")
 def comicvine(comicvine_api_key):
-    return Comicvine(comicvine_api_key, cache=SqliteCache("tests/Comic-Organizer.sqlite"))
+    return Comicvine(comicvine_api_key, cache=SqliteCache("tests/Dex-Starr-Cache.sqlite"))
 
 
 @pytest.fixture(scope="session")
@@ -30,7 +30,7 @@ def league_client_id():
 
 @pytest.fixture(scope="session")
 def league(league_api_key, league_client_id):
-    return League(league_api_key, league_client_id, cache=SqliteCache("tests/Comic-Organizer.sqlite"))
+    return League(league_api_key, league_client_id, cache=SqliteCache("tests/Dex-Starr-Cache.sqlite"))
 
 
 @pytest.fixture(scope="session")
@@ -45,4 +45,4 @@ def metron_password():
 
 @pytest.fixture(scope="session")
 def metron(metron_username, metron_password):
-    return Metron(metron_username, metron_password, cache=SqliteCache("tests/Comic-Organizer.sqlite"))
+    return Metron(metron_username, metron_password, cache=SqliteCache("tests/Dex-Starr-Cache.sqlite"))

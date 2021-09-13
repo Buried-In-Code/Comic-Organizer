@@ -139,7 +139,6 @@ cython_debug/
 
 .idea/
 .vscode/
-config.ini
 logs/
-Comic-Organizer.sqlite
-!tests/Comic-Organizer.sqlite
+Dex-Starr-Cache.sqlite
+!tests/Dex-Starr-Cache.sqlite
