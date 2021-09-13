@@ -1,11 +1,9 @@
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" align="left" width="128" height="128" hspace="5"/>
-
 # Dex-Starr
 
-With test and code of crimson red,  
-Ripped from a program so freshly dead,  
-Together with our comics collate,  
-We'll sort you all, that is your Fate!
+> With test and code of crimson red,  
+> Ripped from a program so freshly dead,  
+> Together with our comics collate,  
+> We'll sort you all, that is your Fate!
 
 [![PyPI - Python](https://img.shields.io/pypi/pyversions/Dex-Starr.svg?logo=Python&label=Python&style=flat-square)](https://pypi.python.org/pypi/Dex-Starr/)
 [![PyPI - Status](https://img.shields.io/pypi/status/Dex-Starr.svg?logo=PyPI&label=Status&style=flat-square)](https://pypi.python.org/pypi/Dex-Starr/)
