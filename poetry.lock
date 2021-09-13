@@ -524,7 +524,7 @@ python-versions = ">=3.6.1"
 
 [[package]]
 name = "simyan"
-version = "0.5.0"
+version = "0.5.1"
 description = "A Python wrapper for the Comicvine API."
 category = "main"
 optional = false
@@ -652,7 +652,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "3e1a923618bd29ea9b62b6d4141e5a41cb4d3f8de3b41f8cc2059516fa0d7263"
+content-hash = "3b8fe1067cc0921b87b6e62bd347d0a112da239ef0751b4413d0e94f421a8e87"
 
 [metadata.files]
 "aspy.refactor-imports" = [
@@ -1022,8 +1022,8 @@ seed-isort-config = [
     {file = "seed_isort_config-2.2.0.tar.gz", hash = "sha256:be4cfef8f9a3fe8ea1817069c6b624538ac0b429636ec746edeb27e98ed628c8"},
 ]
 simyan = [
-    {file = "Simyan-0.5.0-py3-none-any.whl", hash = "sha256:de02a500bf4493b12104cb011a6b42c5b10baab09e2a700ee4a1101aa7bdb330"},
-    {file = "Simyan-0.5.0.tar.gz", hash = "sha256:7d28d2eee87985e947dbb06b0f53c518889c7905fd16ef37cf1b83a528cf2d81"},
+    {file = "Simyan-0.5.1-py3-none-any.whl", hash = "sha256:8e64bc1779c2b976cb484c8829ea878434a845f1db4443e914d389b7a2ceab6f"},
+    {file = "Simyan-0.5.1.tar.gz", hash = "sha256:5c3edb567e663d32f2a5d6003110530556cc4fc670eddf117ae437a2ceead0fb"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
