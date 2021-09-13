@@ -1,11 +1,11 @@
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" align="left" width="120" height="120"/>
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" align="left" width="128" height="128" hspace="5"/>
 
 # Dex-Starr
 
-> With test and code of crimson red,
-> Ripped from a program so freshly dead,
-> Together with our comics collate,
-> We'll sort you all, that is your Fate!
+With test and code of crimson red,  
+Ripped from a program so freshly dead,  
+Together with our comics collate,  
+We'll sort you all, that is your Fate!
 
 [![PyPI - Python](https://img.shields.io/pypi/pyversions/Dex-Starr.svg?logo=Python&label=Python&style=flat-square)](https://pypi.python.org/pypi/Dex-Starr/)
 [![PyPI - Status](https://img.shields.io/pypi/status/Dex-Starr.svg?logo=PyPI&label=Status&style=flat-square)](https://pypi.python.org/pypi/Dex-Starr/)
@@ -18,8 +18,9 @@
 
 [![Code Style - Black](https://img.shields.io/badge/Code%20Style-Black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
-Dex-Starr helps sort and organize your comic collection by using the information stored in ComicInfo files.
-It also formats all your digital comics into a single format (CBZ) and transforms the `ComicInfo.xml` inside most digital comic files into `ComicInfo.json` using the below schema.
+Dex-Starr helps sort and organize your comic collection by using the information stored in ComicInfo files.  
+It also formats all your digital comics into a single format (CBZ) and transforms the `ComicInfo.xml` inside most
+digital comic files into `ComicInfo.json` using the below schema.  
 Dex-Starr can also fill in any blanks in the ComicInfo by pulling from a list of supported sources.
 
 ## Arguments
@@ -39,10 +40,12 @@ All settings can be found in `~/.dex-starr/settings.ini`
 **Requires restart for changes to take effect**
 
 ### From PyPI
+
 1. Run: `pip install Dex-Starr`
 2. Run: `Dex-Starr`
 
 ### From Source
+
 1. Make sure you have [Poetry](https://python-poetry.org) installed
 2. Clone the repo: `git clone https://github.com/Buried-In-Code/Dex-Starr`
 3. Navigate to the folder: `cd Dex-Starr/`
