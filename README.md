@@ -1,4 +1,4 @@
-# Comic Organizer
+# Dex-Starr
 
 [![PyPI - Python](https://img.shields.io/pypi/pyversions/Dex-Starr.svg?logo=Python&label=Python&style=flat-square)](https://pypi.python.org/pypi/Dex-Starr/)
 [![PyPI - Status](https://img.shields.io/pypi/status/Dex-Starr.svg?logo=PyPI&label=Status&style=flat-square)](https://pypi.python.org/pypi/Dex-Starr/)
