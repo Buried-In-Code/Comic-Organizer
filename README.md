@@ -8,7 +8,7 @@
 [![PyPI - Python](https://img.shields.io/pypi/pyversions/Dex-Starr.svg?logo=Python&label=Python&style=flat-square)](https://pypi.python.org/pypi/Dex-Starr/)
 [![PyPI - Status](https://img.shields.io/pypi/status/Dex-Starr.svg?logo=PyPI&label=Status&style=flat-square)](https://pypi.python.org/pypi/Dex-Starr/)
 [![PyPI - Version](https://img.shields.io/pypi/v/Dex-Starr.svg?logo=PyPI&label=Version&style=flat-square)](https://pypi.python.org/pypi/Dex-Starr/)
-[![PyPI - License](https://img.shields.io/pypi/l/Dex-Starr.svg?logo=PyPI&label=License&style=flat-square)](https://opensource.org/licenses/MIT)
+[![PyPI - License](https://img.shields.io/pypi/l/Dex-Starr.svg?logo=PyPI&label=License&style=flat-square)](https://opensource.org/licenses/GPL-3.0)
 
 [![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Dex-Starr.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Dex-Starr/graphs/contributors)
 [![Github Action - Code Analysis](https://img.shields.io/github/workflow/status/Buried-In-Code/Dex-Starr/Code-Analysis?logo=Github-Actions&label=Code-Analysis&style=flat-square)](https://github.com/Buried-In-Code/Dex-Starr/actions/workflows/code-analysis.yaml)
@@ -34,7 +34,7 @@ Dex-Starr can also fill in any blanks in the ComicInfo by pulling from a list of
 
 ## Execution
 
-All settings can be found in `~/.dex-starr/settings.ini`
+All settings can be found in `~/.config/Dex-Starr/settings.ini`
 **Requires restart for changes to take effect**
 
 ### From PyPI

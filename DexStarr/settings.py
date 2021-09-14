@@ -5,7 +5,6 @@ from pathlib import Path
 class Settings:
     def __init__(self):
         self.root_folder = Path.home().joinpath("Comics").resolve()
-
         self.comicvine_api_key = ""
         self.league_api_key = ""
         self.league_client_id = ""
@@ -14,11 +13,11 @@ class Settings:
 
         self.config = ConfigParser()
         self.config.optionxform = str
-        self.folder = Path.home().joinpath(".dex-starr")
-        self.settings_file = self.folder.joinpath("settings.ini")
+        folder = Path.home().joinpath(".config").joinpath("Dex-Starr")
+        self.settings_file = folder.joinpath("settings.ini")
 
-        if not self.folder.exists():
-            self.folder.mkdir(parents=True, exist_ok=True)
+        if not folder.exists():
+            folder.mkdir(parents=True, exist_ok=True)
 
         if not self.settings_file.exists():
             self.save()
