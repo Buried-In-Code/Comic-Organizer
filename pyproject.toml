@@ -41,7 +41,7 @@ beautifulsoup4 = "^4.10.0"
 lxml = "^4.6.3"
 patool = "^1.12"
 colorama = "^0.4.4"
-mokkari = "^0.2.2"
+mokkari = "^0.2.4"
 simyan = "^0.5.1"
 
 [tool.poetry.dev-dependencies]
