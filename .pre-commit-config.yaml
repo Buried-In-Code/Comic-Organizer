@@ -1,4 +1,16 @@
 repos:
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.28.1
+    hooks:
+      - id: pyupgrade
+  - repo: https://github.com/ambv/black
+    rev: 21.9b0
+    hooks:
+      - id: black
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
   - repo: https://github.com/pycqa/isort
     rev: 5.9.3
     hooks:
@@ -7,15 +19,3 @@ repos:
     rev: v2.2.0
     hooks:
       - id: seed-isort-config
-  - repo: https://github.com/ambv/black
-    rev: 21.8b0
-    hooks:
-      - id: black
-  - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.9.2
-    hooks:
-      - id: flake8
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v2.26.0
-    hooks:
-      - id: pyupgrade

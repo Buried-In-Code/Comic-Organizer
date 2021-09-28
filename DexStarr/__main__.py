@@ -70,15 +70,27 @@ def slugify(comic_info: ComicInfo) -> Tuple[Path, Path, Path]:
     return publisher_folder, series_folder, comic_path
 
 
-def main(
-    pull_info: bool,
-    show_variants: bool,
-    manual_info: bool,
-    image_check: bool,
-    reset_info: bool,
-    debug: bool = False,
-):
+def parse_arguments() -> Namespace:
+    parser = ArgumentParser(prog="Dex-Starr")
+    parser.add_argument("--pull-info", action="store_true")
+    parser.add_argument("--show-variants", action="store_true")
+    parser.add_argument("--add-manual-info", action="store_true")
+    parser.add_argument("--manual-image-check", action="store_true")
+    parser.add_argument("--reset-info", action="store_true")
+    parser.add_argument("-d", "--debug", action="store_true")
+    return parser.parse_args()
+
+
+def main():
+    args = parse_arguments()
+    painted_logger.init(
+        root_path=Path(__file__).resolve().parent.parent,
+        file_level=logging.DEBUG if args.debug else logging.INFO,
+        console_level=logging.INFO if args.debug else logging.WARNING,
+    )
+
     Console.display_heading("Welcome to Dex-Starr")
+
     for comic_file in list_files(
         SETTINGS.import_folder, (".cbz", ".zip", ".cb7", ".7z", ".cba", ".ace", ".cbr", ".rar", ".cbt", ".tar")
     ):
@@ -111,11 +123,11 @@ def main(
                 comic_info.series.title = Console.request_str(prompt="Series Title")
             if not comic_info.number:
                 comic_info.number = Console.request_str(prompt="Issue Number")
-        if reset_info:
+        if args.reset_info:
             comic_info.reset()
-        if pull_info:
-            add_info(comic_info=comic_info, show_variants=show_variants)
-        if manual_info:
+        if args.pull_info:
+            add_info(comic_info=comic_info, show_variants=args.show_variants)
+        if args.manual_info:
             Console.display_text("Manually adding info")
             # comic_info = add_manual_info(comic_info=comic_info, show_variants=show_variants)
 
@@ -124,7 +136,7 @@ def main(
 
         save_info(file=comic_folder.joinpath("ComicInfo.json"), comic_info=comic_info)
 
-        if image_check:
+        if args.manual_image_check:
             Console.request_str(prompt="Press <ENTER> to continue")
 
         publisher_path, series_path, comic_path = slugify(comic_info=comic_info)
@@ -145,32 +157,5 @@ def main(
         LOGGER.info(f"Cleaned {clean_comic.stem}")
 
 
-def parse_arguments() -> Namespace:
-    parser = ArgumentParser(prog="Dex-Starr")
-    parser.add_argument("--pull-info", action="store_true")
-    parser.add_argument("--show-variants", action="store_true")
-    parser.add_argument("--add-manual-info", action="store_true")
-    parser.add_argument("--manual-image-check", action="store_true")
-    parser.add_argument("--reset-info", action="store_true")
-    parser.add_argument("-d", "--debug", action="store_true")
-    return parser.parse_args()
-
-
 if __name__ == "__main__":
-    try:
-        args = parse_arguments()
-        painted_logger.init(
-            root_path=Path(__file__).resolve().parent.parent,
-            file_level=logging.DEBUG if args.debug else logging.INFO,
-            console_level=logging.INFO if args.debug else logging.WARNING,
-        )
-        main(
-            pull_info=args.pull_info,
-            show_variants=args.show_variants,
-            manual_info=args.add_manual_info,
-            image_check=args.manual_image_check,
-            reset_info=args.reset_info,
-            debug=args.debug,
-        )
-    except KeyboardInterrupt:
-        pass
+    main()
