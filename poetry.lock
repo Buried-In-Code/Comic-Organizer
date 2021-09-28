@@ -305,7 +305,7 @@ pyparsing = ">=2.0.2"
 
 [[package]]
 name = "painted-logger"
-version = "1.3.0"
+version = "1.3.1"
 description = "A customized, coloured Logger for Python projects."
 category = "main"
 optional = false
@@ -659,7 +659,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "b9ebb98757b2f48ba2433ba6ca0cc230f2f500b265c2cf2f582585085500d453"
+content-hash = "5b2d04cb514697bf83ff300b3b68726bc8d3e3d9dd4390c7222f6f0b171bfb74"
 
 [metadata.files]
 "aspy.refactor-imports" = [
@@ -800,6 +800,8 @@ lxml = [
     {file = "lxml-4.6.3-cp27-cp27m-win_amd64.whl", hash = "sha256:8157dadbb09a34a6bd95a50690595e1fa0af1a99445e2744110e3dca7831c4ee"},
     {file = "lxml-4.6.3-cp27-cp27mu-manylinux1_i686.whl", hash = "sha256:7728e05c35412ba36d3e9795ae8995e3c86958179c9770e65558ec3fdfd3724f"},
     {file = "lxml-4.6.3-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:4bff24dfeea62f2e56f5bab929b4428ae6caba2d1eea0c2d6eb618e30a71e6d4"},
+    {file = "lxml-4.6.3-cp310-cp310-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_24_i686.whl", hash = "sha256:64812391546a18896adaa86c77c59a4998f33c24788cadc35789e55b727a37f4"},
+    {file = "lxml-4.6.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_24_x86_64.whl", hash = "sha256:c1a40c06fd5ba37ad39caa0b3144eb3772e813b5fb5b084198a985431c2f1e8d"},
     {file = "lxml-4.6.3-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:74f7d8d439b18fa4c385f3f5dfd11144bb87c1da034a466c5b5577d23a1d9b51"},
     {file = "lxml-4.6.3-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:f90ba11136bfdd25cae3951af8da2e95121c9b9b93727b1b896e3fa105b2f586"},
     {file = "lxml-4.6.3-cp35-cp35m-manylinux2010_i686.whl", hash = "sha256:4c61b3a0db43a1607d6264166b230438f85bfed02e8cff20c22e564d0faff354"},
@@ -865,8 +867,8 @@ packaging = [
     {file = "packaging-21.0.tar.gz", hash = "sha256:7dc96269f53a4ccec5c0670940a4281106dd0bb343f47b7471f779df49c2fbe7"},
 ]
 painted-logger = [
-    {file = "Painted-Logger-1.3.0.tar.gz", hash = "sha256:6f1a7a224acf251cacede57671965f6e5c3d5d0f495a656d370bee5f6a1111b2"},
-    {file = "Painted_Logger-1.3.0-py3-none-any.whl", hash = "sha256:44a7705669d881e9cf0df72ab54a8f404a0018da70b97c843dac8c9cac741a22"},
+    {file = "Painted-Logger-1.3.1.tar.gz", hash = "sha256:4a11e6c636b6ab57915954c6d42eae59a2c68dd16ed906c536c39b1104b2c727"},
+    {file = "Painted_Logger-1.3.1-py3-none-any.whl", hash = "sha256:1ad2fba60a9ac7660f0b501a0e51e12aa7aef4d656eadfddd067f356eda812c2"},
 ]
 pathspec = [
     {file = "pathspec-0.9.0-py2.py3-none-any.whl", hash = "sha256:7d15c4ddb0b5c802d161efc417ec1a2558ea2653c2e8ad9c19098201dc1c993a"},
