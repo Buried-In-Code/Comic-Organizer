@@ -1,4 +1,4 @@
-name: 'Testing'
+name: "Testing"
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   tox:
-    name: 'Tox Tests'
+    name: "Tox Tests"
     strategy:
       fail-fast: false
       matrix:
@@ -22,11 +22,11 @@ jobs:
           - macos-latest
           - windows-latest
     env:
-      COMICVINE_API_KEY: 'Test-API-Key'
-      METRON_USERNAME: 'Test-Username'
-      METRON_PASSWORD: 'Test-Password'
-      LEAGUE_API_KEY: 'Test-API-Key'
-      LEAGUE_CLIENT_ID: 'Test-Client-ID'
+      COMICVINE_API_KEY: "Test-API-Key"
+      METRON_USERNAME: "Test-Username"
+      METRON_PASSWORD: "Test-Password"
+      LEAGUE_API_KEY: "Test-API-Key"
+      LEAGUE_CLIENT_ID: "Test-Client-ID"
     runs-on: ${{ matrix.os }}
     steps:
       #----------------------------------------------
