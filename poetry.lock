@@ -151,6 +151,17 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
 toml = ["toml"]
 
 [[package]]
+name = "deprecation"
+version = "2.1.0"
+description = "A library to handle automated deprecations"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+packaging = "*"
+
+[[package]]
 name = "distlib"
 version = "0.3.3"
 description = "Distribution utilities"
@@ -296,7 +307,7 @@ python-versions = "*"
 name = "packaging"
 version = "21.0"
 description = "Core utilities for Python packages"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -398,7 +409,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 name = "pyparsing"
 version = "2.4.7"
 description = "Python parsing module"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -528,19 +539,20 @@ python-versions = ">=3.6.1"
 
 [[package]]
 name = "simyan"
-version = "0.5.2"
+version = "0.6.0"
 description = "A Python wrapper for the Comicvine API."
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
+deprecation = ">=2.1.0,<3.0.0"
 marshmallow = ">=3.13.0,<4.0.0"
 ratelimit = ">=2.2.1,<3.0.0"
 requests = ">=2.26.0,<3.0.0"
 
 [package.extras]
-docs = ["sphinx-rtd-theme (>=1.0.0,<2.0.0)", "sphinxcontrib-napoleon (>=0.7,<0.8)"]
+docs = ["sphinxcontrib-napoleon (>=0.7,<0.8)", "sphinx-rtd-theme (>=1.0.0,<2.0.0)"]
 
 [[package]]
 name = "six"
@@ -659,7 +671,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "9164bf93abbf917e5a9bca8db887adbc8c532831b13a9f11779f4def1ace4e29"
+content-hash = "26200b45a5b95c57343d527e9554af798a79e6145fe7fd673d2f97dd6b2972c2"
 
 [metadata.files]
 "aspy.refactor-imports" = [
@@ -763,6 +775,10 @@ coverage = [
     {file = "coverage-5.5-pp36-none-any.whl", hash = "sha256:f030f8873312a16414c0d8e1a1ddff2d3235655a2174e3648b4fa66b3f2f1079"},
     {file = "coverage-5.5-pp37-none-any.whl", hash = "sha256:2a3859cb82dcbda1cfd3e6f71c27081d18aa251d20a17d87d26d4cd216fb0af4"},
     {file = "coverage-5.5.tar.gz", hash = "sha256:ebe78fe9a0e874362175b02371bdfbee64d8edc42a044253ddf4ee7d3c15212c"},
+]
+deprecation = [
+    {file = "deprecation-2.1.0-py2.py3-none-any.whl", hash = "sha256:a10811591210e1fb0e768a8c25517cabeabcba6f0bf96564f8ff45189f90b14a"},
+    {file = "deprecation-2.1.0.tar.gz", hash = "sha256:72b3bde64e5d778694b0cf68178aed03d15e15477116add3fb773e581f9518ff"},
 ]
 distlib = [
     {file = "distlib-0.3.3-py2.py3-none-any.whl", hash = "sha256:c8b54e8454e5bf6237cc84c20e8264c3e991e824ef27e8f1e81049867d861e31"},
@@ -1031,8 +1047,8 @@ seed-isort-config = [
     {file = "seed_isort_config-2.2.0.tar.gz", hash = "sha256:be4cfef8f9a3fe8ea1817069c6b624538ac0b429636ec746edeb27e98ed628c8"},
 ]
 simyan = [
-    {file = "Simyan-0.5.2-py3-none-any.whl", hash = "sha256:951987fb68e360eb087fc6a2eb6028899c6e3fc9e60f6513174d35fc36b16dc3"},
-    {file = "Simyan-0.5.2.tar.gz", hash = "sha256:e363409cd70f3b0ebf201267bd6204aa86d76f722dfd3900f47e0673ed805a7d"},
+    {file = "Simyan-0.6.0-py3-none-any.whl", hash = "sha256:e4e4179461b10fbd7d14678fbbe8e343e0f703634a9a865ab33a8d462d6886bf"},
+    {file = "Simyan-0.6.0.tar.gz", hash = "sha256:28cca8e30a0b4e97df41aac4ff406912f8879a60c35d55b565650fb8f97030bd"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
