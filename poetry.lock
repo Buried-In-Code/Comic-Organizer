@@ -262,7 +262,7 @@ python-versions = "*"
 
 [[package]]
 name = "mokkari"
-version = "1.0.2"
+version = "1.0.4"
 description = "Python wrapper for Metron API"
 category = "main"
 optional = false
@@ -659,7 +659,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "9164bf93abbf917e5a9bca8db887adbc8c532831b13a9f11779f4def1ace4e29"
+content-hash = "e00178baeb192ced4ff3aac167688e1ea6256b9b84fb3436482e39ce4605771a"
 
 [metadata.files]
 "aspy.refactor-imports" = [
@@ -851,8 +851,8 @@ mccabe = [
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
 mokkari = [
-    {file = "mokkari-1.0.2-py3-none-any.whl", hash = "sha256:16cab6b0dac9bd201c6675d352883f55eec344e7aebd2b41860207b99466da96"},
-    {file = "mokkari-1.0.2.tar.gz", hash = "sha256:c6422e6e91cfce6650f86b4a11b4fca1a58153837dff196ac619e2c8a1c94fa9"},
+    {file = "mokkari-1.0.4-py3-none-any.whl", hash = "sha256:ff85dd720b1ca9ec4562d2121242ac32955a3a5e783a810fddecd45d28eb756a"},
+    {file = "mokkari-1.0.4.tar.gz", hash = "sha256:580bfba571cac957569906012759d67b6ac7d94cc1b737c61970a8d63ee0e303"},
 ]
 mypy-extensions = [
     {file = "mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},
