@@ -43,7 +43,7 @@ lxml = "^4.6.3"
 patool = "^1.12"
 colorama = "^0.4.4"
 mokkari = "^1.0.2"
-simyan = "^0.5.2"
+simyan = "^0.6.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
