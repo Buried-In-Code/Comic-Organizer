@@ -1,0 +1,44 @@
+---
+Data:
+  Publisher: include('Publisher')
+  Series: include('Series')
+  Comic: include('Comic')
+Meta:
+  Date: any(day(), str())
+  Tool:
+    Name: str()
+    Version: regex('^\d+\.\d+\.\d+$', name='Version')
+  Notes: any(str(), null(), required=False)
+---
+Publisher:
+  Title: str()
+  Identifiers: list(include('Identifier'))
+---
+Series:
+  Title: str()
+  Volume: int(min=1)
+  Identifiers: list(include('Identifier'))
+  Start Year: any(int(min=1900), null())
+---
+Comic:
+  Format: enum('Annual', 'Comic', 'Digital Chapter', 'Hardcover', 'Trade Paperback')
+  Number: str()
+  Cover Date: any(day(), str(), null())
+  Creators: list(include('Creator'))
+  Genres: list(str())
+  Identifiers: list(include('Identifier'))
+  Language ISO: any(str(), null())
+  Page Count: any(int(min=1), null())
+  Store Date: any(day(), str(), null())
+  Summary: any(str(), null())
+  Title: any(str(), null())
+  Collected Issues: list(str(), required=False)
+---
+Creator:
+  Name: str()
+  Roles: list(str())
+---
+Identifier:
+  Service: str()
+  ID: any(str(), int(), null())
+  URL: any(str(), null())

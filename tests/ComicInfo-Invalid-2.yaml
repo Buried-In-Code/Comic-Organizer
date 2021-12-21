@@ -1,0 +1,36 @@
+%YAML 1.2
+---
+Publisher:
+  Title: Publisher
+  Identifiers:
+    - Service: Madeup Service
+      ID: '123'
+      URL: 'https://made-up.com/123'
+Series:
+  Title: Series
+  Volume: 2
+  Identifiers:
+    - Service: Madeup Service
+      ID: '456'
+      URL: 'https://made-up.com/123/456'
+  Start Year: ~
+Format: Comic
+Number: '6'
+Cover Date: ~
+Creators:
+  - Name: Creator
+    Roles:
+      - Colourist
+      - Letterer
+      - Editor
+      - Writer
+Genres: [ ]
+Identifiers:
+  - Service: Madeup Service
+    ID: '789'
+    URL: 'https://made-up.com/123/456/789'
+Language ISO: ~
+Page Count: ~
+Store Date: ~
+Summary: ~
+Title: ~

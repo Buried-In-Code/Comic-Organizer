@@ -1,0 +1,20 @@
+{
+  "Data": {
+    "Publisher": {
+      "Title": "Publisher"
+    },
+    "Series": {
+      "Title": "Series",
+      "Volume": 2
+    },
+    "Format": "Comic",
+    "Number": "6"
+  },
+  "Meta": {
+    "Date": "2021-12-02",
+    "Tool": {
+      "Name": "Dex-Starr",
+      "Version": "0.2.0"
+    }
+  }
+}

@@ -1,0 +1,301 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema",
+	"$id": "ComicInfo.schema.json",
+	"type": "object",
+	"required": [
+		"Data",
+		"Meta"
+	],
+	"properties": {
+		"Data": {
+			"type": "object",
+			"required": [
+				"Publisher",
+				"Series",
+				"Comic"
+			],
+			"properties": {
+				"Publisher": {
+					"type": "object",
+					"required": [
+						"Title",
+						"Identifiers"
+					],
+					"properties": {
+						"Title": {
+							"type": "string"
+						},
+						"Identifiers": {
+							"type": "array",
+							"uniqueItems": true,
+							"items": {
+								"type": "object",
+								"required": [
+									"Service",
+									"ID",
+									"URL"
+								],
+								"properties": {
+									"Service": {
+										"type": "string"
+									},
+									"ID": {
+										"type": [
+											"string",
+											"integer",
+											"null"
+										],
+										"default": null
+									},
+									"URL": {
+										"type": [
+											"string",
+											"null"
+										],
+										"default": null
+									}
+								}
+							}
+						}
+					}
+				},
+				"Series": {
+					"type": "object",
+					"required": [
+						"Title",
+						"Volume",
+						"Identifiers",
+						"Start Year"
+					],
+					"properties": {
+						"Title": {
+							"type": "string"
+						},
+						"Volume": {
+							"type": "integer",
+							"minimum": 1,
+							"default": 1
+						},
+						"Identifiers": {
+							"type": "array",
+							"uniqueItems": true,
+							"items": {
+								"type": "object",
+								"required": [
+									"Service",
+									"ID",
+									"URL"
+								],
+								"properties": {
+									"Service": {
+										"type": "string"
+									},
+									"ID": {
+										"type": [
+											"string",
+											"integer",
+											"null"
+										],
+										"default": null
+									},
+									"URL": {
+										"type": [
+											"string",
+											"null"
+										],
+										"default": null
+									}
+								}
+							}
+						},
+						"Start Year": {
+							"type": [
+								"integer",
+								"null"
+							],
+							"minimum": 1900,
+							"default": null
+						}
+					}
+				},
+				"Comic": {
+				    "type": "object",
+				    "required": [
+				        "Format",
+				        "Number",
+				        "Cover Date",
+				        "Creators",
+				        "Genres",
+				        "Identifiers",
+				        "Language ISO",
+				        "Page Count",
+				        "Store Date",
+				        "Summary",
+				        "Title"
+				    ],
+				    "properties": {
+				        "Format": {
+					        "enum": [
+						        "Annual",
+						        "Comic",
+						        "Digital Chapter",
+						        "Hardcover",
+						        "Trade Paperback"
+					        ],
+					        "default": "Comic"
+				        },
+				        "Number": {
+					        "type": "string"
+				        },
+				        "Cover Date": {
+					        "type": [
+						        "string",
+						        "null"
+					        ],
+					        "format": "date",
+					        "default": null
+				        },
+				        "Creators": {
+					        "type": "array",
+					        "items": {
+						        "type": "object",
+						        "required": [
+							        "Name",
+							        "Roles"
+						        ],
+						        "properties": {
+							        "Name": {
+								        "type": "string"
+							        },
+							        "Roles": {
+								        "type": "array",
+								        "items": {
+									        "type": "string"
+								        }
+							        }
+						        }
+					        }
+				        },
+				        "Genres": {
+					        "type": "array",
+					        "items": {
+						        "type": "string"
+					        }
+				        },
+				        "Identifiers": {
+					        "type": "array",
+					        "uniqueItems": true,
+					        "items": {
+						        "type": "object",
+						        "required": [
+							        "Service",
+							        "ID",
+							        "URL"
+						        ],
+						        "properties": {
+							        "Service": {
+								        "type": "string"
+							        },
+							        "ID": {
+								        "type": [
+									        "string",
+													"integer",
+									        "null"
+								        ],
+								        "default": null
+							        },
+							        "URL": {
+								        "type": [
+									        "string",
+									        "null"
+								        ],
+								        "default": null
+							        }
+						        }
+					        }
+				        },
+				        "Language ISO": {
+					        "type": [
+						        "string",
+						        "null"
+					        ],
+					        "default": null
+				        },
+				        "Page Count": {
+					        "type": [
+						        "integer",
+						        "null"
+					        ],
+					        "minimum": 1,
+					        "default": null
+				        },
+				        "Store Date": {
+					        "type": [
+						        "string",
+						        "null"
+					        ],
+					        "format": "date",
+					        "default": null
+				        },
+				        "Summary": {
+					        "type": [
+						        "string",
+						        "null"
+					        ],
+					        "default": null
+				        },
+				        "Title": {
+					        "type": [
+						        "string",
+						        "null"
+					        ],
+					        "default": null
+				        },
+				        "Collected Issues": {
+					        "type": "array",
+					        "items": {
+						        "type": "string"
+					        }
+				        }
+			        }
+				}
+			}
+		},
+		"Meta": {
+			"type": "object",
+			"required": [
+				"Date",
+				"Tool"
+			],
+			"properties": {
+				"Date": {
+					"type": "string",
+					"format": "date"
+				},
+				"Tool": {
+					"type": "object",
+					"required": [
+						"Name",
+						"Version"
+					],
+					"properties": {
+						"Name": {
+							"type": "string"
+						},
+						"Version": {
+							"type": "string",
+							"pattern": "^\\d+\\.\\d+\\.\\d+$"
+						}
+					}
+				},
+				"Notes": {
+					"type": [
+						"string",
+						"null"
+					],
+					"default": null
+				}
+			}
+		}
+	}
+}
