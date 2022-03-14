@@ -5,10 +5,8 @@ from typing import Any, Dict, List, Optional
 from yamale import YamaleError, make_data, make_schema
 from yamale import validate as validate_yaml
 
-from dex_starr import yaml_setup
-from dex_starr.console import ConsoleLog
-
-CONSOLE = ConsoleLog(__name__)
+from . import get_config_root, yaml_setup
+from .console import CONSOLE
 
 
 class OutputFormatEnum(Enum):
@@ -43,15 +41,12 @@ class Settings:
         self.metron_password: Optional[str] = None
 
         root_folder = Path.home().joinpath("Comics").resolve()
-        self.import_folder = root_folder.joinpath("Import")
-        self.processing_folder = root_folder.joinpath("Processing")
-        self.collection_folder = root_folder.joinpath("Collection")
+        self.import_folder = root_folder / "Import"
+        self.processing_folder = root_folder / "Processing"
+        self.collection_folder = root_folder / "Collection"
 
-        folder = Path.home().joinpath(".config").joinpath("Dex-Starr")
-        self.settings_file: Path = folder.joinpath("settings.yaml")
-
-        if not folder.exists():
-            folder.mkdir(parents=True, exist_ok=True)
+        get_config_root().mkdir(parents=True, exist_ok=True)
+        self.settings_file = get_config_root() / "settings.yaml"
 
         if not self.settings_file.exists():
             self.save()
@@ -73,7 +68,10 @@ class Settings:
                 "Collection": str(self.collection_folder),
             },
             "Comicvine": {"API Key": self.comicvine_api_key},
-            "League of Comic Geeks": {"API Key": self.league_api_key, "Client ID": self.league_client_id},
+            "League of Comic Geeks": {
+                "API Key": self.league_api_key,
+                "Client ID": self.league_client_id,
+            },
             "Metron": {"Username": self.metron_username, "Password": self.metron_password},
         }
 
@@ -82,22 +80,26 @@ class Settings:
             yaml_setup().dump(self.dump(), yaml_file)
 
     def _validate(self) -> bool:
-        schema_file = Path("schemas").joinpath("Settings.schema.yaml")
+        schema_file = Path("schemas") / "settings.schema.yaml"
         data = make_data(self.settings_file, parser="ruamel")
 
         try:
             validate_yaml(make_schema(schema_file, parser="ruamel"), data)
             return True
         except YamaleError as ye:
-            CONSOLE.error("Validation failed")
+            CONSOLE.print("Validation failed", style="logging.level.error")
             for result in ye.results:
-                CONSOLE.error(f"Error validating data '{result.data}' with '{result.schema}'")
+                CONSOLE.print(
+                    f"Error validating data '{result.data}' with '{result.schema}'",
+                    style="logging.level.error",
+                )
                 for error in result.errors:
-                    CONSOLE.error(f"- {error}")
+                    CONSOLE.print(f"- {error}", style="logging.level.error")
         return False
 
     def load(self):
         if not self._validate():
+            CONSOLE.print("Shutting down Dex-Starr", style="logging.level.critical")
             exit(1)
         with self.settings_file.open("r", encoding="UTF-8") as stream:
             data = yaml_setup().load(stream)
@@ -121,3 +123,6 @@ class Settings:
             metron_data = data["Metron"]
             self.metron_username = metron_data["Username"]
             self.metron_password = metron_data["Password"]
+
+
+SETTINGS = Settings()

@@ -2,18 +2,19 @@ import json
 from datetime import date
 from enum import Enum, auto
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 import xmltodict
 from jsonschema import ValidationError
 from jsonschema import validate as validate_json
+from rich import inspect
+from rich.prompt import IntPrompt, Prompt
 from yamale import YamaleError, make_data, make_schema
 from yamale import validate as validate_yaml
 
-from dex_starr import __version__, get_field
-from dex_starr.console import ConsoleLog
-
-CONSOLE = ConsoleLog(__name__)
+from . import __version__
+from .console import CONSOLE, create_menu
+from .settings import SETTINGS
 
 
 class FormatEnum(Enum):
@@ -24,11 +25,10 @@ class FormatEnum(Enum):
     TRADE_PAPERBACK = auto()
 
     @staticmethod
-    def select() -> Optional["FormatEnum"]:
-        response = CONSOLE.prompt(
-            "Enter Format", choices=[x.get_title() for x in sorted(FormatEnum)], default=FormatEnum.COMIC.get_title()
-        )
-        return FormatEnum.get(name=response)
+    def select() -> "FormatEnum":
+        options = [x.get_title() for x in sorted(FormatEnum)]
+        selected = create_menu(prompt="Enter Format", options=options)
+        return FormatEnum.get(name=options[selected]) or FormatEnum.COMIC
 
     @staticmethod
     def get(name: str) -> Optional["FormatEnum"]:
@@ -47,17 +47,21 @@ class FormatEnum(Enum):
 
 
 class Identifier:
-    def __init__(self, service: str, id: Optional[Union[str, int]] = None, url: Optional[str] = None):
+    def __init__(self, service: str, id_: Optional[int] = None, url: Optional[str] = None):
         self.service = service
-        self.id = id
+        self.id_ = id_
         self.url = url
 
     @staticmethod
     def load(data: Dict[str, Any]) -> "Identifier":
-        return Identifier(service=data["Service"], id=data["ID"], url=data["URL"])
+        try:
+            id_ = int(data["ID"])
+        except TypeError:
+            id_ = None
+        return Identifier(service=data["Service"], id_=id_, url=data["URL"])
 
     def dump(self) -> Dict[str, Any]:
-        return {"Service": self.service, "ID": self.id, "URL": self.url}
+        return {"Service": self.service, "ID": self.id_, "URL": self.url}
 
 
 class Publisher:
@@ -79,12 +83,16 @@ class Publisher:
             "Identifiers": [x.dump() for x in self.identifiers],
         }
 
-    def set_pulled_metadata(self, pulled_metadata: Dict[str, Any], resolve_manually: bool = False):
-        try:
-            if "title" in pulled_metadata:
-                self.title = get_field(pulled_metadata, "Publisher", "title", resolve_manually)
-        except ValueError:
-            pass
+    def set_metadata(self, metadata: Dict[str, Any], resolve_manually: bool = False):
+        if "title" in metadata:
+            title = get_field(
+                metadata=metadata,
+                section="Publisher",
+                field="title",
+                order=[] if resolve_manually else SETTINGS.resolution_order,
+            )
+            if title:
+                self.title = title
 
 
 class Series:
@@ -104,29 +112,43 @@ class Series:
         return series
 
     def dump(self) -> Dict[str, Any]:
+        if not self.start_year or self.start_year <= 1900:
+            self.start_year = 1900
         return {
             "Title": self.title,
             "Volume": self.volume if self.volume >= 1 else 1,
             "Identifiers": [x.dump() for x in self.identifiers],
-            "Start Year": self.start_year if self.start_year >= 1900 else 1900,
+            "Start Year": self.start_year,
         }
 
-    def set_pulled_metadata(self, pulled_metadata: Dict[str, Any], resolve_manually: bool = False):
-        try:
-            if "title" in pulled_metadata:
-                self.title = get_field(pulled_metadata, "Series", "title", resolve_manually)
-        except ValueError:
-            pass
-        try:
-            if "volume" in pulled_metadata:
-                self.volume = get_field(pulled_metadata, "Series", "volume", resolve_manually)
-        except ValueError:
-            pass
-        try:
-            if "start_year" in pulled_metadata:
-                self.start_year = get_field(pulled_metadata, "Series", "start_year", resolve_manually)
-        except ValueError:
-            pass
+    def set_metadata(self, metadata: Dict[str, Any], resolve_manually: bool = False):
+        if "title" in metadata:
+            title = get_field(
+                metadata=metadata,
+                section="Series",
+                field="title",
+                order=[] if resolve_manually else SETTINGS.resolution_order,
+            )
+            if title:
+                self.title = title
+        if "volume" in metadata:
+            volume = get_field(
+                metadata=metadata,
+                section="Series",
+                field="volume",
+                order=[] if resolve_manually else SETTINGS.resolution_order,
+            )
+            if volume:
+                self.volume = volume
+        if "start_year" in metadata:
+            start_year = get_field(
+                metadata=metadata,
+                section="Series",
+                field="start_year",
+                order=[] if resolve_manually else SETTINGS.resolution_order,
+            )
+            if start_year:
+                self.start_year = start_year
 
 
 class Creator:
@@ -179,6 +201,8 @@ class Comic:
         return comic
 
     def dump(self) -> Dict[str, Any]:
+        if not self.page_count or self.page_count <= 1:
+            self.page_count = 1
         return {
             "Format": self.format_.get_title(),
             "Number": self.number,
@@ -187,54 +211,84 @@ class Comic:
             "Genres": self.genres,
             "Identifiers": [x.dump() for x in self.identifiers],
             "Language ISO": self.language_iso,
-            "Page Count": self.page_count if self.page_count >= 1 else 1,
+            "Page Count": self.page_count,
             "Store Date": self.store_date.isoformat() if self.store_date else None,
             "Summary": self.summary,
             "Title": self.title,
         }
 
-    def set_pulled_metadata(self, pulled_metadata: Dict[str, Any], resolve_manually: bool = False):
-        try:
-            if "format" in pulled_metadata:
-                self.format_ = get_field(pulled_metadata, "Comic", "format", resolve_manually)
-        except ValueError:
-            pass
-        try:
-            if "number" in pulled_metadata:
-                self.number = get_field(pulled_metadata, "Comic", "number", resolve_manually)
-        except ValueError:
-            pass
-        try:
-            if "cover_date" in pulled_metadata:
-                self.cover_date = get_field(pulled_metadata, "Comic", "cover_date", resolve_manually)
-        except ValueError:
-            pass
+    def set_metadata(self, metadata: Dict[str, Any], resolve_manually: bool = False):
+        if "format" in metadata:
+            format_ = get_field(
+                metadata=metadata,
+                section="Comic",
+                field="format",
+                order=[] if resolve_manually else SETTINGS.resolution_order,
+            )
+            if format_:
+                self.format_ = format_
+        if "number" in metadata:
+            number = get_field(
+                metadata=metadata,
+                section="Comic",
+                field="number",
+                order=[] if resolve_manually else SETTINGS.resolution_order,
+            )
+            if number:
+                self.number = number
+        if "cover_date" in metadata:
+            cover_date = get_field(
+                metadata=metadata,
+                section="Comic",
+                field="cover_date",
+                order=[] if resolve_manually else SETTINGS.resolution_order,
+            )
+            if cover_date:
+                self.cover_date = cover_date
         # TODO: Creators
         # TODO: Genres
-        try:
-            if "page_count" in pulled_metadata:
-                self.page_count = get_field(pulled_metadata, "Comic", "page_count", resolve_manually)
-        except ValueError:
-            pass
-        try:
-            if "store_date" in pulled_metadata:
-                self.store_date = get_field(pulled_metadata, "Comic", "store_date", resolve_manually)
-        except ValueError:
-            pass
-        try:
-            if "summary" in pulled_metadata:
-                self.summary = get_field(pulled_metadata, "Comic", "summary", resolve_manually)
-        except ValueError:
-            pass
-        try:
-            if "title" in pulled_metadata:
-                self.title = get_field(pulled_metadata, "Comic", "title", resolve_manually)
-        except ValueError:
-            pass
+        if "page_count" in metadata:
+            page_count = get_field(
+                metadata=metadata,
+                section="Comic",
+                field="page_count",
+                order=[] if resolve_manually else SETTINGS.resolution_order,
+            )
+            if page_count:
+                self.page_count = page_count
+        if "store_date" in metadata:
+            store_date = get_field(
+                metadata=metadata,
+                section="Comic",
+                field="store_date",
+                order=[] if resolve_manually else SETTINGS.resolution_order,
+            )
+            if store_date:
+                self.store_date = store_date
+        if "summary" in metadata:
+            summary = get_field(
+                metadata=metadata,
+                section="Comic",
+                field="summary",
+                order=[] if resolve_manually else SETTINGS.resolution_order,
+            )
+            if summary:
+                self.summary = summary
+        if "title" in metadata:
+            title = get_field(
+                metadata=metadata,
+                section="Comic",
+                field="title",
+                order=[] if resolve_manually else SETTINGS.resolution_order,
+            )
+            if title:
+                self.title = title
 
 
 class Metadata:
-    def __init__(self, publisher: Publisher, series: Series, comic: Comic, notes: Optional[str] = None):
+    def __init__(
+        self, publisher: Publisher, series: Series, comic: Comic, notes: Optional[str] = None
+    ):
         self.publisher = publisher
         self.series = series
         self.comic = comic
@@ -243,17 +297,21 @@ class Metadata:
     @staticmethod
     def create() -> "Metadata":
         metadata = Metadata(
-            publisher=Publisher(title=CONSOLE.prompt("Publisher Title")),
-            series=Series(title=CONSOLE.prompt("Series Title"), volume=CONSOLE.prompt_int("Series Volume", default=1)),
+            publisher=Publisher(title=Prompt.ask("Publisher Title", console=CONSOLE)),
+            series=Series(
+                title=Prompt.ask("Series Title", console=CONSOLE),
+                volume=IntPrompt.ask("Series Volume", default=1, console=CONSOLE),
+            ),
             comic=Comic(
-                format_=FormatEnum.select() or FormatEnum.COMIC, number=CONSOLE.prompt("Issue Number", default="0")
+                format_=FormatEnum.select(),
+                number=Prompt.ask("Issue Number", default="0", console=CONSOLE),
             ),
         )
         if (
             metadata.comic.format_ in [FormatEnum.TRADE_PAPERBACK, FormatEnum.HARDCOVER]
             and metadata.comic.number == "0"
         ):
-            metadata.comic.title = CONSOLE.prompt("Issue Title") or None
+            metadata.comic.title = Prompt.ask("Issue Title", console=CONSOLE) or None
         return metadata
 
     @staticmethod
@@ -272,16 +330,21 @@ class Metadata:
                 "Series": self.series.dump(),
                 "Comic": self.comic.dump(),
             },
-            "Meta": {"Date": date.today().isoformat(), "Tool": {"Name": "Dex-Starr", "Version": __version__}},
+            "Meta": {
+                "Date": date.today().isoformat(),
+                "Tool": {"Name": "Dex-Starr", "Version": __version__},
+            },
         }
         if self.notes:
             output["Meta"]["Notes"] = self.notes
         return output
 
-    def set_pulled_metadata(self, pulled_metadata: Dict[str, Any], resolve_manually: bool = False):
-        self.publisher.set_pulled_metadata(pulled_metadata["publisher"], resolve_manually)
-        self.series.set_pulled_metadata(pulled_metadata["series"], resolve_manually)
-        self.comic.set_pulled_metadata(pulled_metadata["comic"], resolve_manually)
+    def set_metadata(self, metadata: Dict[str, Any], resolve_manually: bool = False):
+        self.publisher.set_metadata(
+            metadata=metadata["publisher"], resolve_manually=resolve_manually
+        )
+        self.series.set_metadata(metadata=metadata["series"], resolve_manually=resolve_manually)
+        self.comic.set_metadata(metadata=metadata["comic"], resolve_manually=resolve_manually)
 
 
 def parse_yaml(info_file: Path) -> Optional[Metadata]:
@@ -289,10 +352,12 @@ def parse_yaml(info_file: Path) -> Optional[Metadata]:
     data = make_data(content=info_file.read_text(encoding="UTF-8"), parser="ruamel")
 
     try:
-        validate_yaml(make_schema(content=schema_file.read_text(encoding="UTF-8"), parser="ruamel"), data)
+        validate_yaml(
+            make_schema(content=schema_file.read_text(encoding="UTF-8"), parser="ruamel"), data
+        )
         return Metadata.load(data[0][0])
     except YamaleError as ye:
-        CONSOLE.print_dict(data[0][0], title="Validation Error", subtitle=ye.message)
+        inspect(data[0][0], title=ye.message, console=CONSOLE)
     return None
 
 
@@ -306,7 +371,7 @@ def parse_json(info_file: Path) -> Optional[Metadata]:
         validate_json(instance=info_data, schema=schema_data)
         return Metadata.load(info_data)
     except ValidationError as ve:
-        CONSOLE.print_dict(info_data, title="Validation Error", subtitle=ve.message)
+        inspect(info_data, title=ve.message, console=CONSOLE)
     return None
 
 
@@ -319,7 +384,17 @@ def parse_xml(info_file: Path) -> Optional[Metadata]:
     day = int(data["Day"]) if "Day" in data else 1 if month else None
 
     creators = {}
-    roles = ["Artist", "Writer", "Penciller", "Inker", "Colourist", "Colorist", "Letterer", "CoverArtist", "Editor"]
+    roles = [
+        "Artist",
+        "Writer",
+        "Penciller",
+        "Inker",
+        "Colourist",
+        "Colorist",
+        "Letterer",
+        "CoverArtist",
+        "Editor",
+    ]
     for role in roles:
         if role not in data:
             continue
@@ -341,18 +416,24 @@ def parse_xml(info_file: Path) -> Optional[Metadata]:
 
     output = {
         "Publisher": {
-            "Title": data["Publisher"] if "Publisher" in data else CONSOLE.prompt("Publisher Title"),
+            "Title": data["Publisher"]
+            if "Publisher" in data
+            else Prompt.ask("Publisher Title", console=CONSOLE),
             "Identifiers": [],
         },
         "Series": {
-            "Title": data["Series"] if "Series" in data else CONSOLE.prompt("Series Title"),
-            "Volume": CONSOLE.prompt_int("Series Volume", default=1),
+            "Title": data["Series"]
+            if "Series" in data
+            else Prompt.ask("Series Title", console=CONSOLE),
+            "Volume": IntPrompt.ask("Series Volume", default=1, console=CONSOLE),
             "Identifiers": [],
             "Start Year": int(data["Volume"]) if "Volume" in data else None,
         },
         "Comic": {
-            "Format": (FormatEnum.select() or FormatEnum.COMIC).get_title(),
-            "Number": data["Number"] if "Number" in data else CONSOLE.prompt("Issue Number", default="0"),
+            "Format": FormatEnum.select().get_title(),
+            "Number": data["Number"]
+            if "Number" in data
+            else Prompt.ask("Issue Number", default="0", console=CONSOLE),
             "Cover Date": date(year, month, day).isoformat() if year else None,
             "Creators": list(creators.values()),
             "Genres": [x.strip() for x in data["Genre"].split(",")] if "Genre" in data else [],
@@ -365,9 +446,30 @@ def parse_xml(info_file: Path) -> Optional[Metadata]:
         },
     }
     if (
-        output["Comic"]["Format"] in [FormatEnum.TRADE_PAPERBACK.get_title(), FormatEnum.HARDCOVER.get_title()]
+        output["Comic"]["Format"]
+        in [FormatEnum.TRADE_PAPERBACK.get_title(), FormatEnum.HARDCOVER.get_title()]
         and output["Comic"]["Number"] == "0"
     ):
-        output["Comic"]["Title"] = CONSOLE.prompt("Issue Title") or None
+        output["Comic"]["Title"] = Prompt.ask("Issue Title", console=CONSOLE) or None
 
     return Metadata.load({"Data": output, "Meta": {}})
+
+
+def get_field(
+    metadata: Dict[str, Any], section: str, field: str, order: List[str] = None
+) -> Optional[Any]:
+    if not order:
+        order = []
+    if len(metadata[field]) == 1 or len(set(metadata[field].values())) == 1:
+        return list(metadata[field].values())[0]
+    if len(metadata[field]) > 1:
+        if order:
+            for entry in order:
+                if entry in metadata[field]:
+                    return metadata[field][entry]
+        selected_index = create_menu(
+            options=[f"{k} - {v}" for k, v in metadata[field].items()],
+            prompt=f"Select {section} {field.replace('_', ' ').title()}",
+        )
+        return list(metadata[field].values())[selected_index - 1]
+    return None

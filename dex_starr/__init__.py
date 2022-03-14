@@ -1,11 +1,24 @@
-__version__ = "0.2.0"
-__all__ = ["__version__", "SETTINGS", "list_files", "del_folder", "sanitize", "merge_dicts", "get_field"]
+from importlib.metadata import version
+
+__version__ = version(__package__)
+__all__ = [
+    "__version__",
+    "del_folder",
+    "get_config_root",
+    "get_project_root",
+    "INFO_EXTENSIONS",
+    "list_files",
+    "sanitize",
+    "yaml_setup",
+]
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import List
 
 from pathvalidate import sanitize_filename
 from ruamel.yaml import YAML
+
+INFO_EXTENSIONS = [".json", ".xml", ".yaml"]
 
 
 def yaml_setup() -> YAML:
@@ -21,11 +34,12 @@ def yaml_setup() -> YAML:
     return yaml
 
 
-from dex_starr.console import ConsoleLog  # noqa
-from dex_starr.settings import Settings  # noqa
+def get_project_root() -> Path:
+    return Path(__file__).parent.parent
 
-CONSOLE = ConsoleLog(__name__)
-SETTINGS = Settings()
+
+def get_config_root() -> Path:
+    return Path.home() / ".config" / "dex-starr"
 
 
 def list_files(folder: Path, filter_: List[str] = None) -> List[Path]:
@@ -51,33 +65,3 @@ def del_folder(folder: Path):
 
 def sanitize(filename: str) -> str:
     return " ".join(sanitize_filename(filename).replace("-", " ").split()).replace(" ", "-")
-
-
-def merge_dicts(input_1: Dict[str, Any], input_2: Dict[str, Any]) -> Dict[str, Any]:
-    for key, value in input_1.items():
-        if isinstance(value, dict):
-            if key in input_2:
-                input_2[key] = merge_dicts(input_1[key], input_2[key])
-    return {**input_1, **input_2}
-
-
-def get_field(
-    pulled_metadata: Dict[str, Any], section: str, field: str, resolve_manually: bool = False
-) -> Optional[Any]:
-    if len(pulled_metadata[field]) == 1:
-        return list(pulled_metadata[field].values())[0]
-    if len(pulled_metadata[field]) > 1:
-        if len(set(pulled_metadata[field].values())) == 1:
-            return list(pulled_metadata[field].values())[0]
-        if not resolve_manually:
-            for entry in SETTINGS.resolution_order:
-                if entry in pulled_metadata[field]:
-                    return pulled_metadata[field][entry]
-        selected_index = CONSOLE.menu(
-            options=[f"{k} - {v}" for k, v in pulled_metadata[field].items()],
-            prompt=f"Select {section} {field.replace('_', ' ').title()}",
-            none_option=False,
-        )
-        if selected_index is not None and selected_index != 0:
-            return list(pulled_metadata[field].values())[selected_index - 1]
-    raise ValueError
