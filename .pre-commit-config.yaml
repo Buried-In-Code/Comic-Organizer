@@ -20,7 +20,7 @@ repos:
           - --yaml-version=1.1
         files: ^\.github.*
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.13
+    rev: 0.7.14
     hooks:
       - id: mdformat
         additional_dependencies:
