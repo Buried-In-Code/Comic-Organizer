@@ -5,10 +5,10 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 from patoolib import extract_archive
 
-from . import INFO_EXTENSIONS, list_files, sanitize, yaml_setup
-from .console import CONSOLE
-from .metadata import FormatEnum, Metadata, parse_json, parse_xml, parse_yaml
-from .settings import SETTINGS, OutputFormatEnum
+from dex_starr import INFO_EXTENSIONS, list_files, sanitize, yaml_setup
+from dex_starr.console import CONSOLE
+from dex_starr.metadata import FormatEnum, Metadata, parse_json, parse_xml, parse_yaml
+from dex_starr.settings import SETTINGS, OutputFormatEnum
 
 IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 

@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional
 from yamale import YamaleError, make_data, make_schema
 from yamale import validate as validate_yaml
 
-from . import get_config_root, yaml_setup
-from .console import CONSOLE
+from dex_starr import get_config_root, yaml_setup
+from dex_starr.console import CONSOLE
 
 
 class OutputFormatEnum(Enum):

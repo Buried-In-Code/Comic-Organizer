@@ -12,9 +12,9 @@ from rich.prompt import IntPrompt, Prompt
 from yamale import YamaleError, make_data, make_schema
 from yamale import validate as validate_yaml
 
-from . import __version__
-from .console import CONSOLE, create_menu
-from .settings import SETTINGS
+from dex_starr import __version__
+from dex_starr.console import CONSOLE, create_menu
+from dex_starr.settings import SETTINGS
 
 
 class FormatEnum(Enum):
@@ -64,10 +64,23 @@ class Identifier:
         return {"Service": self.service, "ID": self.id_, "URL": self.url}
 
 
-class Publisher:
-    def __init__(self, title: str):
-        self.title = title
+class Identifiable:
+    def __init__(self):
         self.identifiers: List[Identifier] = []
+
+    def has_service(self, service: str) -> bool:
+        return len([x for x in self.identifiers if x.service.lower() == service.lower()]) > 0
+
+    def get_service_id(self, service: str) -> Optional[int]:
+        services = [x for x in self.identifiers if x.service.lower() == service.lower()]
+        return services[0].id_ if services else None
+
+
+class Publisher(Identifiable):
+    def __init__(self, title: str):
+        super().__init__()
+
+        self.title = title
 
     @staticmethod
     def load(data: Dict[str, Any]) -> "Publisher":
@@ -95,11 +108,12 @@ class Publisher:
                 self.title = title
 
 
-class Series:
+class Series(Identifiable):
     def __init__(self, title: str, volume: int = 1):
+        super().__init__()
+
         self.title = title
         self.volume = volume
-        self.identifiers: List[Identifier] = []
         self.start_year: Optional[int] = None
 
     @staticmethod
@@ -166,15 +180,16 @@ class Creator:
         return {"Name": self.name, "Roles": self.roles}
 
 
-class Comic:
+class Comic(Identifiable):
     def __init__(self, number: str, format_: FormatEnum = FormatEnum.COMIC):
+        super().__init__()
+
         self.format_ = format_
         self.number = number
 
         self.cover_date: Optional[date] = None
         self.creators: List[Creator] = []
         self.genres: List[str] = []
-        self.identifiers: List[Identifier] = []
         self.language_iso: Optional[str] = None
         self.page_count: Optional[int] = None
         self.store_date: Optional[date] = None

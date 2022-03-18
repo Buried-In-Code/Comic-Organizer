@@ -4,11 +4,11 @@ from typing import Any, Dict
 
 from simyan.sqlite_cache import SQLiteCache
 
-from ..metadata import Metadata
-from ..settings import SETTINGS
-from .comicvine import pull_info as pull_comicvine_info
-from .league_of_comic_geeks_api import pull_info as pull_league_info
-from .metron import pull_info as pull_metron_info
+from dex_starr.metadata import Metadata
+from dex_starr.service.league_of_comic_geeks import pull_info as pull_from_league_of_comic_geeks
+from dex_starr.service.mokkari import pull_info as pull_from_metron
+from dex_starr.service.simyan import pull_info as pull_from_comicvine
+from dex_starr.settings import SETTINGS
 
 
 def merge_dicts(input_1: Dict[str, Any], input_2: Dict[str, Any]) -> Dict[str, Any]:
@@ -24,16 +24,31 @@ def pull_info(metadata: Metadata, resolve_manually: bool = False):
     pulled_info = {}
     if SETTINGS.comicvine_api_key:
         pulled_info = merge_dicts(
-            pulled_info, pull_comicvine_info(SETTINGS.comicvine_api_key, cache, metadata)
+            pulled_info,
+            pull_from_comicvine(
+                api_key=SETTINGS.comicvine_api_key,
+                cache=cache,
+                metadata=metadata,
+            ),
         )
     if SETTINGS.metron_username and SETTINGS.metron_password:
         pulled_info = merge_dicts(
             pulled_info,
-            pull_metron_info(SETTINGS.metron_username, SETTINGS.metron_password, cache, metadata),
+            pull_from_metron(
+                username=SETTINGS.metron_username,
+                password=SETTINGS.metron_password,
+                cache=cache,
+                metadata=metadata,
+            ),
         )
     if SETTINGS.league_api_key and SETTINGS.league_client_id:
         pulled_info = merge_dicts(
             pulled_info,
-            pull_league_info(SETTINGS.league_api_key, SETTINGS.league_client_id, cache, metadata),
+            pull_from_league_of_comic_geeks(
+                api_key=SETTINGS.league_api_key,
+                client_id=SETTINGS.league_client_id,
+                cache=cache,
+                metadata=metadata,
+            ),
         )
     metadata.set_metadata(pulled_info, resolve_manually)

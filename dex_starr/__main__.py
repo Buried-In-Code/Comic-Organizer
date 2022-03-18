@@ -6,11 +6,11 @@ from rich import inspect
 from rich.panel import Panel
 from rich.prompt import Prompt
 
-from . import INFO_EXTENSIONS, __version__, del_folder, list_files
-from .archive import Archive
-from .console import CONSOLE
-from .service import pull_info
-from .settings import SETTINGS, OutputFormatEnum
+from dex_starr import INFO_EXTENSIONS, __version__, del_folder, list_files
+from dex_starr.archive import Archive
+from dex_starr.console import CONSOLE
+from dex_starr.service import pull_info
+from dex_starr.settings import SETTINGS, OutputFormatEnum
 
 COMIC_EXTENSIONS = [".cbz", ".cbr", ".cb7", ".cbt", ".cba"]
 
