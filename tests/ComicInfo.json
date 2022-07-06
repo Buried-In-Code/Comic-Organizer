@@ -5,8 +5,8 @@
       "Identifiers": [
 				{
 					"Service": "Madeup Service",
-					"ID": "123",
-					"URL": "https://made-up.com/123"
+					"Id": "123",
+					"Url": "https://made-up.com/123"
 				}
       ]
     },
@@ -16,13 +16,13 @@
       "Identifiers": [
 				{
 					"Service": "Madeup Service",
-					"ID": "456",
-					"URL": "https://made-up.com/123/456"
+					"Id": "456",
+					"Url": "https://made-up.com/123/456"
 				}
       ],
       "Start Year": null
     },
-		"Comic": {
+		"Issue": {
 			"Format": "Comic",
 			"Number": "6",
 			"Cover Date": null,
@@ -41,8 +41,8 @@
 			"Identifiers": [
 				{
 					"Service": "Madeup Service",
-					"ID": "789",
-					"URL": "https://made-up.com/123/456/789"
+					"Id": "789",
+					"Url": "https://made-up.com/123/456/789"
 				}
 			],
 			"Language ISO": null,

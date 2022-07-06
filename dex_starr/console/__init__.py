@@ -1,4 +1,11 @@
-__all__ = ["CONSOLE", "create_menu", "Table", "create_progress_bar", "DatePrompt", "DatetimePrompt"]
+__all__ = [
+    "CONSOLE",
+    "create_menu",
+    "create_progress_bar",
+    "create_table",
+    "DatePrompt",
+    "DatetimePrompt",
+]
 
-from .console import CONSOLE, Table, create_menu, create_progress_bar
-from .prompt import DatePrompt, DatetimePrompt
+from dex_starr.console.console import CONSOLE, create_menu, create_progress_bar, create_table
+from dex_starr.console.prompt import DatePrompt, DatetimePrompt

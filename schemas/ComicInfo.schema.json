@@ -3,138 +3,67 @@
 	"$id": "ComicInfo.schema.json",
 	"type": "object",
 	"required": [
-		"Data",
-		"Meta"
+		"data",
+		"meta"
 	],
 	"properties": {
-		"Data": {
+		"data": {
 			"type": "object",
 			"required": [
-				"Publisher",
-				"Series",
-				"Comic"
+				"issue",
+				"publisher",
+				"series"
 			],
 			"properties": {
-				"Publisher": {
-					"type": "object",
-					"required": [
-						"Title",
-						"Identifiers"
-					],
-					"properties": {
-						"Title": {
-							"type": "string"
-						},
-						"Identifiers": {
-							"type": "array",
-							"uniqueItems": true,
-							"items": {
-								"type": "object",
-								"required": [
-									"Service",
-									"ID",
-									"URL"
-								],
-								"properties": {
-									"Service": {
-										"type": "string"
-									},
-									"ID": {
-										"type": [
-											"string",
-											"integer",
-											"null"
-										],
-										"default": null
-									},
-									"URL": {
-										"type": [
-											"string",
-											"null"
-										],
-										"default": null
-									}
-								}
-							}
-						}
-					}
-				},
-				"Series": {
-					"type": "object",
-					"required": [
-						"Title",
-						"Volume",
-						"Identifiers",
-						"Start Year"
-					],
-					"properties": {
-						"Title": {
-							"type": "string"
-						},
-						"Volume": {
-							"type": "integer",
-							"minimum": 1,
-							"default": 1
-						},
-						"Identifiers": {
-							"type": "array",
-							"uniqueItems": true,
-							"items": {
-								"type": "object",
-								"required": [
-									"Service",
-									"ID",
-									"URL"
-								],
-								"properties": {
-									"Service": {
-										"type": "string"
-									},
-									"ID": {
-										"type": [
-											"string",
-											"integer",
-											"null"
-										],
-										"default": null
-									},
-									"URL": {
-										"type": [
-											"string",
-											"null"
-										],
-										"default": null
-									}
-								}
-							}
-						},
-						"Start Year": {
-							"type": [
-								"integer",
-								"null"
-							],
-							"minimum": 1900,
-							"default": null
-						}
-					}
-				},
-				"Comic": {
+			    "issue": {
 				    "type": "object",
 				    "required": [
-				        "Format",
-				        "Number",
-				        "Cover Date",
-				        "Creators",
-				        "Genres",
-				        "Identifiers",
-				        "Language ISO",
-				        "Page Count",
-				        "Store Date",
-				        "Summary",
-				        "Title"
+				        "characters",
+				        "coverDate",
+				        "creators",
+				        "format",
+				        "genres",
+				        "languageIso",
+				        "locations",
+				        "number",
+				        "pageCount",
+				        "sources",
+				        "storeDate",
+				        "storyArcs",
+				        "summary",
+				        "teams",
+				        "title"
 				    ],
 				    "properties": {
-				        "Format": {
+				        "characters": {
+				            "type": "array",
+				            "items": {
+				                "type": "string"
+				            },
+				            "uniqueItems": true
+				        },
+				        "coverDate": {
+					        "type": [
+						        "string",
+						        "null"
+					        ],
+					        "format": "date",
+					        "default": null
+				        },
+				        "creators": {
+					        "type": "object",
+					        "patternProperties": {
+					            ".*": {
+					                "type": "array",
+					                "items": {
+					                    "type": "string"
+					                },
+					                "uniqueItems": true
+					            }
+					        }
+				        },
+				        "format": {
+				            "type": "string",
 					        "enum": [
 						        "Annual",
 						        "Comic",
@@ -144,84 +73,31 @@
 					        ],
 					        "default": "Comic"
 				        },
-				        "Number": {
+				        "genres": {
+				            "type": "array",
+				            "items": {
+				                "type": "string"
+				            },
+				            "uniqueItems": true
+				        },
+				        "languageIso": {
+					        "type": [
+						        "string",
+						        "null"
+					        ],
+					        "default": null
+				        },
+				        "locations": {
+				            "type": "array",
+				            "items": {
+				                "type": "string"
+				            },
+				            "uniqueItems": true
+				        },
+				        "number": {
 					        "type": "string"
 				        },
-				        "Cover Date": {
-					        "type": [
-						        "string",
-						        "null"
-					        ],
-					        "format": "date",
-					        "default": null
-				        },
-				        "Creators": {
-					        "type": "array",
-					        "items": {
-						        "type": "object",
-						        "required": [
-							        "Name",
-							        "Roles"
-						        ],
-						        "properties": {
-							        "Name": {
-								        "type": "string"
-							        },
-							        "Roles": {
-								        "type": "array",
-								        "items": {
-									        "type": "string"
-								        }
-							        }
-						        }
-					        }
-				        },
-				        "Genres": {
-					        "type": "array",
-					        "items": {
-						        "type": "string"
-					        }
-				        },
-				        "Identifiers": {
-					        "type": "array",
-					        "uniqueItems": true,
-					        "items": {
-						        "type": "object",
-						        "required": [
-							        "Service",
-							        "ID",
-							        "URL"
-						        ],
-						        "properties": {
-							        "Service": {
-								        "type": "string"
-							        },
-							        "ID": {
-								        "type": [
-									        "string",
-													"integer",
-									        "null"
-								        ],
-								        "default": null
-							        },
-							        "URL": {
-								        "type": [
-									        "string",
-									        "null"
-								        ],
-								        "default": null
-							        }
-						        }
-					        }
-				        },
-				        "Language ISO": {
-					        "type": [
-						        "string",
-						        "null"
-					        ],
-					        "default": null
-				        },
-				        "Page Count": {
+				        "pageCount": {
 					        "type": [
 						        "integer",
 						        "null"
@@ -229,7 +105,15 @@
 					        "minimum": 1,
 					        "default": null
 				        },
-				        "Store Date": {
+				        "sources": {
+					        "type": "object",
+					        "patternProperties": {
+					            ".*": {
+					                "type": "integer"
+					            }
+					        }
+					    },
+						"storeDate": {
 					        "type": [
 						        "string",
 						        "null"
@@ -237,63 +121,134 @@
 					        "format": "date",
 					        "default": null
 				        },
-				        "Summary": {
+				        "storyArcs": {
+				            "type": "array",
+				            "items": {
+				                "type": "string"
+				            },
+				            "uniqueItems": true
+				        },
+				        "summary": {
 					        "type": [
 						        "string",
 						        "null"
 					        ],
 					        "default": null
 				        },
-				        "Title": {
+				        "teams": {
+				            "type": "array",
+				            "items": {
+				                "type": "string"
+				            },
+				            "uniqueItems": true
+				        },
+				        "title": {
 					        "type": [
 						        "string",
 						        "null"
 					        ],
 					        "default": null
-				        },
-				        "Collected Issues": {
-					        "type": "array",
-					        "items": {
-						        "type": "string"
-					        }
 				        }
 			        }
-				}
-			}
-		},
-		"Meta": {
-			"type": "object",
-			"required": [
-				"Date",
-				"Tool"
-			],
-			"properties": {
-				"Date": {
-					"type": "string",
-					"format": "date"
 				},
-				"Tool": {
-					"type": "object",
-					"required": [
-						"Name",
-						"Version"
-					],
-					"properties": {
-						"Name": {
-							"type": "string"
-						},
-						"Version": {
-							"type": "string",
-							"pattern": "^\\d+\\.\\d+\\.\\d+$"
-						}
-					}
-				},
-				"Notes": {
+				"notes": {
 					"type": [
 						"string",
 						"null"
 					],
 					"default": null
+				},
+				"publisher": {
+					"type": "object",
+					"required": [
+						"imprint",
+						"sources",
+						"title"
+					],
+					"properties": {
+					    "imprint": {
+					        "type": [
+					            "string",
+					            "null"
+				            ],
+				            "default": null
+					    },
+					    "sources": {
+					        "type": "object",
+					        "patternProperties": {
+					            ".*": {
+					                "type": "integer"
+					            }
+					        }
+					    },
+						"title": {
+							"type": "string"
+						}
+					}
+				},
+				"series": {
+					"type": "object",
+					"required": [
+						"sources",
+						"startYear",
+						"title",
+						"volume"
+					],
+					"properties": {
+						"sources": {
+					        "type": "object",
+					        "patternProperties": {
+					            ".*": {
+					                "type": "integer"
+					            }
+					        }
+					    },
+					    "startYear": {
+							"type": [
+								"integer",
+								"null"
+							],
+							"minimum": 1900,
+							"default": null
+						},
+						"title": {
+							"type": "string"
+						},
+						"volume": {
+							"type": "integer",
+							"minimum": 1,
+							"default": 1
+						}
+					}
+				}
+			}
+		},
+		"meta": {
+			"type": "object",
+			"required": [
+				"date",
+				"tool"
+			],
+			"properties": {
+				"date": {
+					"type": "string",
+					"format": "date"
+				},
+				"tool": {
+					"type": "object",
+					"required": [
+						"name",
+						"version"
+					],
+					"properties": {
+						"name": {
+							"type": "string"
+						},
+						"version": {
+							"type": "string",
+							"pattern": "^\\d+\\.\\d+\\.\\d+$"
+						}
+					}
 				}
 			}
 		}

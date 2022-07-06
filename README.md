@@ -104,20 +104,20 @@ Root Folder
 +-- Collection
 |  +-- Publisher
 |  |  +-- Series
-|  |  |  +-- Series-#001.cbz
-|  |  |  +-- Series-Annual-#01.cbz
-|  |  |  +-- Series-Chapter-#01.cbz
-|  |  |  +-- Series-#01-HC.cbz
+|  |  |  +-- Series-#1.cbz
+|  |  |  +-- Series-Annual-#1.cbz
+|  |  |  +-- Series-Chapter-#1.cbz
+|  |  |  +-- Series-#1-HC.cbz
 |  |  |  +-- Series-Title-HC.cbz
-|  |  |  +-- Series-#01-TP.cbz
+|  |  |  +-- Series-#1-TP.cbz
 |  |  |  +-- Series-Title-TP.cbz
 |  |  +-- Series-v2
-|  |  |  +-- Series-v2-#001.cbz
-|  |  |  +-- Series-v2-Annual-#01.cbz
-|  |  |  +-- Series-v2-Chapter-#01.cbz
-|  |  |  +-- Series-v2-#01-HC.cbz
+|  |  |  +-- Series-v2-#1.cbz
+|  |  |  +-- Series-v2-Annual-#1.cbz
+|  |  |  +-- Series-v2-Chapter-#1.cbz
+|  |  |  +-- Series-v2-#1-HC.cbz
 |  |  |  +-- Series-v2-Title-HC.cbz
-|  |  |  +-- Series-v2-#01-TP.cbz
+|  |  |  +-- Series-v2-#1-TP.cbz
 |  |  |  +-- Series-v2-Title-TP.cbz
 ```
 

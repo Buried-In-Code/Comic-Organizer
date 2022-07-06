@@ -1,37 +1,35 @@
-from importlib.metadata import version
-
-__version__ = version(__package__)
+__version__ = "0.2.0"
 __all__ = [
     "__version__",
+    "IMAGE_EXTENSIONS",
+    "SUPPORTED_EXTENSIONS",
+    "SUPPORTED_INFO_FILES",
     "del_folder",
+    "get_cache_root",
     "get_config_root",
     "get_project_root",
-    "INFO_EXTENSIONS",
     "list_files",
-    "sanitize",
+    "safe_list_get",
     "yaml_setup",
 ]
 
 from pathlib import Path
-from typing import List
+from typing import Any, List
 
-from pathvalidate import sanitize_filename
 from ruamel.yaml import YAML
 
-INFO_EXTENSIONS = [".json", ".xml", ".yaml"]
+IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
+SUPPORTED_EXTENSIONS = [".cbz", ".cbr", ".cbt", ".cb7"]
+SUPPORTED_INFO_FILES = ["Metadata.json", "MetronInfo.xml", "ComicInfo.xml"]
 
 
-def yaml_setup() -> YAML:
-    def null_representer(self, data):
-        return self.represent_scalar("tag:yaml.org,2002:null", "~")
-
-    yaml = YAML(pure=True)
-    yaml.default_flow_style = False
-    yaml.width = 2147483647
-    yaml.representer.add_representer(type(None), null_representer)
-    # yaml.emitter.alt_null = '~'
-    yaml.version = (1, 2)
-    return yaml
+def del_folder(folder: Path):
+    for child in folder.iterdir():
+        if child.is_file():
+            child.unlink(missing_ok=True)
+        else:
+            del_folder(folder=child)
+    folder.rmdir()
 
 
 def get_project_root() -> Path:
@@ -39,7 +37,15 @@ def get_project_root() -> Path:
 
 
 def get_config_root() -> Path:
-    return Path.home() / ".config" / "dex-starr"
+    root = Path.home() / ".config" / "dex-starr"
+    root.mkdir(parents=True, exist_ok=True)
+    return root
+
+
+def get_cache_root() -> Path:
+    root = Path.home() / ".cache" / "dex-starr"
+    root.mkdir(parents=True, exist_ok=True)
+    return root
 
 
 def list_files(folder: Path, filter_: List[str] = None) -> List[Path]:
@@ -54,14 +60,22 @@ def list_files(folder: Path, filter_: List[str] = None) -> List[Path]:
     return files
 
 
-def del_folder(folder: Path):
-    for child in folder.iterdir():
-        if child.is_file():
-            child.unlink(missing_ok=True)
-        else:
-            del_folder(folder=child)
-    folder.rmdir()
+def safe_list_get(list_: List[Any], index: int = 0, default: Any = None) -> Any:
+    try:
+        return list_[index]
+    except IndexError:
+        return default
 
 
-def sanitize(filename: str) -> str:
-    return " ".join(sanitize_filename(filename).replace("-", " ").split()).replace(" ", "-")
+def yaml_setup() -> YAML:
+    def null_representer(self, data):
+        return self.represent_scalar("tag:yaml.org,2002:null", "~")
+
+    yaml = YAML(pure=True)
+    yaml.default_flow_style = False
+    yaml.width = 2147483647
+    yaml.indent(mapping=2, sequence=4, offset=2)
+    yaml.representer.add_representer(type(None), null_representer)
+    # yaml.emitter.alt_null = '~'
+    yaml.version = (1, 2)
+    return yaml

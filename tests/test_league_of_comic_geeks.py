@@ -1,4 +1,4 @@
-from dex_starr.service.league_of_comic_geeks.session import Session as LeagueOfComicGeeks
+from dex_starr.services.league_of_comic_geeks.service import LeagueOfComicGeeks
 
 
 def test_comic_list(league_of_comic_geeks: LeagueOfComicGeeks):
@@ -9,10 +9,10 @@ def test_comic_list(league_of_comic_geeks: LeagueOfComicGeeks):
 
 
 def test_series(league_of_comic_geeks: LeagueOfComicGeeks):
-    result = league_of_comic_geeks.series(id_=156046)
+    result = league_of_comic_geeks.series(series_id=156046)
     assert result is not None
 
 
 def test_comic(league_of_comic_geeks: LeagueOfComicGeeks):
-    result = league_of_comic_geeks.comic(id_=5327798)
+    result = league_of_comic_geeks.comic(comic_id=5327798)
     assert result is not None
