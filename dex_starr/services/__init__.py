@@ -5,9 +5,9 @@ from typing import Any, Dict
 from simyan.sqlite_cache import SQLiteCache
 
 from dex_starr.metadata import Metadata
-from dex_starr.service.league_of_comic_geeks import pull_info as pull_from_league_of_comic_geeks
-from dex_starr.service.mokkari import pull_info as pull_from_metron
-from dex_starr.service.simyan import pull_info as pull_from_comicvine
+from dex_starr.services.league_of_comic_geeks import pull_info as pull_from_league_of_comic_geeks
+from dex_starr.services.mokkari import pull_info as pull_from_metron
+from dex_starr.services.simyan import pull_info as pull_from_comicvine
 from dex_starr.settings import SETTINGS
 
 
