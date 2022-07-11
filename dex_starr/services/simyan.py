@@ -52,16 +52,16 @@ class SimyanTalker:
             if search.lower() == "exit":
                 return
             _issue = self._search_issue(series_id, search)
-        issue.characters = {*issue.characters, *[c.name for c in _issue.characters]}
+        issue.characters = list({*issue.characters, *[c.name for c in _issue.characters]})
         issue.cover_date = _issue.cover_date or issue.cover_date
         # TODO: Add Creators
-        issue.locations = {*issue.locations, *[x.name for x in _issue.locations]}
+        issue.locations = list({*issue.locations, *[x.name for x in _issue.locations]})
         issue.number = _issue.number or issue.number
         issue.sources["Comicvine"] = _issue.issue_id
         issue.store_date = _issue.store_date or issue.store_date
-        issue.story_arcs = {*issue.story_arcs, *[s.name for s in _issue.story_arcs]}
+        issue.story_arcs = list({*issue.story_arcs, *[s.name for s in _issue.story_arcs]})
         issue.summary = _issue.summary or issue.summary
-        issue.teams = {*issue.teams, *[t.name for t in _issue.teams]}
+        issue.teams = list({*issue.teams, *[t.name for t in _issue.teams]})
         issue.title = _issue.name or issue.title
 
     def _search_volume(
@@ -72,7 +72,7 @@ class SimyanTalker:
             volume_list = self.session.volume_list({"filter": f"name:{title}"})
         except ServiceError:
             volume_list = []
-        volume_list = filter(lambda v: v.publisher_id == publisher_id, volume_list)
+        volume_list = filter(lambda v: v.publisher.id_ == publisher_id, volume_list)
         if start_year:
             volume_list = filter(lambda v: v.start_year == start_year, volume_list)
         if not volume_list:

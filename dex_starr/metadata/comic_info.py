@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 import xmltodict
 from pydantic import BaseModel, Extra, Field
 
-from dex_starr.metadata.metadata import FormatEnum, Issue, Metadata, Publisher, Series
+from dex_starr.metadata.metadata import Issue, Metadata, Publisher, Series
 
 
 def to_pascal_case(value: str) -> str:
@@ -195,7 +195,7 @@ class ComicInfo(BaseModel):
             ),
             series=Series(title=self.series, start_year=self.volume),
             issue=Issue(
-                format=FormatEnum.UNSET,
+                format="Comic",
                 number=self.number,
                 characters=self.character_list,
                 cover_date=self.cover_date,
@@ -223,9 +223,12 @@ class ComicInfo(BaseModel):
 
     def to_file(self, info_file: Path):
         with info_file.open("w", encoding="UTF-8") as stream:
-            unsorted = self.dict(by_alias=True)
+            content = self.dict(by_alias=True, exclude_none=True)
+            content["@xmlns:xsd"] = "https://www.w3.org/2001/XMLSchema"
+            content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
+
             xmltodict.unparse(
-                {"ComicInfo": {k: unsorted[k] for k in sorted(unsorted)}},
+                {"ComicInfo": {k: content[k] for k in sorted(content)}},
                 output=stream,
                 short_empty_elements=True,
                 pretty=True,

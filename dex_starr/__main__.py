@@ -1,6 +1,7 @@
 import logging
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
+from typing import Dict, List, Union
 
 from pathvalidate.argparse import sanitize_filepath_arg
 from rich import box
@@ -22,6 +23,9 @@ from dex_starr.metadata.comic_info import ComicInfo
 from dex_starr.metadata.metadata import Metadata
 from dex_starr.metadata.metron_info import MetronInfo
 from dex_starr.metadata.utils import create_metadata, to_comic_info, to_metron_info
+from dex_starr.services.league_of_comic_geeks.talker import Talker as LoCGTalker
+from dex_starr.services.mokkari import MokkariTalker
+from dex_starr.services.simyan import SimyanTalker
 from dex_starr.settings import Settings
 
 
@@ -51,9 +55,19 @@ def write_info_file(archive: Archive, settings: Settings, metadata: Metadata):
         comic_info.to_file(archive.extracted_folder / "ComicInfo.xml")
 
 
-def pull_info(metadata: Metadata, resolve_manually: bool):
-    # TODO: Rewrite Services
-    pass
+def pull_info(
+    metadata: Metadata,
+    services: Dict[str, Union[LoCGTalker, MokkariTalker, SimyanTalker]],
+    resolution_order: List[str] = None,
+    resolve_manually: bool = False,
+):
+    if not resolution_order:
+        resolution_order = []
+    for service in reversed(resolution_order):
+        if service not in services or not services[service]:
+            continue
+        CONSOLE.rule(f"Pulling from {service}")
+        services[service].update_metadata(metadata)
 
 
 def setup_logging(debug: bool = False):
@@ -92,6 +106,25 @@ def main():
         justify="center",
     )
     settings = Settings.load()
+    settings.save()
+
+    league_of_comic_geeks = None
+    mokkari = None
+    simyan = None
+    if settings.league_of_comic_geeks.api_key and settings.league_of_comic_geeks.client_id:
+        league_of_comic_geeks = LoCGTalker(
+            settings.league_of_comic_geeks.api_key, settings.league_of_comic_geeks.client_id
+        )
+    if settings.metron.username and settings.metron.password:
+        mokkari = MokkariTalker(settings.metron.username, settings.metron.password)
+    if settings.comicvine.api_key:
+        simyan = SimyanTalker(settings.comicvine.api_key)
+    services = {
+        "League of Comic Geeks": league_of_comic_geeks,
+        "Metron": mokkari,
+        "Comicvine": simyan,
+    }
+
     # region Clean cache
     for child in get_cache_root().iterdir():
         if child.is_dir():
@@ -120,9 +153,9 @@ def main():
                     CONSOLE.print(f"Deleting {child.name}", style="logging.level.info")
                     child.unlink(missing_ok=True)
             # endregion
-            pull_info(metadata, args.resolve_manually)
+            pull_info(metadata, services, settings.general.resolution_order, args.resolve_manually)
 
-            if args.manually_edit:
+            if args.manual_edit:
                 write_info_file(archive, settings, metadata)
                 Prompt.ask("Press <Enter> to continue", console=CONSOLE)
                 metadata = read_info_file(archive)

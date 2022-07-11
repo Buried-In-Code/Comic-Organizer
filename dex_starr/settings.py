@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Extra, Field
 
 from dex_starr import get_config_root, yaml_setup
 
@@ -18,6 +18,9 @@ class LeagueOfComicGeeks(BaseModel):
 
     class Config:
         alias_generator = to_space_case
+        anystr_strip_whitespace = True
+        allow_population_by_field_name = True
+        extra = Extra.ignore
 
 
 class MetronSettings(BaseModel):
@@ -27,6 +30,9 @@ class MetronSettings(BaseModel):
 
     class Config:
         alias_generator = to_space_case
+        anystr_strip_whitespace = True
+        allow_population_by_field_name = True
+        extra = Extra.ignore
 
 
 class ComicvineSettings(BaseModel):
@@ -34,6 +40,9 @@ class ComicvineSettings(BaseModel):
 
     class Config:
         alias_generator = to_space_case
+        anystr_strip_whitespace = True
+        allow_population_by_field_name = True
+        extra = Extra.ignore
 
 
 class GeneralSettings(BaseModel):
@@ -44,6 +53,9 @@ class GeneralSettings(BaseModel):
 
     class Config:
         alias_generator = to_space_case
+        anystr_strip_whitespace = True
+        allow_population_by_field_name = True
+        extra = Extra.ignore
 
 
 class Settings(BaseModel):
@@ -56,6 +68,9 @@ class Settings(BaseModel):
 
     class Config:
         alias_generator = to_space_case
+        anystr_strip_whitespace = True
+        allow_population_by_field_name = True
+        extra = Extra.ignore
 
     @staticmethod
     def load() -> "Settings":
@@ -67,4 +82,6 @@ class Settings(BaseModel):
 
     def save(self):
         with _settings_file.open("w", encoding="UTF-8") as stream:
-            yaml_setup().dump(self.dict(by_alias=True), stream)
+            content = self.dict(by_alias=True)
+            content["General"]["Collection Folder"] = str(content["General"]["Collection Folder"])
+            yaml_setup().dump(content, stream)

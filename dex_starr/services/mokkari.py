@@ -7,7 +7,7 @@ from mokkari.session import Session as Mokkari
 from rich.prompt import IntPrompt, Prompt
 
 from dex_starr.console import CONSOLE, create_menu
-from dex_starr.metadata.metadata import FormatEnum, Issue, Metadata, Publisher, Series
+from dex_starr.metadata.metadata import Issue, Metadata, Publisher, Series
 from dex_starr.services.sqlite_cache import SQLiteCache
 
 
@@ -42,24 +42,24 @@ class MokkariTalker:
             if search.lower() == "exit":
                 return
             _issue = self._search_issue(series_id, search)
-        issue.characters = {*issue.characters, *[c.alias for c in _issue.characters]}
+        issue.characters = list({*issue.characters, *[c.alias for c in _issue.characters]})
         issue.cover_date = _issue.cover_date or issue.cover_date
         # TODO: Add Creators
         issue.format = _issue.series.series_type
         if _issue.series.series_type.name == "Annual":
-            issue.format = FormatEnum.ANNUAL
+            issue.format = "Annual"
         elif _issue.series.series_type.name == "Trade Paperback":
-            issue.format = FormatEnum.TRADE_PAPERBACK
-        issue.format = FormatEnum.COMIC
+            issue.format = "Trade Paperback"
+        issue.format = "Comic"
         # TODO: Add Genres
         # TODO: Add Language ISO
         # TODO: Add Locations
         issue.number = _issue.number or issue.number
         issue.sources["Metron"] = _issue.id
         issue.store_date = _issue.store_date or issue.store_date
-        issue.story_arcs = {*issue.story_arcs, *[s.name for s in _issue.arcs]}
+        issue.story_arcs = list({*issue.story_arcs, *[s.name for s in _issue.arcs]})
         issue.summary = _issue.desc or issue.summary
-        issue.teams = {*issue.teams, *[t.name for t in _issue.teams]}
+        issue.teams = list({*issue.teams, *[t.name for t in _issue.teams]})
         issue.title = _issue.issue_name or _issue.collection_title or issue.title
 
     def _search_series(
@@ -76,24 +76,24 @@ class MokkariTalker:
         if start_year:
             params["start_year"] = start_year
         series_list = self.session.series_list(params)
-        if not series_list:
+        if series_list:
+            series_list = sorted(series_list, key=lambda s: s.display_name)
+            series_index = create_menu(
+                options=[f"{s.id} | {s.display_name}" for s in series_list],
+                prompt="Select Series",
+                default="None of the Above",
+            )
+            if series_index != 0:
+                _series = self.session.series(series_list[series_index - 1].id)
+        if not _series and start_year:
+            _series = self._search_series(publisher_id, title, volume=volume)
+        if not _series and volume:
+            _series = self._search_series(publisher_id, title, start_year=start_year)
+        if not _series:
             CONSOLE.print(
                 f"Unable to find a series for: {title} v{volume} ({start_year})",
                 style="logging.level.warning",
             )
-            return None
-        series_list = sorted(series_list, key=lambda s: s.display_name)
-        series_index = create_menu(
-            options=[f"{s.id} | {s.display_name}" for s in series_list],
-            prompt="Select Series",
-            default="None of the Above",
-        )
-        if series_index != 0:
-            _series = self.session.series(series_list[series_index - 1].id)
-        if not _series and start_year:
-            return self._search_series(publisher_id, title, volume=volume)
-        if not _series and volume:
-            return self._search_series(publisher_id, title, start_year=start_year)
         return _series
 
     def _update_series(self, series: Series, publisher_id: int):
@@ -149,7 +149,7 @@ class MokkariTalker:
             if search.lower() == "exit":
                 return
             _publisher = self._search_publisher(search)
-        publisher.sources["Comicvine"] = _publisher.id
+        publisher.sources["Metron"] = _publisher.id
         publisher.title = _publisher.name or publisher.title
 
     def update_metadata(self, metadata: Metadata):

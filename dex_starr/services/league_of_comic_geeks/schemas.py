@@ -1,54 +1,45 @@
 from datetime import date, datetime
-from typing import List, Optional
+from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Extra, Field, validator
-
-from dex_starr.metadata.metadata import FormatEnum
+from pydantic import BaseModel, Extra, Field
 
 
 class ComicResult(BaseModel):
     comic_id: int = Field(alias="id")
+    format: str
+    description: Optional[str] = None
+    modified_date: datetime = Field(alias="date_modified")
     parent_id: int
+    parent_title: Optional[str] = None
     publisher_id: int
     publisher_name: str
+    release_date: date = Field(alias="date_release")
+    series_begin: int
+    series_end: int
     series_id: int
     series_name: str
     series_volume: int
-    series_end: int
-    series_begin: int
     title: str
-    parent_title: Optional[str] = None
-    release_date: date = Field(alias="date_release")
-    description: Optional[str] = None
-    format: FormatEnum
     variant: int
-    price: float
-    modified_date: datetime = Field(alias="date_modified")
 
     class Config:
         anystr_strip_whitespace = True
         allow_population_by_field_name = True
         extra = Extra.allow
 
-    @validator("format", pre=True)
-    def format_to_enum(cls, v: str) -> FormatEnum:
-        return FormatEnum(v)
-
 
 class Series(BaseModel):
-    series_id: int = Field(alias="id")
-    publisher_id: int
-    title: str
+    comic_id: int
+    date_added: datetime
+    date_modified: datetime
     description: str
+    publisher_id: int
+    publisher_name: str
+    series_id: int = Field(alias="id")
+    title: str
     volume: int
     year_begin: int
     year_end: int
-    date_added: datetime
-    date_modified: datetime
-    publisher_name: str
-    publisher_slug: str
-    comic_id: int
-    series_string: int
 
     class Config:
         anystr_strip_whitespace = True
@@ -58,37 +49,32 @@ class Series(BaseModel):
 
 class Details(BaseModel):
     comic_id: int = Field(alias="id")
-    parent_id: int
-    publisher_id: int
-    series_id: int
-    title: str
-    release_date: date = Field(alias="date_release")
-    format: FormatEnum
-    variant: int
-    pages: int
-    price: float
     date_added: datetime
     date_modified: datetime
     description: str
+    format: str
+    pages: int
+    parent_id: int
     parent_title: Optional[str] = None
+    price: float
+    publisher_id: int
     publisher_name: str
     publisher_slug: str
+    release_date: date = Field(alias="date_release")
+    series_id: int
+    title: str
+    variant: int
 
     class Config:
         anystr_strip_whitespace = True
         allow_population_by_field_name = True
         extra = Extra.allow
 
-    @validator("format", pre=True)
-    def format_to_enum(cls, v: str) -> FormatEnum:
-        return FormatEnum(v)
-
 
 class Creator(BaseModel):
     creator_id: int = Field(alias="id")
     name: str
-    slug: str
-    role_id: int
+    role_id: str
     role: str
 
     class Config:
@@ -96,19 +82,24 @@ class Creator(BaseModel):
         allow_population_by_field_name = True
         extra = Extra.allow
 
+    @property
+    def roles(self) -> Dict[int, str]:
+        role_dict = {}
+        id_list = self.role_id.split(",")
+        role_list = self.role.split(",")
+        for index, id in enumerate(id_list):
+            role_dict[int(id)] = role_list[index]
+        return role_dict
+
 
 class Character(BaseModel):
     character_id: int = Field(alias="id")
-    parent_id: int
-    type_id: int
-    name: str
-    universe_id: Optional[int] = None
     date_added: datetime
     date_modified: datetime
-    parent_name: Optional[str] = None
     full_name: str
-    universe_name: str
-    publisher_name: str
+    name: str
+    parent_id: int
+    parent_name: Optional[str] = None
 
     class Config:
         anystr_strip_whitespace = True
@@ -117,9 +108,9 @@ class Character(BaseModel):
 
 
 class Comic(BaseModel):
-    details: Details
-    creators: List[Creator]
     characters: List[Character]
+    creators: List[Creator]
+    details: Details
     series: Series
 
     class Config:
