@@ -19,7 +19,9 @@ class SimyanTalker:
     def _search_issue(self, series_id: int, number: str) -> Optional[SimyanIssue]:
         _issue = None
         try:
-            issue_list = self.session.issue_list({"filter": f"volume:{series_id},issue_number:{number}"})
+            issue_list = self.session.issue_list(
+                {"filter": f"volume:{series_id},issue_number:{number}"}
+            )
         except ServiceError:
             issue_list = []
         if not issue_list:

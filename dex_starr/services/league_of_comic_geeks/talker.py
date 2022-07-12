@@ -45,7 +45,7 @@ class Talker:
         format: str = "Comic",
         number: Optional[str] = None,
         publisher: Optional[str] = None,
-        series_name: Optional[str] = None
+        series_name: Optional[str] = None,
     ) -> Optional[Comic]:
         comic = None
         if number:
@@ -63,14 +63,19 @@ class Talker:
             comic_list = list(filter(lambda x: x.series_name == series_name, comic_list))
         if comic_list:
             comic_index = create_menu(
-                options=[f"{x.comic_id} | {x.publisher_name} | {x.series_name} v{x.series_volume} | {x.title}" for x in comic_list],
+                options=[
+                    f"{x.publisher_name} | {x.series_name} v{x.series_volume} | {x.title}"
+                    for x in comic_list
+                ],
                 prompt="Select Comic",
                 default="None of the Above",
             )
             if comic_index != 0:
                 return self.session.comic(comic_list[comic_index - 1].comic_id)
         if not comic and series_name:
-            return self._search_metadata(title=title, format=format, number=number, publisher=publisher)
+            return self._search_metadata(
+                title=title, format=format, number=number, publisher=publisher
+            )
         if not comic and publisher:
             return self._search_metadata(title=title, format=format, number=number)
         if not comic:
@@ -83,8 +88,11 @@ class Talker:
             comic = self.session.comic(metadata.issue.sources["League of Comic Geeks"])
         if not comic:
             comic = self._search_metadata(
-                metadata.series.title, metadata.issue.format, metadata.issue.number,
-                publisher=metadata.publisher.title, series_name=metadata.series.title
+                metadata.series.title,
+                metadata.issue.format,
+                metadata.issue.number,
+                publisher=metadata.publisher.title,
+                series_name=metadata.series.title,
             )
         while not comic:
             search = Prompt.ask("Search Term", default="Exit", console=CONSOLE)
