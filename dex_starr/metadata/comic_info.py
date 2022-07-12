@@ -60,6 +60,11 @@ class ComicInfo(BaseModel):
         allow_population_by_field_name = True
         extra = Extra.allow
 
+    def __init__(self, **data):
+        if "Pages" in data:
+            data["Pages"] = data["Pages"]["Page"]
+        super().__init__(**data)
+
     @property
     def story_arc_list(self) -> List[str]:
         if not self.alternate_series and not self.story_arc:
@@ -215,7 +220,7 @@ class ComicInfo(BaseModel):
     @staticmethod
     def from_file(info_file: Path) -> "ComicInfo":
         with info_file.open("rb") as stream:
-            content = xmltodict.parse(stream)["ComicInfo"]
+            content = xmltodict.parse(stream, force_list=["Page"])["ComicInfo"]
             for key in content.copy().keys():
                 if key.startswith("@xmlns"):
                     del content[key]
@@ -226,6 +231,11 @@ class ComicInfo(BaseModel):
             content = self.dict(by_alias=True, exclude_none=True)
             content["@xmlns:xsd"] = "https://www.w3.org/2001/XMLSchema"
             content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
+
+            if "Pages" in content and content["Pages"]:
+                content["Pages"] = {"Page": content["Pages"]}
+            else:
+                del content["Pages"]
 
             xmltodict.unparse(
                 {"ComicInfo": {k: content[k] for k in sorted(content)}},

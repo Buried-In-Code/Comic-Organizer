@@ -5,6 +5,7 @@ __all__ = [
     "SUPPORTED_EXTENSIONS",
     "SUPPORTED_INFO_FILES",
     "del_folder",
+    "filter_files",
     "get_cache_root",
     "get_config_root",
     "get_project_root",
@@ -32,6 +33,18 @@ def del_folder(folder: Path):
     folder.rmdir()
 
 
+def filter_files(folder: Path, filter_: List[str] = None) -> List[Path]:
+    if filter_ is None:
+        filter_ = []
+    files = []
+    for file in folder.iterdir():
+        if file.is_dir():
+            files.extend(filter_files(folder=file, filter_=filter_))
+        elif file.suffix in filter_:
+            files.append(file)
+    return sorted(files)
+
+
 def get_project_root() -> Path:
     return Path(__file__).parent.parent
 
@@ -48,16 +61,14 @@ def get_cache_root() -> Path:
     return root
 
 
-def list_files(folder: Path, filter_: List[str] = None) -> List[Path]:
-    if filter_ is None:
-        filter_ = []
+def list_files(folder: Path) -> List[Path]:
     files = []
     for file in folder.iterdir():
         if file.is_dir():
-            files.extend(list_files(folder=file, filter_=filter_))
-        elif file.suffix in filter_:
+            files.extend(list_files(folder=file))
+        else:
             files.append(file)
-    return files
+    return sorted(files)
 
 
 def safe_list_get(list_: List[Any], index: int = 0, default: Any = None) -> Any:

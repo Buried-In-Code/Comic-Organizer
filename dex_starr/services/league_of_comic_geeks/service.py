@@ -16,7 +16,7 @@ MINUTE = 60
 
 
 class Service:
-    API_URL = "https://leagueofcomicgeeks.com/api/"
+    API_URL = "https://leagueofcomicgeeks.com/api"
 
     def __init__(
         self, api_key: str, client_id: str, timeout: int = 30, cache: Optional[SQLiteCache] = None

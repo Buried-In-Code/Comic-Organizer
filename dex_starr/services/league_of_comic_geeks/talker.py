@@ -44,6 +44,8 @@ class Talker:
         title: str,
         format: str = "Comic",
         number: Optional[str] = None,
+        publisher: Optional[str] = None,
+        series_name: Optional[str] = None
     ) -> Optional[Comic]:
         comic = None
         if number:
@@ -55,13 +57,24 @@ class Talker:
         comic_list = sorted(
             list({x.comic_id: x for x in results_1 + results_2}.values()), key=lambda x: x.title
         )
-        comic_index = create_menu(
-            options=[f"{x.comic_id} | {x.title}" for x in comic_list],
-            prompt="Select Comic",
-            default="None of the Above",
-        )
-        if comic_index != 0:
-            comic = self.session.comic(comic_list[comic_index - 1].comic_id)
+        if publisher is not None:
+            comic_list = list(filter(lambda x: x.publisher_name == publisher, comic_list))
+        if series_name is not None:
+            comic_list = list(filter(lambda x: x.series_name == series_name, comic_list))
+        if comic_list:
+            comic_index = create_menu(
+                options=[f"{x.comic_id} | {x.publisher_name} | {x.series_name} v{x.series_volume} | {x.title}" for x in comic_list],
+                prompt="Select Comic",
+                default="None of the Above",
+            )
+            if comic_index != 0:
+                return self.session.comic(comic_list[comic_index - 1].comic_id)
+        if not comic and series_name:
+            return self._search_metadata(title=title, format=format, number=number, publisher=publisher)
+        if not comic and publisher:
+            return self._search_metadata(title=title, format=format, number=number)
+        if not comic:
+            CONSOLE.print("Unable to find a matching comic", style="logging.level.warning")
         return comic
 
     def update_metadata(self, metadata: Metadata):
@@ -70,7 +83,8 @@ class Talker:
             comic = self.session.comic(metadata.issue.sources["League of Comic Geeks"])
         if not comic:
             comic = self._search_metadata(
-                metadata.series.title, metadata.issue.format, metadata.issue.number
+                metadata.series.title, metadata.issue.format, metadata.issue.number,
+                publisher=metadata.publisher.title, series_name=metadata.series.title
             )
         while not comic:
             search = Prompt.ask("Search Term", default="Exit", console=CONSOLE)
@@ -91,6 +105,10 @@ class Talker:
         )
         metadata.issue.cover_date = comic.details.release_date or metadata.issue.cover_date
         # TODO: Add Creators
+        if not metadata.issue.creators:
+            metadata.issue.creators = {
+                html.unescape(c.name): list(c.roles.values()) for c in comic.creators
+            }
         metadata.issue.format = comic.details.format or metadata.issue.format
         # TODO: Add Genres
         # TODO: Add Language

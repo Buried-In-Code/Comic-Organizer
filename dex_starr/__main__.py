@@ -14,6 +14,7 @@ from dex_starr import (
     SUPPORTED_EXTENSIONS,
     __version__,
     del_folder,
+    filter_files,
     get_cache_root,
     list_files,
 )
@@ -48,7 +49,7 @@ def write_info_file(archive: Archive, settings: Settings, metadata: Metadata):
     if settings.general.generate_metadata_file:
         metadata.to_file(archive.extracted_folder / "Metadata.json")
     if settings.metron.generate_info_file:
-        metron_info = to_metron_info(metadata)
+        metron_info = to_metron_info(metadata, settings.general.resolution_order)
         metron_info.to_file(archive.extracted_folder / "MetronInfo.xml")
     if settings.general.generate_comic_info_file:
         comic_info = to_comic_info(metadata)
@@ -134,7 +135,7 @@ def main():
     # endregion
 
     try:
-        for archive_file in list_files(
+        for archive_file in filter_files(
             Path(args.import_folder).resolve(), filter_=SUPPORTED_EXTENSIONS
         ):
             CONSOLE.rule(f"Importing {archive_file.name}", style="cyan")

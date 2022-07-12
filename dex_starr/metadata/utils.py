@@ -1,10 +1,13 @@
+from typing import List
+
 from rich.prompt import IntPrompt, Prompt
 
 from dex_starr.console import CONSOLE, create_menu
 from dex_starr.metadata.comic_info import ComicInfo
 from dex_starr.metadata.metadata import Issue, Metadata, Publisher, Series
-from dex_starr.metadata.metron_info import MetronInfo
+from dex_starr.metadata.metron_info import Credit, MetronInfo, Resource
 from dex_starr.metadata.metron_info import Series as MetronSeries
+from dex_starr.metadata.metron_info import Source
 
 
 def create_metadata() -> Metadata:
@@ -37,7 +40,7 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
         publisher=metadata.publisher.title,
         imprint=metadata.publisher.imprint,
         series=metadata.series.title,
-        volume=metadata.series.start_year,
+        volume=metadata.series.volume,
         number=metadata.issue.number,
         characters=", ".join(metadata.issue.characters) if metadata.issue.characters else None,
         year=metadata.issue.cover_date.year if metadata.issue.cover_date else None,
@@ -62,19 +65,34 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
     )
 
 
-def to_metron_info(metadata: Metadata) -> MetronInfo:
+def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInfo:
+    issue_source = None
+    for source in reversed(resolution_order):
+        if source in metadata.issue.sources:
+            issue_source = (metadata.issue.sources[source], source)
+    series_source = None
+    for source in reversed(resolution_order):
+        if source in metadata.series.sources:
+            series_source = (metadata.series.sources[source], source)
     return MetronInfo(
+        id=Source(source=issue_source[1], value=issue_source[0]) if issue_source else None,
         publisher=metadata.publisher.title,
         series=MetronSeries(
-            name=metadata.series.title, sort_name=metadata.series.title, type=metadata.issue.format
+            name=Resource(id=series_source[0], value=metadata.series.title),
+            sort_name=metadata.series.title,
+            type=metadata.issue.format,
+            volume=metadata.series.volume,
         ),
-        volume=metadata.series.volume,
         collection_title=metadata.issue.title,
         number=metadata.issue.number,
         summary=metadata.issue.summary,
         cover_date=metadata.issue.cover_date,
         store_date=metadata.issue.store_date,
         page_count=metadata.issue.page_count,
-        characters=metadata.issue.characters,
-        locations=metadata.issue.locations,
+        characters=[Resource(value=c) for c in metadata.issue.characters],
+        locations=[Resource(value=x) for x in metadata.issue.locations],
+        credits=[
+            Credit(creator=Resource(value=c), roles=[Resource(value=x) for x in r])
+            for c, r in metadata.issue.creators.items()
+        ],
     )

@@ -19,11 +19,11 @@ class SimyanTalker:
     def _search_issue(self, series_id: int, number: str) -> Optional[SimyanIssue]:
         _issue = None
         try:
-            issue_list = self.session.issue_list({"filter": f"volume:{series_id}, number:{number}"})
+            issue_list = self.session.issue_list({"filter": f"volume:{series_id},issue_number:{number}"})
         except ServiceError:
             issue_list = []
         if not issue_list:
-            CONSOLE.print(f"Unable to find a issue for: {number}", style="logging.level.warning")
+            CONSOLE.print("Unable to find a matching issue", style="logging.level.warning")
             return None
         issue_list = sorted(issue_list, key=lambda i: i.number)
         issue_index = create_menu(
@@ -54,7 +54,6 @@ class SimyanTalker:
             _issue = self._search_issue(series_id, search)
         issue.characters = list({*issue.characters, *[c.name for c in _issue.characters]})
         issue.cover_date = _issue.cover_date or issue.cover_date
-        # TODO: Add Creators
         issue.locations = list({*issue.locations, *[x.name for x in _issue.locations]})
         issue.number = _issue.number or issue.number
         issue.sources["Comicvine"] = _issue.issue_id
@@ -76,10 +75,7 @@ class SimyanTalker:
         if start_year:
             volume_list = filter(lambda v: v.start_year == start_year, volume_list)
         if not volume_list:
-            CONSOLE.print(
-                f"Unable to find a volume for: {title} ({start_year})",
-                style="logging.level.warning",
-            )
+            CONSOLE.print("Unable to find a matching volume", style="logging.level.warning")
             return None
         volume_list = sorted(volume_list, key=lambda v: (v.name, v.start_year or 0))
         volume_index = create_menu(
@@ -124,7 +120,7 @@ class SimyanTalker:
         except ServiceError:
             publisher_list = []
         if not publisher_list:
-            CONSOLE.print(f"Unable to find a publisher for: {title}", style="logging.level.warning")
+            CONSOLE.print("Unable to find a matching publisher", style="logging.level.warning")
             return None
         publisher_list = sorted(publisher_list, key=lambda p: p.name)
         publisher_index = create_menu(

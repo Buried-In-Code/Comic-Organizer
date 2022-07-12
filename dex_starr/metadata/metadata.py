@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -6,7 +7,12 @@ from typing import Dict, List, Optional
 from pydantic import BaseModel, Field
 
 from dex_starr import __version__, yaml_setup
-from dex_starr.metadata import sanitize
+
+
+def sanitize(dirty: str) -> str:
+    dirty = re.sub(r"[^0-9a-zA-Z& ]+", "", dirty.replace("-", " "))
+    dirty = " ".join(dirty.split())
+    return dirty.replace(" ", "-")
 
 
 def to_camel_case(value: str) -> str:
@@ -51,7 +57,7 @@ class Issue(BaseModel):
     creators: Dict[str, List[str]] = Field(default_factory=dict)
     format: str = "Comic"
     genres: List[str] = Field(default_factory=list)
-    language_iso: Optional[str] = None
+    language_iso: str = "EN"
     locations: List[str] = Field(default_factory=list)
     number: str
     page_count: Optional[int] = None

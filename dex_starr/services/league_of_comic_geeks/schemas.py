@@ -88,7 +88,7 @@ class Creator(BaseModel):
         id_list = self.role_id.split(",")
         role_list = self.role.split(",")
         for index, id in enumerate(id_list):
-            role_dict[int(id)] = role_list[index]
+            role_dict[int(id)] = role_list[index].strip().title()
         return role_dict
 
 

@@ -5,7 +5,13 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 from patoolib import extract_archive
 
-from dex_starr import IMAGE_EXTENSIONS, SUPPORTED_INFO_FILES, get_cache_root, list_files
+from dex_starr import (
+    IMAGE_EXTENSIONS,
+    SUPPORTED_INFO_FILES,
+    filter_files,
+    get_cache_root,
+    list_files,
+)
 from dex_starr.console import CONSOLE
 from dex_starr.metadata.metadata import Metadata
 
@@ -42,7 +48,7 @@ class Archive:
         return True
 
     def _rename_images(self):
-        image_list = list_files(self.extracted_folder, filter_=IMAGE_EXTENSIONS)
+        image_list = filter_files(self.extracted_folder, filter_=IMAGE_EXTENSIONS)
         list_length = len(str(len(image_list)))
         for index, img_file in enumerate(image_list):
             img_file.rename(

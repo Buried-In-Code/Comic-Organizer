@@ -1,3 +1,4 @@
+import html
 from typing import Optional
 
 from mokkari.issue import Issue as MokkariIssue
@@ -19,7 +20,7 @@ class MokkariTalker:
         _issue = None
         issue_list = self.session.issues_list({"series_id": series_id, "number": number})
         if not issue_list:
-            CONSOLE.print(f"Unable to find a issue for: {number}", style="logging.level.warning")
+            CONSOLE.print("Unable to find a matching issue", style="logging.level.warning")
             return None
         issue_list = sorted(issue_list, key=lambda i: i.issue_name)
         issue_index = create_menu(
@@ -44,7 +45,9 @@ class MokkariTalker:
             _issue = self._search_issue(series_id, search)
         issue.characters = list({*issue.characters, *[c.alias for c in _issue.characters]})
         issue.cover_date = _issue.cover_date or issue.cover_date
-        # TODO: Add Creators
+        issue.creators = {
+            html.unescape(x.creator): [r.name for r in x.roles] for x in _issue.credits
+        }
         issue.format = _issue.series.series_type
         if _issue.series.series_type.name == "Annual":
             issue.format = "Annual"
@@ -86,14 +89,11 @@ class MokkariTalker:
             if series_index != 0:
                 _series = self.session.series(series_list[series_index - 1].id)
         if not _series and start_year:
-            _series = self._search_series(publisher_id, title, volume=volume)
+            return self._search_series(publisher_id, title, volume=volume)
         if not _series and volume:
-            _series = self._search_series(publisher_id, title, start_year=start_year)
+            return self._search_series(publisher_id, title, start_year=start_year)
         if not _series:
-            CONSOLE.print(
-                f"Unable to find a series for: {title} v{volume} ({start_year})",
-                style="logging.level.warning",
-            )
+            CONSOLE.print("Unable to find a matching series", style="logging.level.warning")
         return _series
 
     def _update_series(self, series: Series, publisher_id: int):
@@ -126,7 +126,7 @@ class MokkariTalker:
         _publisher = None
         publisher_list = self.session.publishers_list({"name": title})
         if not publisher_list:
-            CONSOLE.print(f"Unable to find a publisher for: {title}", style="logging.level.warning")
+            CONSOLE.print("Unable to find a matching publisher", style="logging.level.warning")
             return None
         publisher_list = sorted(publisher_list, key=lambda p: p.name)
         publisher_index = create_menu(

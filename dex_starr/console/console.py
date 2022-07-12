@@ -11,8 +11,8 @@ CONSOLE = Console(
     theme=Theme(
         {
             "prompt": "green",
-            "prompt.choices": "italic yellow",
-            "prompt.default": "dim yellow",
+            "prompt.choices": "yellow",
+            "prompt.default": "dim italic yellow",
             "logging.level.debug": "dim white",
             "logging.level.info": "white",
             "logging.level.warning": "yellow",

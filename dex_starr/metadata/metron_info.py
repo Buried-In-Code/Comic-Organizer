@@ -13,7 +13,15 @@ def to_pascal_case(value: str) -> str:
     return value.replace("_", " ").title().replace(" ", "")
 
 
-class Page(BaseModel):
+class MetronModel(BaseModel):
+    class Config:
+        alias_generator = to_pascal_case
+        anystr_strip_whitespace = True
+        allow_population_by_field_name = True
+        extra = Extra.allow
+
+
+class Page(MetronModel):
     image: int = Field(alias="@Image")
     type: str = Field(alias="@Type", default="Story")
     double_page: bool = Field(alias="@DoublePage", default=False)
@@ -23,101 +31,58 @@ class Page(BaseModel):
     image_width: int = Field(alias="@ImageWidth", default=-1)
     image_height: int = Field(alias="@ImageHeight", default=-1)
 
-    class Config:
-        alias_generator = to_pascal_case
-        anystr_strip_whitespace = True
-        allow_population_by_field_name = True
-        extra = Extra.allow
+
+class Resource(MetronModel):
+    id: Optional[str] = Field(alias="@id", default=None)
+    value: str = Field(alias="#text")
 
 
-class Credit(BaseModel):
-    creator: str
-    roles: List[str] = Field(default_factory=list)
+class Credit(MetronModel):
+    creator: Resource
+    roles: List[Resource] = Field(default_factory=list)
 
     def __init__(self, **data):
-        data["Roles"] = data["Roles"]["Role"]
+        if "Roles" in data:
+            data["Roles"] = data["Roles"]["Role"]
         super().__init__(**data)
 
-    class Config:
-        alias_generator = to_pascal_case
-        anystr_strip_whitespace = True
-        allow_population_by_field_name = True
-        extra = Extra.allow
 
-
-class GTIN(BaseModel):
+class GTIN(MetronModel):
     isbn: Optional[str] = Field(alias="ISBN", default=None)
     upc: Optional[str] = Field(alias="UPC", default=None)
 
-    class Config:
-        alias_generator = to_pascal_case
-        anystr_strip_whitespace = True
-        allow_population_by_field_name = True
-        extra = Extra.allow
+
+class Reprint(MetronModel):
+    name: Resource
 
 
-class Source(BaseModel):
-    source: str = Field(alias="@source")
-    value: int = Field(alias="#text", gt=0)
-
-    class Config:
-        alias_generator = to_pascal_case
-        anystr_strip_whitespace = True
-        allow_population_by_field_name = True
-        extra = Extra.allow
-
-
-class Reprint(BaseModel):
-    id: Optional[Source] = Field(alias="ID", default=None)
-    name: str
-
-    class Config:
-        alias_generator = to_pascal_case
-        anystr_strip_whitespace = True
-        allow_population_by_field_name = True
-        extra = Extra.allow
-
-
-class Arc(BaseModel):
-    name: str
+class Arc(MetronModel):
+    name: Resource
     number: Optional[int] = Field(default=None, gt=0)
 
-    class Config:
-        alias_generator = to_pascal_case
-        anystr_strip_whitespace = True
-        allow_population_by_field_name = True
-        extra = Extra.allow
 
-
-class Price(BaseModel):
+class Price(MetronModel):
     currency: str = Field(alias="@currency")
     value: float = Field(alias="#text")
 
-    class Config:
-        alias_generator = to_pascal_case
-        anystr_strip_whitespace = True
-        allow_population_by_field_name = True
-        extra = Extra.allow
 
-
-class Series(BaseModel):
+class Series(MetronModel):
     lang: str = Field(alias="@lang", default="EN")
-    name: str
-    sort_name: str
-    type: str
-
-    class Config:
-        alias_generator = to_pascal_case
-        anystr_strip_whitespace = True
-        allow_population_by_field_name = True
-        extra = Extra.allow
+    name: Resource
+    sort_name: Optional[str] = None
+    type: Optional[str] = None
+    volume: Optional[int] = None
 
 
-class MetronInfo(BaseModel):
+class Source(MetronModel):
+    source: str = Field(alias="@source")
+    value: str = Field(alias="#text")
+
+
+class MetronInfo(MetronModel):
     id: Optional[Source] = Field(alias="ID", default=None)
     publisher: str
     series: Series
-    volume: Optional[int] = None
     collection_title: Optional[str] = None
     number: Optional[str] = None
     stories: List[str] = Field(default_factory=list)
@@ -126,12 +91,12 @@ class MetronInfo(BaseModel):
     cover_date: Optional[date] = None
     store_date: Optional[date] = None
     page_count: Optional[int] = None
-    genres: List[str] = Field(default_factory=list)
-    tags: List[str] = Field(default_factory=list)
+    genres: List[Resource] = Field(default_factory=list)
+    tags: List[Resource] = Field(default_factory=list)
     arcs: List[Arc] = Field(default_factory=list)
-    characters: List[str] = Field(default_factory=list)
-    teams: List[str] = Field(default_factory=list)
-    locations: List[str] = Field(default_factory=list)
+    characters: List[Resource] = Field(default_factory=list)
+    teams: List[Resource] = Field(default_factory=list)
+    locations: List[Resource] = Field(default_factory=list)
     reprints: List[Reprint] = Field(default_factory=list)
     gtin: Optional[GTIN] = Field(alias="GTIN", default=None)
     black_and_white: bool = False
@@ -140,16 +105,10 @@ class MetronInfo(BaseModel):
     credits: List[Credit] = Field(default_factory=list)
     pages: List[Page] = Field(default_factory=list)
 
-    class Config:
-        alias_generator = to_pascal_case
-        anystr_strip_whitespace = True
-        allow_population_by_field_name = True
-        extra = Extra.allow
-
     def __init__(self, **data):
         if "Stories" in data:
             data["Stories"] = data["Stories"]["Story"]
-        if "Generes" in data:
+        if "Genres" in data:
             data["Genres"] = data["Genres"]["Genre"]
         if "Tags" in data:
             data["Tags"] = data["Tags"]["Tag"]
@@ -172,22 +131,25 @@ class MetronInfo(BaseModel):
     def to_metadata(self) -> Metadata:
         return Metadata(
             publisher=Publisher(title=self.publisher),
-            series=MetadataSeries(title=self.series.name, volume=self.volume),
+            series=MetadataSeries(
+                title=self.series.name.value,
+                volume=self.series.volume,
+            ),
             issue=Issue(
-                characters=self.characters,
+                characters=[c.value for c in self.characters],
                 cover_date=self.cover_date,
-                creators={c.creator: sorted(r.value for r in c.roles) for c in self.credits},
+                creators={c.creator.value: sorted(r.value for r in c.roles) for c in self.credits},
                 format=self.series.type,
                 genres=sorted({g.value for g in self.genres}),
                 language_iso=self.series.lang,
-                locations=self.locations,
+                locations=[x.value for x in self.locations],
                 number=self.number,
                 page_count=self.page_count,
-                # TODO: Sources
+                sources={self.id.source: self.id.value} if self.id else {},
                 store_date=self.store_date,
                 story_arcs=self.stories,
                 summary=self.summary,
-                teams=self.teams,
+                teams=[t.value for t in self.teams],
                 title=self.collection_title,
             ),
         )
@@ -207,6 +169,7 @@ class MetronInfo(BaseModel):
                     "Location",
                     "Reprint",
                     "Credit",
+                    "Role",
                     "Page",
                 ],
             )["MetronInfo"]
@@ -254,6 +217,11 @@ class MetronInfo(BaseModel):
             else:
                 del content["Reprints"]
             if "Credits" in content and content["Credits"]:
+                for credit in content["Credits"]:
+                    if "Roles" in credit and credit["Roles"]:
+                        credit["Roles"] = {"Role": credit["Roles"]}
+                    else:
+                        del credit["Roles"]
                 content["Credits"] = {"Credit": content["Credits"]}
             else:
                 del content["Credits"]
