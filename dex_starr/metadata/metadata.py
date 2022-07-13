@@ -36,9 +36,9 @@ class Publisher(BaseModel):
 
 class Series(BaseModel):
     sources: Dict[str, int] = Field(default_factory=dict)
-    start_year: Optional[int] = None
+    start_year: Optional[int] = Field(default=None, gt=1900)
     title: str
-    volume: int = 1
+    volume: int = Field(default=1, gt=0)
 
     class Config:
         alias_generator = to_camel_case
@@ -60,7 +60,7 @@ class Issue(BaseModel):
     language_iso: str = "EN"
     locations: List[str] = Field(default_factory=list)
     number: str
-    page_count: Optional[int] = None
+    page_count: Optional[int] = Field(default=None, gt=0)
     sources: Dict[str, int] = Field(default_factory=dict)
     store_date: Optional[date] = None
     story_arcs: List[str] = Field(default_factory=list)

@@ -70,7 +70,7 @@ class Series(MetronModel):
     lang: str = Field(alias="@lang", default="EN")
     name: Resource
     sort_name: Optional[str] = None
-    type: Optional[str] = None
+    format: Optional[str] = None
     volume: Optional[int] = None
 
 
@@ -139,7 +139,7 @@ class MetronInfo(MetronModel):
                 characters=[c.value for c in self.characters],
                 cover_date=self.cover_date,
                 creators={c.creator.value: sorted(r.value for r in c.roles) for c in self.credits},
-                format=self.series.type,
+                format=self.series.format,
                 genres=sorted({g.value for g in self.genres}),
                 language_iso=self.series.lang,
                 locations=[x.value for x in self.locations],
@@ -184,51 +184,29 @@ class MetronInfo(MetronModel):
             content["@xmlns:xsd"] = "https://www.w3.org/2001/XMLSchema"
             content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
 
-            if "Stories" in content and content["Stories"]:
-                content["Stories"] = {"Story": content["Stories"]}
+            mappings = {
+                "Stories": "Story",
+                "Genres": "Genre",
+                "Tags": "Tag",
+                "Arcs": "Arc",
+                "Characters": "Character",
+                "Teams": "Team",
+                "Locations": "Location",
+                "Reprints": "Reprint",
+                "Credits": "Credit",
+                "Pages": "Page",
+            }
+            for key, value in mappings.items():
+                if key in content and content[key]:
+                    content[key] = {value: content[key]}
+                else:
+                    del content[key]
+            if "Roles" in content["Credits"]["Credit"] and content["Credits"]["Credit"]["Roles"]:
+                content["Credits"]["Credit"]["Roles"] = {
+                    "Role": content["Credits"]["Credit"]["Roles"]
+                }
             else:
-                del content["Stories"]
-            if "Genres" in content and content["Genres"]:
-                content["Genres"] = {"Genre": content["Genres"]}
-            else:
-                del content["Genres"]
-            if "Tags" in content and content["Tags"]:
-                content["Tags"] = {"Tag": content["Tags"]}
-            else:
-                del content["Tags"]
-            if "Arcs" in content and content["Arcs"]:
-                content["Arcs"] = {"Arc": content["Arcs"]}
-            else:
-                del content["Arcs"]
-            if "Characters" in content and content["Characters"]:
-                content["Characters"] = {"Character": content["Characters"]}
-            else:
-                del content["Characters"]
-            if "Teams" in content and content["Teams"]:
-                content["Teams"] = {"Team": content["Teams"]}
-            else:
-                del content["Teams"]
-            if "Locations" in content and content["Locations"]:
-                content["Locations"] = {"Location": content["Locations"]}
-            else:
-                del content["Locations"]
-            if "Reprints" in content and content["Reprints"]:
-                content["Reprints"] = {"Reprint": content["Reprints"]}
-            else:
-                del content["Reprints"]
-            if "Credits" in content and content["Credits"]:
-                for credit in content["Credits"]:
-                    if "Roles" in credit and credit["Roles"]:
-                        credit["Roles"] = {"Role": credit["Roles"]}
-                    else:
-                        del credit["Roles"]
-                content["Credits"] = {"Credit": content["Credits"]}
-            else:
-                del content["Credits"]
-            if "Pages" in content and content["Pages"]:
-                content["Pages"] = {"Page": content["Pages"]}
-            else:
-                del content["Pages"]
+                del content["Credits"]["Credit"]["Roles"]
 
             xmltodict.unparse(
                 {"MetronInfo": {k: content[k] for k in sorted(content)}},

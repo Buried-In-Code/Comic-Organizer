@@ -1,0 +1,61 @@
+{
+	"data": {
+		"publisher": {
+			"imprint": null,
+			"sources": {
+					"Comicvine": 123,
+					"Metron": 123,
+					"League of Comic Geeks": 123
+				},
+			"title": "DC Comics"
+		},
+		"series": {
+			"sources": {
+				"Comicvine": 123,
+				"Metron": 123,
+				"League of Comic Geeks": 123
+			},
+			"startYear": 2004,
+			"title": "Green Lantern",
+			"volume": 4
+		},
+		"issue": {
+			"characters": [
+				"Hal Jordan",
+				"Saint Walker"
+			],
+			"coverDate": "2010-01-01",
+			"creators": {
+				"Adam Schlagman": ["Editor"],
+				"Christian Alamy": ["Inker"],
+				"Doug Mahnke": ["Cover", "Inker", "Penciller"]
+			},
+			"format": "Comic",
+			"genres": [],
+			"languageIso": "EN",
+			"locations": ["Okaara", "Ryut"],
+			"number": "48",
+			"page_count": null,
+			"sources": {
+				"Comicvine": 123,
+				"Metron": 123,
+				"League of Comic Geeks": 123
+			},
+			"storeDate": "2009-11-25",
+			"storyArcs": ["Blackest Night"],
+			"summary": "Short summary of the issue.",
+			"teams": [
+				"Black Lantern Corps",
+				"Blue Lantern Corps"
+			],
+			"title": "Gimme A Break"
+		}
+	},
+	"meta": {
+		"date": "2022-06-22",
+		"tool": {
+			"name": "Dex-Starr",
+			"version": "0.2.0"
+		}
+	}
+}

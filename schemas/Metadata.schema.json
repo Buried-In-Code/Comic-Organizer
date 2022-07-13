@@ -10,11 +10,74 @@
 		"data": {
 			"type": "object",
 			"required": [
-				"issue",
 				"publisher",
-				"series"
+				"series",
+				"issue"
 			],
 			"properties": {
+				"publisher": {
+					"type": "object",
+					"required": [
+						"imprint",
+						"sources",
+						"title"
+					],
+					"properties": {
+						"imprint": {
+							"type": [
+								"string",
+								"null"
+							],
+							"default": null
+						},
+						"sources": {
+							"type": "object",
+							"patternProperties": {
+								".*": {
+									"type": "integer"
+								}
+							}
+						},
+						"title": {
+							"type": "string"
+						}
+					}
+				},
+				"series": {
+					"type": "object",
+					"required": [
+						"sources",
+						"startYear",
+						"title",
+						"volume"
+					],
+					"properties": {
+						"sources": {
+							"type": "object",
+							"patternProperties": {
+								".*": {
+									"type": "integer"
+								}
+							}
+						},
+						"startYear": {
+							"type": [
+								"integer",
+								"null"
+							],
+							"minimum": 1900,
+							"default": null
+						},
+						"title": {
+							"type": "string"
+						},
+						"volume": {
+							"type": "integer",
+							"minimum": 1,
+							"default": 1
+						}
+					}
+				},
 				"issue": {
 					"type": "object",
 					"required": [
@@ -74,11 +137,8 @@
 							"uniqueItems": true
 						},
 						"languageIso": {
-							"type": [
-								"string",
-								"null"
-							],
-							"default": null
+							"type": "string",
+							"default": "EN"
 						},
 						"locations": {
 							"type": "array",
@@ -150,69 +210,6 @@
 						"null"
 					],
 					"default": null
-				},
-				"publisher": {
-					"type": "object",
-					"required": [
-						"imprint",
-						"sources",
-						"title"
-					],
-					"properties": {
-						"imprint": {
-							"type": [
-								"string",
-								"null"
-							],
-							"default": null
-						},
-						"sources": {
-							"type": "object",
-							"patternProperties": {
-								".*": {
-									"type": "integer"
-								}
-							}
-						},
-						"title": {
-							"type": "string"
-						}
-					}
-				},
-				"series": {
-					"type": "object",
-					"required": [
-						"sources",
-						"startYear",
-						"title",
-						"volume"
-					],
-					"properties": {
-						"sources": {
-							"type": "object",
-							"patternProperties": {
-								".*": {
-									"type": "integer"
-								}
-							}
-						},
-						"startYear": {
-							"type": [
-								"integer",
-								"null"
-							],
-							"minimum": 1900,
-							"default": null
-						},
-						"title": {
-							"type": "string"
-						},
-						"volume": {
-							"type": "integer",
-							"minimum": 1,
-							"default": 1
-						}
-					}
 				}
 			}
 		},
