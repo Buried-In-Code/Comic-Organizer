@@ -13,14 +13,11 @@ CONSOLE = Console(
             "prompt": "green",
             "prompt.choices": "yellow",
             "prompt.default": "dim italic yellow",
-            "logging.level.debug": "dim white",
+            "logging.level.debug": "dim italic white",
             "logging.level.info": "white",
-            "logging.level.warning": "yellow",
-            "logging.level.error": "red",
-            "logging.level.critical": "bold red",
-            "bar.back": "dim bright_black",
-            "bar.complete": "yellow",
-            "bar.finished": "green",
+            "logging.level.warning": "red",
+            "logging.level.error": "bold red",
+            "logging.level.critical": "magenta",
         }
     )
 )

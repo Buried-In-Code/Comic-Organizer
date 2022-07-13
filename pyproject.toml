@@ -41,6 +41,7 @@ rich = "^12.5.1"
 "ruamel.yaml" = "^0.17.21"
 simyan = "^0.9.1"
 xmltodict = "^0.13.0"
+py7zr = "^0.19.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.20.0"

@@ -12,65 +12,44 @@ def to_space_case(value: str) -> str:
     return value.replace("_", " ").title()
 
 
-class LeagueOfComicGeeks(BaseModel):
+class SettingsModel(BaseModel):
+    class Config:
+        alias_generator = to_space_case
+        anystr_strip_whitespace = True
+        allow_population_by_field_name = True
+        extra = Extra.ignore
+
+
+class LeagueOfComicGeeks(SettingsModel):
     api_key: Optional[str] = Field(alias="API Key", default=None)
     client_id: Optional[str] = None
 
-    class Config:
-        alias_generator = to_space_case
-        anystr_strip_whitespace = True
-        allow_population_by_field_name = True
-        extra = Extra.ignore
 
-
-class MetronSettings(BaseModel):
-    username: Optional[str] = None
-    password: Optional[str] = None
+class MetronSettings(SettingsModel):
     generate_info_file: bool = True
-
-    class Config:
-        alias_generator = to_space_case
-        anystr_strip_whitespace = True
-        allow_population_by_field_name = True
-        extra = Extra.ignore
+    password: Optional[str] = None
+    username: Optional[str] = None
 
 
-class ComicvineSettings(BaseModel):
+class ComicvineSettings(SettingsModel):
     api_key: Optional[str] = Field(alias="API Key", default=None)
 
-    class Config:
-        alias_generator = to_space_case
-        anystr_strip_whitespace = True
-        allow_population_by_field_name = True
-        extra = Extra.ignore
 
-
-class GeneralSettings(BaseModel):
-    generate_metadata_file: bool = True
-    generate_comic_info_file: bool = True
-    resolution_order: List[str] = Field(default_factory=list)
+class GeneralSettings(SettingsModel):
     collection_folder: Path = Path.home() / "comics" / "collection"
-
-    class Config:
-        alias_generator = to_space_case
-        anystr_strip_whitespace = True
-        allow_population_by_field_name = True
-        extra = Extra.ignore
+    generate_comicinfo_file: bool = Field(alias="Generate ComicInfo File", default=True)
+    generate_metadata_file: bool = True
+    output_format: str = "cbz"
+    resolution_order: List[str] = Field(default_factory=list)
 
 
-class Settings(BaseModel):
+class Settings(SettingsModel):
     general: GeneralSettings = GeneralSettings()
     comicvine: ComicvineSettings = ComicvineSettings()
-    metron: MetronSettings = MetronSettings()
     league_of_comic_geeks: LeagueOfComicGeeks = Field(
         alias="League of Comic Geeks", default=LeagueOfComicGeeks()
     )
-
-    class Config:
-        alias_generator = to_space_case
-        anystr_strip_whitespace = True
-        allow_population_by_field_name = True
-        extra = Extra.ignore
+    metron: MetronSettings = MetronSettings()
 
     @staticmethod
     def load() -> "Settings":
