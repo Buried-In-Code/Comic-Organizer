@@ -3,10 +3,10 @@
 		"publisher": {
 			"imprint": null,
 			"sources": {
-					"Comicvine": 123,
-					"Metron": 123,
-					"League of Comic Geeks": 123
-				},
+				"Comicvine": 123,
+				"Metron": 123,
+				"League of Comic Geeks": 123
+			},
 			"title": "DC Comics"
 		},
 		"series": {
@@ -26,14 +26,25 @@
 			],
 			"coverDate": "2010-01-01",
 			"creators": {
-				"Adam Schlagman": ["Editor"],
-				"Christian Alamy": ["Inker"],
-				"Doug Mahnke": ["Cover", "Inker", "Penciller"]
+				"Adam Schlagman": [
+					"Editor"
+				],
+				"Christian Alamy": [
+					"Inker"
+				],
+				"Doug Mahnke": [
+					"Cover",
+					"Inker",
+					"Penciller"
+				]
 			},
 			"format": "Comic",
 			"genres": [],
 			"languageIso": "EN",
-			"locations": ["Okaara", "Ryut"],
+			"locations": [
+				"Okaara",
+				"Ryut"
+			],
 			"number": "48",
 			"page_count": null,
 			"sources": {
@@ -42,7 +53,9 @@
 				"League of Comic Geeks": 123
 			},
 			"storeDate": "2009-11-25",
-			"storyArcs": ["Blackest Night"],
+			"storyArcs": [
+				"Blackest Night"
+			],
 			"summary": "Short summary of the issue.",
 			"teams": [
 				"Black Lantern Corps",
