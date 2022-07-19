@@ -20,16 +20,21 @@
 [![Github Action - Testing](https://img.shields.io/github/workflow/status/Buried-In-Code/Dex-Starr/Testing?logo=Github-Actions&label=Tests&style=flat-square)](https://github.com/Buried-In-Code/Dex-Starr/actions/workflows/testing.yaml)
 
 Dex-Starr helps sort and organize your comic collection by using the information stored in ComicInfo files.\
-It also formats all your digital comics into a single format (CBZ) and transforms the `ComicInfo.xml` inside most digital comic files into either Json or Yaml.\
+It also formats all your digital comics into a single format (cbz or cb7), adds and/or updates the supported list of Info files.\
 Dex-Starr can also pull information from a list of sources to populate missing fields.
 
 ## Supported Formats
 
-### Extensions
+### Input Extensions
 
 - .cbz
 - .cbr
 - .cbt
+- .cb7
+
+### Output Extensions
+
+- .cbz
 - .cb7
 
 ### Info Files
