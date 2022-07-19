@@ -1,6 +1,6 @@
 from typing import Optional
 
-from rich.prompt import IntPrompt, Prompt
+from rich.prompt import Prompt
 from simyan.comicvine import Comicvine
 from simyan.exceptions import ServiceError
 from simyan.schemas.issue import Issue as SimyanIssue
@@ -54,15 +54,19 @@ class SimyanTalker:
             if search.lower() == "exit":
                 return
             _issue = self._search_issue(series_id, search)
-        issue.characters = list({*issue.characters, *[c.name for c in _issue.characters]})
+        if _issue.characters:
+            issue.characters = {c.name for c in _issue.characters}
         issue.cover_date = _issue.cover_date or issue.cover_date
-        issue.locations = list({*issue.locations, *[x.name for x in _issue.locations]})
+        if _issue.locations:
+            issue.locations = {x.name for x in _issue.locations}
         issue.number = _issue.number or issue.number
         issue.sources["Comicvine"] = _issue.issue_id
         issue.store_date = _issue.store_date or issue.store_date
-        issue.story_arcs = list({*issue.story_arcs, *[s.name for s in _issue.story_arcs]})
+        if _issue.story_arcs:
+            issue.story_arcs = {s.name for s in _issue.story_arcs}
         issue.summary = _issue.summary or issue.summary
-        issue.teams = list({*issue.teams, *[t.name for t in _issue.teams]})
+        if _issue.teams:
+            issue.teams = {t.name for t in _issue.teams}
         issue.title = _issue.name or issue.title
 
     def _search_volume(
@@ -73,6 +77,7 @@ class SimyanTalker:
             volume_list = self.session.volume_list({"filter": f"name:{title}"})
         except ServiceError:
             volume_list = []
+        volume_list = filter(lambda v: v.publisher is not None, volume_list)
         volume_list = filter(lambda v: v.publisher.id_ == publisher_id, volume_list)
         if start_year:
             volume_list = filter(lambda v: v.start_year == start_year, volume_list)
@@ -104,13 +109,10 @@ class SimyanTalker:
         if not volume:
             volume = self._search_volume(publisher_id, series.title, series.start_year)
         while not volume:
-            search_title = Prompt.ask("Volume title", default="Exit", console=CONSOLE)
-            if search_title.lower() == "exit":
+            search = Prompt.ask("Volume title", default="Exit", console=CONSOLE)
+            if search.lower() == "exit":
                 return
-            search_start_year = IntPrompt.ask(
-                "Volume start year", default=None, show_default=True, console=CONSOLE
-            )
-            volume = self._search_volume(publisher_id, search_title, search_start_year)
+            volume = self._search_volume(publisher_id, search)
         series.sources["Comicvine"] = volume.volume_id
         series.start_year = volume.start_year or series.start_year
         series.title = volume.name or series.title

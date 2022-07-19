@@ -20,15 +20,20 @@ class SettingsModel(BaseModel):
         extra = Extra.ignore
 
 
-class LeagueOfComicGeeks(SettingsModel):
-    api_key: Optional[str] = Field(alias="API Key", default=None)
-    client_id: Optional[str] = None
-
-
 class MetronSettings(SettingsModel):
     generate_info_file: bool = True
     password: Optional[str] = None
     username: Optional[str] = None
+
+
+class MarvelSettings(SettingsModel):
+    public_key: Optional[str] = None
+    private_key: Optional[str] = None
+
+
+class LeagueOfComicGeeks(SettingsModel):
+    api_key: Optional[str] = Field(alias="API Key", default=None)
+    client_id: Optional[str] = None
 
 
 class ComicvineSettings(SettingsModel):
@@ -49,6 +54,7 @@ class Settings(SettingsModel):
     league_of_comic_geeks: LeagueOfComicGeeks = Field(
         alias="League of Comic Geeks", default=LeagueOfComicGeeks()
     )
+    marvel: MarvelSettings = MarvelSettings()
     metron: MetronSettings = MetronSettings()
 
     @staticmethod

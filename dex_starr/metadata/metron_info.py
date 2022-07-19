@@ -201,11 +201,12 @@ class MetronInfo(MetronModel):
                     content[key] = {value: content[key]}
                 else:
                     del content[key]
-            for credit in content["Credits"]["Credit"]:
-                if "Roles" in credit and credit["Roles"]:
-                    credit["Roles"] = {"Role": credit["Roles"]}
-                else:
-                    del credit["Roles"]
+            if "Credits" in content:
+                for credit in content["Credits"]["Credit"]:
+                    if "Roles" in credit and credit["Roles"]:
+                        credit["Roles"] = {"Role": credit["Roles"]}
+                    else:
+                        del credit["Roles"]
 
             xmltodict.unparse(
                 {"MetronInfo": {k: content[k] for k in sorted(content)}},

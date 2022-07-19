@@ -5,7 +5,7 @@ from mokkari.issue import Issue as MokkariIssue
 from mokkari.publisher import Publisher as MokkariPublisher
 from mokkari.series import Series as MokkariSeries
 from mokkari.session import Session as Mokkari
-from rich.prompt import IntPrompt, Prompt
+from rich.prompt import Prompt
 
 from dex_starr.console import CONSOLE, create_menu
 from dex_starr.metadata.metadata import Issue, Metadata, Publisher, Series
@@ -24,7 +24,7 @@ class MokkariTalker:
             return None
         issue_list = sorted(issue_list, key=lambda i: i.issue_name)
         issue_index = create_menu(
-            options=[f"{i.id} | {i.name}" for i in issue_list],
+            options=[f"{i.id} | {i.issue_name or i.collection_title}" for i in issue_list],
             prompt="Select Issue",
             default="None of the Above",
         )
@@ -43,27 +43,32 @@ class MokkariTalker:
             if search.lower() == "exit":
                 return
             _issue = self._search_issue(series_id, search)
-        issue.characters = list({*issue.characters, *[c.alias for c in _issue.characters]})
+        if _issue.characters:
+            issue.characters = {c.name for c in _issue.characters}
         issue.cover_date = _issue.cover_date or issue.cover_date
-        issue.creators = {
-            html.unescape(x.creator): [r.name for r in x.roles] for x in _issue.credits
-        }
-        issue.format = _issue.series.series_type
-        if _issue.series.series_type.name == "Annual":
+        if _issue.credits:
+            issue.creators = {
+                html.unescape(x.creator): [r.name for r in x.role] for x in _issue.credits
+            }
+        format_name = _issue.series.series_type or issue.format
+        if format_name == "Annual":
             issue.format = "Annual"
-        elif _issue.series.series_type.name == "Trade Paperback":
+        elif format_name == "Trade Paperback":
             issue.format = "Trade Paperback"
-        issue.format = "Comic"
+        else:
+            issue.format = "Comic"
         # TODO: Add Genres
         # TODO: Add Language ISO
         # TODO: Add Locations
         issue.number = _issue.number or issue.number
         issue.sources["Metron"] = _issue.id
         issue.store_date = _issue.store_date or issue.store_date
-        issue.story_arcs = list({*issue.story_arcs, *[s.name for s in _issue.arcs]})
+        if _issue.arcs:
+            issue.story_arcs = {s.name for s in _issue.arcs}
         issue.summary = _issue.desc or issue.summary
-        issue.teams = list({*issue.teams, *[t.name for t in _issue.teams]})
-        issue.title = _issue.issue_name or _issue.collection_title or issue.title
+        if _issue.teams:
+            issue.teams = {t.name for t in _issue.teams}
+        issue.title = _issue.collection_title or issue.title
 
     def _search_series(
         self,
@@ -105,18 +110,10 @@ class MokkariTalker:
                 publisher_id, series.title, series.volume, series.start_year
             )
         while not _series:
-            search_title = Prompt.ask("Series title", default="Exit", console=CONSOLE)
-            if search_title.lower() == "exit":
+            search = Prompt.ask("Series title", default="Exit", console=CONSOLE)
+            if search.lower() == "exit":
                 return
-            search_volume = IntPrompt.ask(
-                "Series volume", default=None, show_default=True, console=CONSOLE
-            )
-            search_start_year = IntPrompt.ask(
-                "Series start year", default=None, show_default=True, console=CONSOLE
-            )
-            _series = self._search_series(
-                publisher_id, search_title, search_volume, search_start_year
-            )
+            _series = self._search_series(publisher_id, search)
         series.sources["Metron"] = _series.id
         series.start_year = _series.year_began or series.start_year
         series.title = _series.name or series.title

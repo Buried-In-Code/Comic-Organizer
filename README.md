@@ -55,6 +55,13 @@ Dex-Starr can also pull information from a list of sources to populate missing f
 | `--manual-edit`      | bool | Pause the Script before bundling the files to allow manual removal of Ads, etc... |
 | `--resolve-manually` | bool | Manually choose which fields are chosen by the importer                           |
 
+## Services
+
+- [Comicvine](https://comicvine.gamespot.com) using the [Simyan](https://github.com/Metron-Project/Simyan) lib
+- [League of Comic Geeks](https://leagueofcomicgeeks.com)
+- [Marvel](https://www.marvel.com/comics) using the [Esak](https://github.com/Metron-Project/Esak) lib
+- [Metron](https://metron.cloud) using the [Mokkari](https://github.com/Metron-Project/Mokkari) lib
+
 ## File Renaming
 
 ### Series Naming

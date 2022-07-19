@@ -4,7 +4,9 @@ from typing import Dict, List, Optional
 
 import xmltodict
 from pydantic import BaseModel, Extra, Field
+from rich.prompt import Prompt
 
+from dex_starr.console import CONSOLE, create_menu
 from dex_starr.metadata.metadata import Issue, Metadata, Publisher, Series
 
 
@@ -154,7 +156,23 @@ class ComicInfo(BaseModel):
             return []
         return sorted(x.strip() for x in self.locations.split(","))
 
+    def _fill_missing_fields(self):
+        CONSOLE.print("Filling in missing fields", style="logging.level.info")
+        if self.publisher is None:
+            self.publisher = Prompt.ask("Publisher title", console=CONSOLE)
+        if self.series is None:
+            self.series = Prompt.ask("Series title", console=CONSOLE)
+        if self.number is None:
+            self.number = Prompt.ask("Issue number", console=CONSOLE)
+        formats = ["Annual", "Comic", "Digital Chapter", "Hardcover", "Trade Paperback"]
+        format_index = create_menu(options=formats, prompt="Issue format", default="Comic")
+        self.format = "Comic"
+        if format_index != 0:
+            self.format = formats[format_index - 1]
+
     def to_metadata(self) -> Metadata:
+        self._fill_missing_fields()
+
         # region Parse Creators
         creators = {}
         for writer in self.writer_list:
@@ -200,7 +218,7 @@ class ComicInfo(BaseModel):
             ),
             series=Series(title=self.series, start_year=self.volume),
             issue=Issue(
-                format="Comic",
+                format=self.format,
                 number=self.number,
                 characters=self.character_list,
                 cover_date=self.cover_date,

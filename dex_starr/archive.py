@@ -44,6 +44,7 @@ class Archive:
         return True
 
     def extract(self) -> bool:
+        CONSOLE.print(f"Extracting `{self.source_file.name}`", style="logging.level.info")
         extracted_folder = get_cache_root() / self.source_file.stem
         if extracted_folder.exists():
             CONSOLE.print(
@@ -98,6 +99,7 @@ class Archive:
             series_folder
             / f"{metadata.series.file_name}{metadata.issue.file_name}.{general.output_format}"
         )
+        CONSOLE.print(f"Archiving `{self.result_file.name}`", style="logging.level.info")
         self._rename_images()
 
         archive_file = self.extracted_folder.parent / self.result_file.name

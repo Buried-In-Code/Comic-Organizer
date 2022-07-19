@@ -28,6 +28,7 @@ class Publisher(BaseModel):
     class Config:
         alias_generator = to_camel_case
         allow_population_by_field_name = True
+        validate_assignment = True
 
     @property
     def file_name(self) -> str:
@@ -43,6 +44,7 @@ class Series(BaseModel):
     class Config:
         alias_generator = to_camel_case
         allow_population_by_field_name = True
+        validate_assignment = True
 
     @property
     def file_name(self) -> str:
@@ -71,6 +73,7 @@ class Issue(BaseModel):
     class Config:
         alias_generator = to_camel_case
         allow_population_by_field_name = True
+        validate_assignment = True
 
     @property
     def file_name(self) -> str:
@@ -106,6 +109,7 @@ class Metadata(BaseModel):
     class Config:
         alias_generator = to_camel_case
         allow_population_by_field_name = True
+        validate_assignment = True
 
     @staticmethod
     def from_file(comic_info_file: Path) -> "Metadata":

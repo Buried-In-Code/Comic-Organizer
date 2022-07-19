@@ -1,19 +1,19 @@
 import html
-import re
 from typing import Optional
 
+from himon.exceptions import ServiceError
+from himon.league_of_comic_geeks import LeagueofComicGeeks
+from himon.schemas.comic import Comic
+from himon.sqlite_cache import SQLiteCache
 from rich.prompt import Prompt
 
 from dex_starr.console import CONSOLE, create_menu
 from dex_starr.metadata.metadata import Metadata
-from dex_starr.services.league_of_comic_geeks.schemas import Comic
-from dex_starr.services.league_of_comic_geeks.service import Service
-from dex_starr.services.sqlite_cache import SQLiteCache
 
 
-class Talker:
+class HimonTalker:
     def __init__(self, api_key: str, client_id: str):
-        self.session = Service(api_key, client_id, cache=SQLiteCache(expiry=14))
+        self.session = LeagueofComicGeeks(api_key, client_id, cache=SQLiteCache(expiry=14))
 
     def _generate_search_terms(self, series_title: str, format: str, number: Optional[str] = None):
         search_1 = series_title
@@ -33,18 +33,12 @@ class Talker:
                 search_2 += f" #{number}"
         return search_1, search_2
 
-    def _remove_extra(self, value: Optional[str]) -> Optional[str]:
-        if not value:
-            return value
-        tag_re = re.compile(r"(<!--.*?-->|<[^>]*>)")
-        return " ".join(html.unescape(tag_re.sub("", value.strip())).split())
-
     def _search_metadata(
         self,
         title: str,
         format: str = "Comic",
         number: Optional[str] = None,
-        publisher: Optional[str] = None,
+        publisher_name: Optional[str] = None,
         series_name: Optional[str] = None,
     ) -> Optional[Comic]:
         comic = None
@@ -52,19 +46,28 @@ class Talker:
             search_terms = self._generate_search_terms(title, format, number)
         else:
             search_terms = (title, title)
-        results_1 = [x for x in self.session.comic_list(search_terms[0]) if x.variant == 0]
-        results_2 = [x for x in self.session.comic_list(search_terms[1]) if x.variant == 0]
-        comic_list = sorted(
-            list({x.comic_id: x for x in results_1 + results_2}.values()), key=lambda x: x.title
-        )
-        if publisher is not None:
-            comic_list = list(filter(lambda x: x.publisher_name == publisher, comic_list))
+        try:
+            results_1 = [x for x in self.session.search(search_terms[0]) if not x.is_variant]
+        except ServiceError:
+            results_1 = []
+        try:
+            results_2 = [x for x in self.session.search(search_terms[1]) if not x.is_variant]
+        except ServiceError:
+            results_2 = []
+        comic_list = list({x.comic_id: x for x in results_1 + results_2}.values())
+        if publisher_name is not None:
+            comic_list = [x for x in comic_list if x.publisher_name == publisher_name]
         if series_name is not None:
-            comic_list = list(filter(lambda x: x.series_name == series_name, comic_list))
+            comic_list = [x for x in comic_list if x.series_name == series_name]
+        comic_list = sorted(
+            comic_list,
+            key=lambda x: (x.publisher_name, x.series_name, x.series_volume or 1, x.title),
+        )
         if comic_list:
             comic_index = create_menu(
                 options=[
-                    f"{x.publisher_name} | {x.series_name} v{x.series_volume} | {x.title}"
+                    f"{x.comic_id} | {x.publisher_name} | {x.series_name} v{x.series_volume or 1} "
+                    f"| {x.title}"
                     for x in comic_list
                 ],
                 prompt="Select Comic",
@@ -74,9 +77,9 @@ class Talker:
                 return self.session.comic(comic_list[comic_index - 1].comic_id)
         if not comic and series_name:
             return self._search_metadata(
-                title=title, format=format, number=number, publisher=publisher
+                title=title, format=format, number=number, publisher_name=publisher_name
             )
-        if not comic and publisher:
+        if not comic and publisher_name:
             return self._search_metadata(title=title, format=format, number=number)
         if not comic:
             CONSOLE.print("Unable to find a matching comic", style="logging.level.warning")
@@ -91,7 +94,7 @@ class Talker:
                 metadata.series.title,
                 metadata.issue.format,
                 metadata.issue.number,
-                publisher=metadata.publisher.title,
+                publisher_name=metadata.publisher.title,
                 series_name=metadata.series.title,
             )
         while not comic:
@@ -105,27 +108,23 @@ class Talker:
         metadata.series.start_year = comic.series.year_begin or metadata.series.start_year
         metadata.series.title = comic.series.title or metadata.series.title
         metadata.series.volume = comic.series.volume or metadata.series.volume
-        metadata.issue.characters = list(
-            {
-                *metadata.issue.characters,
-                *[c.name for c in comic.characters],
-            }
-        )
-        metadata.issue.cover_date = comic.details.release_date or metadata.issue.cover_date
-        # TODO: Add Creators
-        if not metadata.issue.creators:
+        if comic.characters:
+            metadata.issue.characters = {c.name for c in comic.characters}
+        metadata.issue.cover_date = comic.release_date or metadata.issue.cover_date
+        if comic.creators:
             metadata.issue.creators = {
                 html.unescape(c.name): list(c.roles.values()) for c in comic.creators
             }
-        metadata.issue.format = comic.details.format or metadata.issue.format
+        metadata.issue.format = comic.format or metadata.issue.format
         # TODO: Add Genres
         # TODO: Add Language
         # TODO: Add Locations
         # TODO: Add Number
-        metadata.issue.page_count = comic.details.pages or metadata.issue.page_count
-        metadata.issue.sources["League of Comic Geeks"] = comic.details.comic_id
+        metadata.issue.page_count = comic.page_count or metadata.issue.page_count
+        metadata.issue.sources["League of Comic Geeks"] = comic.comic_id
         # TODO: Add Store Date
         # TODO: Add Story Arcs
-        metadata.issue.summary = self._remove_extra(comic.details.description)
+        metadata.issue.summary = comic.description
         # TODO: Add Teams
-        # TODO: Add Title
+        if not metadata.issue.title:
+            metadata.issue.title = comic.title
