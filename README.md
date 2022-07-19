@@ -57,10 +57,10 @@ Dex-Starr can also pull information from a list of sources to populate missing f
 
 ## Services
 
-- [Comicvine](https://comicvine.gamespot.com) using the [Simyan](https://github.com/Metron-Project/Simyan) lib
-- [League of Comic Geeks](https://leagueofcomicgeeks.com)
-- [Marvel](https://www.marvel.com/comics) using the [Esak](https://github.com/Metron-Project/Esak) lib
-- [Metron](https://metron.cloud) using the [Mokkari](https://github.com/Metron-Project/Mokkari) lib
+- [Comicvine](https://comicvine.gamespot.com) using [Simyan](https://github.com/Metron-Project/Simyan)
+- [League of Comic Geeks](https://leagueofcomicgeeks.com) using [Himon](https://github.com/Buried-In-Code/Himon)
+- [Marvel](https://www.marvel.com/comics) using [Esak](https://github.com/Metron-Project/Esak)
+- [Metron](https://metron.cloud) using [Mokkari](https://github.com/Metron-Project/Mokkari)
 
 ## File Renaming
 
