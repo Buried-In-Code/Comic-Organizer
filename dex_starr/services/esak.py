@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import re
-from typing import Optional
 
 from esak.comic import Comic
 from esak.series import Series as EsakSeries
@@ -20,9 +21,7 @@ class EsakTalker:
     def _clean_title(self, title: str) -> str:
         return re.sub(r"(.*)(\(.*?\))", r"\1", title).strip()
 
-    def _search_comic(
-        self, series_id: int, number: str, format: Optional[str] = None
-    ) -> Optional[Comic]:
+    def _search_comic(self, series_id: int, number: str, format: str | None = None) -> Comic | None:
         _comic = None
         params = {"noVariants": True, "series": series_id, "issueNumber": number}
         if format in ["Trade Paperback", "Hardcover"]:
@@ -76,7 +75,7 @@ class EsakTalker:
         # TODO: Teams
         issue.title = _comic.title = issue.title
 
-    def _search_series(self, title: str, start_year: Optional[int] = None) -> Optional[EsakSeries]:
+    def _search_series(self, title: str, start_year: int | None = None) -> EsakSeries | None:
         _series = None
         params = {"title": title}
         if start_year:

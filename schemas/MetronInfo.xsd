@@ -6,16 +6,17 @@
     <xs:complexType name="metroninfoType">
         <xs:all>
             <xs:element name="ID" type="sourceType" minOccurs="0" />
-            <xs:element name="Publisher" type="xs:string" />
+            <xs:element name="Publisher" type="resourceType" />
             <xs:element name="Series" type="seriesType" />
             <xs:element name="CollectionTitle" type="xs:string" minOccurs="0" />
             <xs:element name="Number" type="xs:string" minOccurs="0" />
             <xs:element name="Stories" type="storyType" minOccurs="0" /> <!-- Story titles in issue -->
             <xs:element name="Summary" type="xs:string" minOccurs="0" />
-            <xs:element name="Price" type="priceType" minOccurs="0" />
+            <xs:element name="Prices" type="pricesType" minOccurs="0" />
             <xs:element name="CoverDate" type="xs:date" />
             <xs:element name="StoreDate" type="xs:date" minOccurs="0" />
             <xs:element name="PageCount" type="xs:int" default="0" />
+            <xs:element name="Notes" type="xs:string" minOccurs="0" />
             <xs:element name="Genres" type="genresType" minOccurs="0" />
             <xs:element name="Tags" type="tagsType" minOccurs="0" />
             <xs:element name="Arcs" type="arcsType" minOccurs="0" />
@@ -42,7 +43,7 @@
 
     <xs:complexType name="storyType">
         <xs:sequence>
-            <xs:element name="Story" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element name="Story" type="resourceType" minOccurs="0" maxOccurs="unbounded" />
         </xs:sequence>
     </xs:complexType>
 
@@ -62,7 +63,7 @@
             <xs:element name="Volume" type="xs:int" minOccurs="0" />
             <xs:element name="Format" type="formatType" minOccurs="0" />
         </xs:all>
-        <xs:attribute name="lang" type="xs:string" default="EN" />
+        <xs:attribute name="lang" type="languageCode" default="en" />
     </xs:complexType>
 
     <xs:complexType name="charactersType">
@@ -155,10 +156,16 @@
         </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="pricesType">
+        <xs:sequence>
+            <xs:element name="Price" type="priceType" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="priceType">
         <xs:simpleContent>
             <xs:extension base="xs:decimal">
-                <xs:attribute name="currency" type="currencyType" use="required" />
+                <xs:attribute name="country" type="countryCode" use="required" />
             </xs:extension>
         </xs:simpleContent>
     </xs:complexType>
@@ -289,11 +296,15 @@
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:simpleType name="currencyType">
+    <xs:simpleType name="countryCode">
         <xs:restriction base="xs:string">
-            <xs:enumeration value="pounds" />
-            <xs:enumeration value="euros" />
-            <xs:enumeration value="dollars" />
+            <xs:pattern value="[A-Z][A-Z]" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="languageCode">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[a-z][a-z]" />
         </xs:restriction>
     </xs:simpleType>
 

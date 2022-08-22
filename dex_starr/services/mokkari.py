@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import html
-from typing import Optional
 
 from mokkari.issue import Issue as MokkariIssue
 from mokkari.publisher import Publisher as MokkariPublisher
@@ -16,7 +17,7 @@ class MokkariTalker:
     def __init__(self, username: str, password: str):
         self.session = Mokkari(username=username, passwd=password, cache=SQLiteCache(expiry=14))
 
-    def _search_issue(self, series_id: int, number: str) -> Optional[MokkariIssue]:
+    def _search_issue(self, series_id: int, number: str) -> MokkariIssue | None:
         _issue = None
         issue_list = self.session.issues_list({"series_id": series_id, "number": number})
         if not issue_list:
@@ -74,9 +75,9 @@ class MokkariTalker:
         self,
         publisher_id: int,
         title: str,
-        volume: Optional[int] = None,
-        start_year: Optional[int] = None,
-    ) -> Optional[MokkariSeries]:
+        volume: int | None = None,
+        start_year: int | None = None,
+    ) -> MokkariSeries | None:
         _series = None
         params = {"publisher_id": publisher_id, "name": title}
         if volume:
@@ -119,7 +120,7 @@ class MokkariTalker:
         series.title = _series.name or series.title
         series.volume = _series.volume or series.volume
 
-    def _search_publisher(self, title: str) -> Optional[MokkariPublisher]:
+    def _search_publisher(self, title: str) -> MokkariPublisher | None:
         _publisher = None
         publisher_list = self.session.publishers_list({"name": title})
         if not publisher_list:

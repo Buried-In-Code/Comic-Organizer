@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 __version__ = "0.2.0"
 __all__ = [
     "__version__",
@@ -15,7 +17,7 @@ __all__ = [
 ]
 
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 
 from ruamel.yaml import YAML
 
@@ -33,7 +35,7 @@ def del_folder(folder: Path):
     folder.rmdir()
 
 
-def filter_files(folder: Path, filter_: List[str] = None) -> List[Path]:
+def filter_files(folder: Path, filter_: list[str] = None) -> list[Path]:
     if filter_ is None:
         filter_ = []
     files = []
@@ -61,7 +63,7 @@ def get_cache_root() -> Path:
     return root
 
 
-def list_files(folder: Path) -> List[Path]:
+def list_files(folder: Path) -> list[Path]:
     files = []
     for file in folder.iterdir():
         if file.is_dir():
@@ -71,7 +73,7 @@ def list_files(folder: Path) -> List[Path]:
     return sorted(files)
 
 
-def safe_list_get(list_: List[Any], index: int = 0, default: Any = None) -> Any:
+def safe_list_get(list_: list[Any], index: int = 0, default: Any = None) -> Any:
     try:
         return list_[index]
     except IndexError:

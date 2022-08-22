@@ -1,7 +1,8 @@
-from pathlib import Path
-from typing import List, Optional
+from __future__ import annotations
 
-from pydantic import BaseModel, Extra, Field
+from pathlib import Path
+
+from pydantic import BaseModel, Extra, Field, validator
 
 from dex_starr import get_config_root, yaml_setup
 
@@ -22,22 +23,22 @@ class SettingsModel(BaseModel):
 
 class MetronSettings(SettingsModel):
     generate_info_file: bool = True
-    password: Optional[str] = None
-    username: Optional[str] = None
+    password: str | None = None
+    username: str | None = None
 
 
 class MarvelSettings(SettingsModel):
-    public_key: Optional[str] = None
-    private_key: Optional[str] = None
+    public_key: str | None = None
+    private_key: str | None = None
 
 
 class LeagueOfComicGeeks(SettingsModel):
-    api_key: Optional[str] = Field(alias="API Key", default=None)
-    client_id: Optional[str] = None
+    api_key: str | None = Field(alias="API Key", default=None)
+    client_id: str | None = None
 
 
 class ComicvineSettings(SettingsModel):
-    api_key: Optional[str] = Field(alias="API Key", default=None)
+    api_key: str | None = Field(alias="API Key", default=None)
 
 
 class GeneralSettings(SettingsModel):
@@ -45,7 +46,13 @@ class GeneralSettings(SettingsModel):
     generate_comicinfo_file: bool = Field(alias="Generate ComicInfo File", default=True)
     generate_metadata_file: bool = True
     output_format: str = "cbz"
-    resolution_order: List[str] = Field(default_factory=list)
+    resolution_order: list[str] = Field(default_factory=list)
+
+    @validator("output_format", pre=True)
+    def validate_output_format(cls, v):
+        if v in ["cbz", "cb7"]:
+            return v
+        raise NotImplementedError(f"Unsupported output format: {v}")
 
 
 class Settings(SettingsModel):
@@ -58,7 +65,7 @@ class Settings(SettingsModel):
     metron: MetronSettings = MetronSettings()
 
     @staticmethod
-    def load() -> "Settings":
+    def load() -> Settings:
         if not _settings_file.exists():
             Settings().save()
         with _settings_file.open("r", encoding="UTF-8") as stream:

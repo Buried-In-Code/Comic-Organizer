@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import shutil
 from pathlib import Path
-from typing import Optional
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from patoolib import extract_archive
@@ -21,8 +22,8 @@ from dex_starr.settings import GeneralSettings
 class Archive:
     def __init__(self, file: Path):
         self.source_file = file
-        self.extracted_folder: Optional[Path] = None
-        self.result_file: Optional[Path] = None
+        self.extracted_folder: Path | None = None
+        self.result_file: Path | None = None
 
     def _extract_zip(self, extracted_folder: Path) -> bool:
         with ZipFile(self.source_file, "r") as stream:
@@ -99,6 +100,8 @@ class Archive:
             series_folder
             / f"{metadata.series.file_name}{metadata.issue.file_name}.{general.output_format}"
         )
+        if self.result_file.exists():
+            return False
         CONSOLE.print(f"Archiving `{self.result_file.name}`", style="logging.level.info")
         self._rename_images()
 

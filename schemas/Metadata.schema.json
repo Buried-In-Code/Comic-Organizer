@@ -1,246 +1,256 @@
 {
-	"$schema": "http://json-schema.org/draft-07/schema",
-	"$id": "Metadata.schema.json",
-	"type": "object",
-	"required": [
-		"data",
-		"meta"
-	],
-	"properties": {
-		"data": {
-			"type": "object",
-			"required": [
-				"publisher",
-				"series",
-				"issue"
-			],
-			"properties": {
-				"publisher": {
-					"type": "object",
-					"required": [
-						"imprint",
-						"sources",
-						"title"
-					],
-					"properties": {
-						"imprint": {
-							"type": [
-								"string",
-								"null"
-							],
-							"default": null
-						},
-						"sources": {
-							"type": "object",
-							"patternProperties": {
-								".*": {
-									"type": "integer"
-								}
-							}
-						},
-						"title": {
-							"type": "string"
-						}
-					}
-				},
-				"series": {
-					"type": "object",
-					"required": [
-						"sources",
-						"startYear",
-						"title",
-						"volume"
-					],
-					"properties": {
-						"sources": {
-							"type": "object",
-							"patternProperties": {
-								".*": {
-									"type": "integer"
-								}
-							}
-						},
-						"startYear": {
-							"type": [
-								"integer",
-								"null"
-							],
-							"minimum": 1900,
-							"default": null
-						},
-						"title": {
-							"type": "string"
-						},
-						"volume": {
-							"type": "integer",
-							"minimum": 1,
-							"default": 1
-						}
-					}
-				},
-				"issue": {
-					"type": "object",
-					"required": [
-						"characters",
-						"coverDate",
-						"creators",
-						"format",
-						"genres",
-						"languageIso",
-						"locations",
-						"number",
-						"pageCount",
-						"sources",
-						"storeDate",
-						"storyArcs",
-						"summary",
-						"teams",
-						"title"
-					],
-					"properties": {
-						"characters": {
-							"type": "array",
-							"items": {
-								"type": "string"
-							},
-							"uniqueItems": true
-						},
-						"coverDate": {
-							"type": [
-								"string",
-								"null"
-							],
-							"format": "date",
-							"default": null
-						},
-						"creators": {
-							"type": "object",
-							"patternProperties": {
-								".*": {
-									"type": "array",
-									"items": {
-										"type": "string"
-									},
-									"uniqueItems": true
-								}
-							}
-						},
-						"format": {
-							"type": "string",
-							"default": "Comic"
-						},
-						"genres": {
-							"type": "array",
-							"items": {
-								"type": "string"
-							},
-							"uniqueItems": true
-						},
-						"languageIso": {
-							"type": "string",
-							"default": "EN"
-						},
-						"locations": {
-							"type": "array",
-							"items": {
-								"type": "string"
-							},
-							"uniqueItems": true
-						},
-						"number": {
-							"type": "string"
-						},
-						"pageCount": {
-							"type": [
-								"integer",
-								"null"
-							],
-							"minimum": 1,
-							"default": null
-						},
-						"sources": {
-							"type": "object",
-							"patternProperties": {
-								".*": {
-									"type": "integer"
-								}
-							}
-						},
-						"storeDate": {
-							"type": [
-								"string",
-								"null"
-							],
-							"format": "date",
-							"default": null
-						},
-						"storyArcs": {
-							"type": "array",
-							"items": {
-								"type": "string"
-							},
-							"uniqueItems": true
-						},
-						"summary": {
-							"type": [
-								"string",
-								"null"
-							],
-							"default": null
-						},
-						"teams": {
-							"type": "array",
-							"items": {
-								"type": "string"
-							},
-							"uniqueItems": true
-						},
-						"title": {
-							"type": [
-								"string",
-								"null"
-							],
-							"default": null
-						}
-					}
-				},
-				"notes": {
-					"type": [
-						"string",
-						"null"
-					],
-					"default": null
-				}
-			}
-		},
-		"meta": {
-			"type": "object",
-			"required": [
-				"date",
-				"tool"
-			],
-			"properties": {
-				"date": {
-					"type": "string",
-					"format": "date"
-				},
-				"tool": {
-					"type": "object",
-					"required": [
-						"name",
-						"version"
-					],
-					"properties": {
-						"name": {
-							"type": "string"
-						},
-						"version": {
-							"type": "string",
-							"pattern": "^\\d+\\.\\d+\\.\\d+$"
-						}
-					}
-				}
-			}
-		}
-	}
+  "$id": "Metadata.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "definitions": {
+    "sources": {
+      "properties": {
+        "Comicvine": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "League of Comic Geeks": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "Marvel": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "Metron": {
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "properties": {
+    "data": {
+      "properties": {
+        "issue": {
+          "properties": {
+            "characters": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            },
+            "coverDate": {
+              "default": null,
+              "format": "date",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "creators": {
+              "patternProperties": {
+                ".*": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "type": "object"
+            },
+            "format": {
+              "default": "Comic",
+              "type": "string"
+            },
+            "genres": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            },
+            "languageIso": {
+              "default": "EN",
+              "type": "string"
+            },
+            "locations": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            },
+            "number": {
+              "type": "string"
+            },
+            "pageCount": {
+              "default": null,
+              "minimum": 1,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "sources": {
+              "$ref": "#/definitions/sources",
+              "type": "object"
+            },
+            "storeDate": {
+              "default": null,
+              "format": "date",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "storyArcs": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            },
+            "summary": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "teams": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            },
+            "title": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "characters",
+            "coverDate",
+            "creators",
+            "format",
+            "genres",
+            "languageIso",
+            "locations",
+            "number",
+            "pageCount",
+            "sources",
+            "storeDate",
+            "storyArcs",
+            "summary",
+            "teams",
+            "title"
+          ],
+          "type": "object"
+        },
+        "notes": {
+          "default": null,
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publisher": {
+          "properties": {
+            "imprint": {
+              "default": null,
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "sources": {
+              "$ref": "#/definitions/sources",
+              "type": "object"
+            },
+            "title": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "sources",
+            "title"
+          ],
+          "type": "object"
+        },
+        "series": {
+          "properties": {
+            "sources": {
+              "$ref": "#/definitions/sources",
+              "type": "object"
+            },
+            "startYear": {
+              "default": null,
+              "minimum": 1900,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "title": {
+              "type": "string"
+            },
+            "volume": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "sources",
+            "startYear",
+            "title",
+            "volume"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "publisher",
+        "series",
+        "issue"
+      ],
+      "type": "object"
+    },
+    "meta": {
+      "properties": {
+        "date": {
+          "format": "date",
+          "type": "string"
+        },
+        "tool": {
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "version": {
+              "pattern": "^\\d+\\.\\d+\\.\\d+$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "version"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "date",
+        "tool"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "data",
+    "meta"
+  ],
+  "type": "object"
 }

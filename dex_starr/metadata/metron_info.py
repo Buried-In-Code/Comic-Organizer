@@ -1,10 +1,14 @@
+from __future__ import annotations
+
 from datetime import date
 from pathlib import Path
-from typing import List, Optional
+from typing import Any
 
 import xmltodict
-from pydantic import BaseModel, Extra, Field
+from pydantic import BaseModel as PyModel
+from pydantic import Extra, Field
 
+from dex_starr.console import CONSOLE
 from dex_starr.metadata.metadata import Issue, Metadata, Publisher
 from dex_starr.metadata.metadata import Series as MetadataSeries
 
@@ -13,15 +17,16 @@ def to_pascal_case(value: str) -> str:
     return value.replace("_", " ").title().replace(" ", "")
 
 
-class MetronModel(BaseModel):
+class BaseModel(PyModel):
     class Config:
         alias_generator = to_pascal_case
-        anystr_strip_whitespace = True
         allow_population_by_field_name = True
+        anystr_strip_whitespace = True
+        validate_assignment = True
         extra = Extra.allow
 
 
-class Page(MetronModel):
+class Page(BaseModel):
     image: int = Field(alias="@Image")
     type: str = Field(alias="@Type", default="Story")
     double_page: bool = Field(alias="@DoublePage", default=False)
@@ -32,14 +37,14 @@ class Page(MetronModel):
     image_height: int = Field(alias="@ImageHeight", default=-1)
 
 
-class Resource(MetronModel):
-    id: Optional[str] = Field(alias="@id", default=None)
+class Resource(BaseModel):
+    id: int = Field(alias="@id", gt=0, default=1)
     value: str = Field(alias="#text")
 
 
-class Credit(MetronModel):
+class Credit(BaseModel):
     creator: Resource
-    roles: List[Resource] = Field(default_factory=list)
+    roles: list[Resource] = Field(default_factory=list)
 
     def __init__(self, **data):
         if "Roles" in data:
@@ -47,85 +52,81 @@ class Credit(MetronModel):
         super().__init__(**data)
 
 
-class GTIN(MetronModel):
-    isbn: Optional[str] = Field(alias="ISBN", default=None)
-    upc: Optional[str] = Field(alias="UPC", default=None)
+class GTIN(BaseModel):
+    isbn: str | None = Field(alias="ISBN", default=None)
+    upc: str | None = Field(alias="UPC", default=None)
 
 
-class Reprint(MetronModel):
+class Reprint(BaseModel):
     name: Resource
 
 
-class Arc(MetronModel):
+class Arc(BaseModel):
     name: Resource
-    number: Optional[int] = Field(default=None, gt=0)
+    number: int | None = Field(default=None, gt=0)
 
 
-class Price(MetronModel):
+class Price(BaseModel):
     currency: str = Field(alias="@currency")
     value: float = Field(alias="#text")
 
 
-class Series(MetronModel):
-    lang: str = Field(alias="@lang", default="EN")
+class Series(BaseModel):
+    lang: str = Field(alias="@lang", default="en")
     name: Resource
-    sort_name: Optional[str] = None
-    format: Optional[str] = None
-    volume: Optional[int] = None
+    sort_name: str | None = None
+    volume: int | None = None
+    format: str | None = None
 
 
-class Source(MetronModel):
+class Source(BaseModel):
     source: str = Field(alias="@source")
-    value: str = Field(alias="#text")
+    value: int = Field(alias="#text", gt=0)
 
 
-class MetronInfo(MetronModel):
-    id: Optional[Source] = Field(alias="ID", default=None)
+class MetronInfo(BaseModel):
+    id: Source | None = Field(alias="ID", default=None)
     publisher: str
     series: Series
-    collection_title: Optional[str] = None
-    number: Optional[str] = None
-    stories: List[str] = Field(default_factory=list)
-    summary: Optional[str] = None
-    price: Optional[Price] = None
-    cover_date: Optional[date] = None
-    store_date: Optional[date] = None
-    page_count: Optional[int] = None
-    genres: List[Resource] = Field(default_factory=list)
-    tags: List[Resource] = Field(default_factory=list)
-    arcs: List[Arc] = Field(default_factory=list)
-    characters: List[Resource] = Field(default_factory=list)
-    teams: List[Resource] = Field(default_factory=list)
-    locations: List[Resource] = Field(default_factory=list)
-    reprints: List[Reprint] = Field(default_factory=list)
-    gtin: Optional[GTIN] = Field(alias="GTIN", default=None)
-    black_and_white: bool = False
-    age_rating: str = "Unknown"
-    url: Optional[str] = Field(alias="URL", default=None)
-    credits: List[Credit] = Field(default_factory=list)
-    pages: List[Page] = Field(default_factory=list)
+    collection_title: str | None = None
+    number: str | None = None
+    stories: list[str] = Field(default_factory=list)
+    summary: str | None = None
+    price: Price | None = None
+    cover_date: date
+    store_date: date | None = None
+    page_count: int | None = None
+    notes: str | None = None
+    genres: list[Resource] = Field(default_factory=list)
+    tags: list[Resource] = Field(default_factory=list)
+    arcs: list[Arc] = Field(default_factory=list)
+    characters: list[Resource] = Field(default_factory=list)
+    teams: list[Resource] = Field(default_factory=list)
+    locations: list[Resource] = Field(default_factory=list)
+    reprints: list[Reprint] = Field(default_factory=list)
+    gtin: GTIN | None = Field(alias="GTIN", default=None)
+    black_and_white: bool | None = False
+    age_rating: str | None = "Unknown"
+    url: str | None = Field(alias="URL", default=None)
+    credits: list[Credit] = Field(default_factory=list)
+    pages: list[Page] = Field(default_factory=list)
 
     def __init__(self, **data):
-        if "Stories" in data:
-            data["Stories"] = data["Stories"]["Story"]
-        if "Genres" in data:
-            data["Genres"] = data["Genres"]["Genre"]
-        if "Tags" in data:
-            data["Tags"] = data["Tags"]["Tag"]
-        if "Arcs" in data:
-            data["Arcs"] = data["Arcs"]["Arc"]
-        if "Characters" in data:
-            data["Characters"] = data["Characters"]["Character"]
-        if "Teams" in data:
-            data["Teams"] = data["Teams"]["Team"]
-        if "Locations" in data:
-            data["Locations"] = data["Locations"]["Location"]
-        if "Reprints" in data:
-            data["Reprints"] = data["Reprints"]["Reprint"]
-        if "Credits" in data:
-            data["Credits"] = data["Credits"]["Credit"]
-        if "Pages" in data:
-            data["Pages"] = data["Pages"]["Page"]
+        mappings = {
+            "Stories": "Story",
+            "Genres": "Genre",
+            "Tags": "Tag",
+            "Arcs": "Arc",
+            "Characters": "Character",
+            "Teams": "Team",
+            "Locations": "Location",
+            "Reprints": "Reprint",
+            "Credits": "Credit",
+            "Pages": "Page",
+        }
+        for key, value in mappings.items():
+            if key in data:
+                data[key] = data[key][value]
         super().__init__(**data)
 
     def to_metadata(self) -> Metadata:
@@ -155,7 +156,7 @@ class MetronInfo(MetronModel):
         )
 
     @staticmethod
-    def from_file(info_file: Path) -> "MetronInfo":
+    def from_file(info_file: Path) -> MetronInfo:
         with info_file.open("rb") as stream:
             content = xmltodict.parse(
                 stream,
@@ -179,6 +180,10 @@ class MetronInfo(MetronModel):
             return MetronInfo(**content)
 
     def to_file(self, info_file: Path):
+        if self.black_and_white is False:
+            self.black_and_white = None
+        if self.age_rating == "Unknown":
+            self.age_rating = None
         with info_file.open("w", encoding="UTF-8") as stream:
             content = self.dict(by_alias=True, exclude_none=True)
             content["@xmlns:xsd"] = "https://www.w3.org/2001/XMLSchema"
@@ -208,6 +213,9 @@ class MetronInfo(MetronModel):
                     else:
                         del credit["Roles"]
 
+            content = int_to_str(content)
+            CONSOLE.print({k: content[k] for k in sorted(content)})
+
             xmltodict.unparse(
                 {"MetronInfo": {k: content[k] for k in sorted(content)}},
                 output=stream,
@@ -215,3 +223,18 @@ class MetronInfo(MetronModel):
                 pretty=True,
                 indent=" " * 2,
             )
+
+
+def int_to_str(content: dict[str, Any]) -> dict[str, Any]:
+    for key, value in content.items():
+        if isinstance(value, dict):
+            content[key] = int_to_str(content[key])
+        elif isinstance(value, list):
+            for index, entry in enumerate(content[key]):
+                if isinstance(entry, dict):
+                    content[key][index] = int_to_str(content[key][index])
+                elif isinstance(entry, int):
+                    content[key][index] = str(content[key][index])
+        elif isinstance(value, int):
+            content[key] = str(content[key])
+    return content

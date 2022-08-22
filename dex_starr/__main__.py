@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import logging
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Dict, List, Union
 
 from pathvalidate.argparse import sanitize_filepath_arg
 from rich import box
@@ -62,8 +63,8 @@ def write_info_file(archive: Archive, settings: Settings, metadata: Metadata):
 
 def pull_info(
     metadata: Metadata,
-    services: Dict[str, Union[HimonTalker, MokkariTalker, SimyanTalker, EsakTalker]],
-    resolution_order: List[str] = None,
+    services: dict[str, HimonTalker | MokkariTalker | SimyanTalker | EsakTalker],
+    resolution_order: list[str] = None,
     resolve_manually: bool = False,
 ):
     if not resolution_order:
@@ -115,26 +116,22 @@ def main():
     settings = Settings.load()
     settings.save()
 
-    marvel = None
-    league_of_comic_geeks = None
-    metron = None
-    comicvine = None
-    if settings.marvel.public_key and settings.marvel.private_key:
-        marvel = EsakTalker(settings.marvel.public_key, settings.marvel.private_key)
-    if settings.league_of_comic_geeks.api_key and settings.league_of_comic_geeks.client_id:
-        league_of_comic_geeks = HimonTalker(
-            settings.league_of_comic_geeks.api_key, settings.league_of_comic_geeks.client_id
-        )
-    if settings.metron.username and settings.metron.password:
-        metron = MokkariTalker(settings.metron.username, settings.metron.password)
+    services = {}
     if settings.comicvine.api_key:
-        comicvine = SimyanTalker(settings.comicvine.api_key)
-    services = {
-        "Comicvine": comicvine,
-        "League of Comic Geeks": league_of_comic_geeks,
-        "Marvel": marvel,
-        "Metron": metron,
-    }
+        services["Comicvine"] = SimyanTalker(api_key=settings.comicvine.api_key)
+    if settings.metron.username and settings.metron.password:
+        services["Metron"] = MokkariTalker(
+            username=settings.metron.username, password=settings.metron.password
+        )
+    if settings.league_of_comic_geeks.api_key and settings.league_of_comic_geeks.client_id:
+        services["League of Comic Geeks"] = HimonTalker(
+            api_key=settings.league_of_comic_geeks.api_key,
+            client_id=settings.league_of_comic_geeks.client_id,
+        )
+    if settings.marvel.public_key and settings.marvel.private_key:
+        services["Marvel"] = EsakTalker(
+            public_key=settings.marvel.public_key, private_key=settings.marvel.private_key
+        )
 
     # region Clean cache
     for child in get_cache_root().iterdir():
@@ -173,7 +170,8 @@ def main():
             write_info_file(archive, settings, metadata)
 
             if archive.archive(metadata, settings.general):
-                archive.source_file.unlink(missing_ok=True)
+                pass
+                # archive.source_file.unlink(missing_ok=True)
             else:
                 CONSOLE.print(
                     f"Unable to archive: {archive.result_file.name}", style="logging.level.error"

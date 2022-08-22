@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import json
 import sqlite3
 from datetime import date, timedelta
-from typing import Any, Dict, Optional
+from typing import Any
 
 from dex_starr import get_cache_root
 
@@ -10,7 +12,7 @@ class SQLiteCache:
     def __init__(
         self,
         path: str = get_cache_root() / "cache.sqlite",
-        expiry: Optional[int] = 14,
+        expiry: int | None = 14,
     ):
         self.expiry = expiry
         self.con = sqlite3.connect(path)
@@ -18,7 +20,7 @@ class SQLiteCache:
         self.cur.execute("CREATE TABLE IF NOT EXISTS queries (query, response, expiry);")
         self.delete()
 
-    def select(self, query: str) -> Dict[str, Any]:
+    def select(self, query: str) -> dict[str, Any]:
         if self.expiry:
             self.cur.execute(
                 "SELECT response FROM queries WHERE query = ? and expiry > ?;",
@@ -31,7 +33,7 @@ class SQLiteCache:
             return json.loads(results[0])
         return {}
 
-    def get(self, key: str) -> Optional[Dict[str, Any]]:
+    def get(self, key: str) -> dict[str, Any] | None:
         return self.select(query=key) or None
 
     def insert(self, query: str, response: str):

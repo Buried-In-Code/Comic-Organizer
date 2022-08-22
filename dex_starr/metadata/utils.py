@@ -1,4 +1,4 @@
-from typing import List
+from __future__ import annotations
 
 from rich.prompt import IntPrompt, Prompt
 
@@ -54,7 +54,7 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
         cover_artist=", ".join(cover_artists) if cover_artists else None,
         editor=", ".join(editors) if editors else None,
         genre=", ".join(metadata.issue.genres) if metadata.issue.genres else None,
-        language_iso=metadata.issue.language_iso,
+        language_iso=metadata.issue.language_iso.lower(),
         locations=", ".join(metadata.issue.locations) if metadata.issue.locations else None,
         page_count=metadata.issue.page_count,
         story_arc=", ".join(metadata.issue.story_arcs) if metadata.issue.story_arcs else None,
@@ -65,7 +65,7 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
     )
 
 
-def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInfo:
+def to_metron_info(metadata: Metadata, resolution_order: list[str]) -> MetronInfo:
     issue_source = None
     for source in reversed(resolution_order):
         if source in metadata.issue.sources:
@@ -80,8 +80,9 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
         series=MetronSeries(
             name=Resource(id=series_source[0], value=metadata.series.title),
             sort_name=metadata.series.title,
-            type=metadata.issue.format,
             volume=metadata.series.volume,
+            format=metadata.issue.format,
+            lang=metadata.issue.language_iso.lower(),
         ),
         collection_title=metadata.issue.title,
         number=metadata.issue.number,
