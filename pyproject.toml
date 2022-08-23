@@ -52,7 +52,7 @@ keywords = ["comics", "comic", "metadata", "tagging", "tagger"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-esak = "^1.3.1"
+esak = "^1.3.2"
 himon = "^0.1.1"
 mokkari = "^2.3.0"
 pathvalidate = "^2.5.1"
