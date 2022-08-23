@@ -1,6 +1,5 @@
-from __future__ import annotations
-
 from pathlib import Path
+from typing import List, Optional
 
 from pydantic import BaseModel, Extra, Field, validator
 
@@ -23,22 +22,22 @@ class SettingsModel(BaseModel):
 
 class MetronSettings(SettingsModel):
     generate_info_file: bool = True
-    password: str | None = None
-    username: str | None = None
+    password: Optional[str] = None
+    username: Optional[str] = None
 
 
 class MarvelSettings(SettingsModel):
-    public_key: str | None = None
-    private_key: str | None = None
+    public_key: Optional[str] = None
+    private_key: Optional[str] = None
 
 
 class LeagueOfComicGeeks(SettingsModel):
-    api_key: str | None = Field(alias="API Key", default=None)
-    client_id: str | None = None
+    api_key: Optional[str] = Field(alias="API Key", default=None)
+    client_id: Optional[str] = None
 
 
 class ComicvineSettings(SettingsModel):
-    api_key: str | None = Field(alias="API Key", default=None)
+    api_key: Optional[str] = Field(alias="API Key", default=None)
 
 
 class GeneralSettings(SettingsModel):
@@ -46,7 +45,7 @@ class GeneralSettings(SettingsModel):
     generate_comicinfo_file: bool = Field(alias="Generate ComicInfo File", default=True)
     generate_metadata_file: bool = True
     output_format: str = "cbz"
-    resolution_order: list[str] = Field(default_factory=list)
+    resolution_order: List[str] = Field(default_factory=list)
 
     @validator("output_format", pre=True)
     def validate_output_format(cls, v):
@@ -65,7 +64,7 @@ class Settings(SettingsModel):
     metron: MetronSettings = MetronSettings()
 
     @staticmethod
-    def load() -> Settings:
+    def load() -> "Settings":
         if not _settings_file.exists():
             Settings().save()
         with _settings_file.open("r", encoding="UTF-8") as stream:

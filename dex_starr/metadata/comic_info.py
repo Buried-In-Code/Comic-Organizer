@@ -1,7 +1,6 @@
-from __future__ import annotations
-
 from datetime import date
 from pathlib import Path
+from typing import Dict, List, Optional
 
 import xmltodict
 from pydantic import BaseModel, Extra, Field, validator
@@ -18,45 +17,45 @@ def to_pascal_case(value: str) -> str:
 
 
 class ComicInfo(BaseModel):
-    title: str | None = None
-    series: str | None = None
-    number: str | None = None
-    count: int | None = None
-    volume: int | None = None
-    alternate_series: str | None = None
-    alternate_number: str | None = None
-    alternate_count: int | None = None
-    summary: str | None = None
-    notes: str | None = None
-    year: int | None = None
-    month: int | None = None
-    day: int | None = None
-    writer: str | None = None
-    penciller: str | None = None
-    inker: str | None = None
-    colorist: str | None = None
-    letterer: str | None = None
-    cover_artist: str | None = None
-    editor: str | None = None
-    publisher: str | None = None
-    imprint: str | None = None
-    genre: str | None = None
-    web: str | None = None
-    page_count: int | None = None
-    language_iso: str | None = Field(alias="LanguageISO", default=None)
-    format: str | None = None
-    black_and_white: bool | None = None
-    manga: bool | None = None
+    title: Optional[str] = None
+    series: Optional[str] = None
+    number: Optional[str] = None
+    count: Optional[int] = None
+    volume: Optional[int] = None
+    alternate_series: Optional[str] = None
+    alternate_number: Optional[str] = None
+    alternate_count: Optional[int] = None
+    summary: Optional[str] = None
+    notes: Optional[str] = None
+    year: Optional[int] = None
+    month: Optional[int] = None
+    day: Optional[int] = None
+    writer: Optional[str] = None
+    penciller: Optional[str] = None
+    inker: Optional[str] = None
+    colorist: Optional[str] = None
+    letterer: Optional[str] = None
+    cover_artist: Optional[str] = None
+    editor: Optional[str] = None
+    publisher: Optional[str] = None
+    imprint: Optional[str] = None
+    genre: Optional[str] = None
+    web: Optional[str] = None
+    page_count: Optional[int] = None
+    language_iso: Optional[str] = Field(alias="LanguageISO", default=None)
+    format: Optional[str] = None
+    black_and_white: Optional[bool] = None
+    manga: Optional[bool] = None
     right_to_left: bool = Field(alias="Manga", default=False)
-    characters: str | None = None
-    teams: str | None = None
-    locations: str | None = None
-    scan_information: str | None = None
-    story_arc: str | None = None
-    series_group: str | None = None
-    age_rating: str | None = None
-    pages: dict[str, list[dict[str, str]]] = Field(default_factory=dict)
-    community_rating: float | None = None
+    characters: Optional[str] = None
+    teams: Optional[str] = None
+    locations: Optional[str] = None
+    scan_information: Optional[str] = None
+    story_arc: Optional[str] = None
+    series_group: Optional[str] = None
+    age_rating: Optional[str] = None
+    pages: Dict[str, List[Dict[str, str]]] = Field(default_factory=dict)
+    community_rating: Optional[float] = None
 
     class Config:
         alias_generator = to_pascal_case
@@ -71,7 +70,7 @@ class ComicInfo(BaseModel):
         super().__init__(**data)
 
     @validator("black_and_white", "manga", pre=True)
-    def validate_optional_bool(cls, v) -> bool | None:
+    def validate_optional_bool(cls, v) -> Optional[bool]:
         if v and v == "No":
             return False
         if v and v in ["Yes", "YesAndRightToLeft"]:
@@ -85,7 +84,7 @@ class ComicInfo(BaseModel):
         return False
 
     @property
-    def story_arc_list(self) -> list[str]:
+    def story_arc_list(self) -> List[str]:
         if not self.alternate_series and not self.story_arc:
             return []
         if not self.alternate_series:
@@ -98,77 +97,77 @@ class ComicInfo(BaseModel):
         ]
 
     @property
-    def cover_date(self) -> date | None:
+    def cover_date(self) -> Optional[date]:
         if not self.year:
             return None
         return date(self.year, self.month or 1, self.day or 1)
 
     @property
-    def writer_list(self) -> list[str]:
+    def writer_list(self) -> List[str]:
         if not self.writer:
             return []
         return sorted(x.strip() for x in self.writer.split(","))
 
     @property
-    def penciller_list(self) -> list[str]:
+    def penciller_list(self) -> List[str]:
         if not self.penciller:
             return []
         return sorted(x.strip() for x in self.penciller.split(","))
 
     @property
-    def inker_list(self) -> list[str]:
+    def inker_list(self) -> List[str]:
         if not self.inker:
             return []
         return sorted(x.strip() for x in self.inker.split(","))
 
     @property
-    def colorist_list(self) -> list[str]:
+    def colorist_list(self) -> List[str]:
         if not self.colorist:
             return []
         return sorted(x.strip() for x in self.colorist.split(","))
 
     @property
-    def colourist_list(self) -> list[str]:
+    def colourist_list(self) -> List[str]:
         return self.colorist_list
 
     @property
-    def letterer_list(self) -> list[str]:
+    def letterer_list(self) -> List[str]:
         if not self.letterer:
             return []
         return sorted(x.strip() for x in self.letterer.split(","))
 
     @property
-    def cover_artist_list(self) -> list[str]:
+    def cover_artist_list(self) -> List[str]:
         if not self.cover_artist:
             return []
         return sorted(x.strip() for x in self.cover_artist.split(","))
 
     @property
-    def editor_list(self) -> list[str]:
+    def editor_list(self) -> List[str]:
         if not self.editor:
             return []
         return sorted(x.strip() for x in self.editor.split(","))
 
     @property
-    def genre_list(self) -> list[str]:
+    def genre_list(self) -> List[str]:
         if not self.genre:
             return []
         return sorted(x.strip() for x in self.genre.split(","))
 
     @property
-    def character_list(self) -> list[str]:
+    def character_list(self) -> List[str]:
         if not self.characters:
             return []
         return sorted(x.strip() for x in self.characters.split(","))
 
     @property
-    def team_list(self) -> list[str]:
+    def team_list(self) -> List[str]:
         if not self.teams:
             return []
         return sorted(x.strip() for x in self.teams.split(","))
 
     @property
-    def location_list(self) -> list[str]:
+    def location_list(self) -> List[str]:
         if not self.locations:
             return []
         return sorted(x.strip() for x in self.locations.split(","))
@@ -230,20 +229,28 @@ class ComicInfo(BaseModel):
         # endregion
         return Metadata(
             publisher=Publisher(
-                title=self.publisher,
                 imprint=self.imprint,
+                # Sources
+                title=self.publisher,
             ),
-            series=Series(title=self.series, start_year=self.volume),
+            series=Series(
+                # Sources
+                start_year=self.volume,
+                title=self.series,
+                # Volume
+            ),
             issue=Issue(
-                format=self.format,
-                number=self.number,
                 characters=self.character_list,
                 cover_date=self.cover_date,
                 creators={k: sorted(creators[k]) for k in sorted(creators)},
+                format=self.format,
                 genres=self.genre_list,
                 language_iso=self.language_iso.lower() if self.language_iso else "en",
                 locations=self.location_list,
+                number=self.number,
                 page_count=self.page_count,
+                # Sources
+                # Store date
                 story_arcs=self.story_arc_list,
                 summary=self.summary,
                 teams=self.team_list,
@@ -253,7 +260,7 @@ class ComicInfo(BaseModel):
         )
 
     @staticmethod
-    def from_file(info_file: Path) -> ComicInfo:
+    def from_file(info_file: Path) -> "ComicInfo":
         with info_file.open("rb") as stream:
             content = xmltodict.parse(stream, force_list=["Page"])["ComicInfo"]
             for key in content.copy().keys():

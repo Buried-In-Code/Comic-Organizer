@@ -1,6 +1,5 @@
-from __future__ import annotations
-
 import html
+from typing import Optional
 
 from himon.exceptions import ServiceError
 from himon.league_of_comic_geeks import LeagueofComicGeeks
@@ -16,7 +15,7 @@ class HimonTalker:
     def __init__(self, api_key: str, client_id: str):
         self.session = LeagueofComicGeeks(api_key, client_id, cache=SQLiteCache(expiry=14))
 
-    def _generate_search_terms(self, series_title: str, format: str, number: str | None = None):
+    def _generate_search_terms(self, series_title: str, format: str, number: Optional[str] = None):
         search_1 = series_title
         if number and number != "1":
             search_1 += f" #{number}"
@@ -38,10 +37,10 @@ class HimonTalker:
         self,
         title: str,
         format: str = "Comic",
-        number: str | None = None,
-        publisher_name: str | None = None,
-        series_name: str | None = None,
-    ) -> Comic | None:
+        number: Optional[str] = None,
+        publisher_name: Optional[str] = None,
+        series_name: Optional[str] = None,
+    ) -> Optional[Comic]:
         comic = None
         if number:
             search_terms = self._generate_search_terms(title, format, number)

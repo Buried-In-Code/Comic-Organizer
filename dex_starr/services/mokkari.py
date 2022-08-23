@@ -1,6 +1,5 @@
-from __future__ import annotations
-
 import html
+from typing import Optional
 
 from mokkari.issue import Issue as MokkariIssue
 from mokkari.publisher import Publisher as MokkariPublisher
@@ -17,7 +16,7 @@ class MokkariTalker:
     def __init__(self, username: str, password: str):
         self.session = Mokkari(username=username, passwd=password, cache=SQLiteCache(expiry=14))
 
-    def _search_issue(self, series_id: int, number: str) -> MokkariIssue | None:
+    def _search_issue(self, series_id: int, number: str) -> Optional[MokkariIssue]:
         _issue = None
         issue_list = self.session.issues_list({"series_id": series_id, "number": number})
         if not issue_list:
@@ -45,7 +44,7 @@ class MokkariTalker:
                 return
             _issue = self._search_issue(series_id, search)
         if _issue.characters:
-            issue.characters = {c.name for c in _issue.characters}
+            issue.characters = sorted({x.name for x in _issue.characters})
         issue.cover_date = _issue.cover_date or issue.cover_date
         if _issue.credits:
             issue.creators = {
@@ -58,26 +57,27 @@ class MokkariTalker:
             issue.format = "Trade Paperback"
         else:
             issue.format = "Comic"
-        # TODO: Add Genres
+        if _issue.series.genres:
+            issue.genres = sorted({x.name for x in _issue.series.genres})
         # TODO: Add Language ISO
         # TODO: Add Locations
         issue.number = _issue.number or issue.number
         issue.sources["Metron"] = _issue.id
         issue.store_date = _issue.store_date or issue.store_date
         if _issue.arcs:
-            issue.story_arcs = {s.name for s in _issue.arcs}
+            issue.story_arcs = {x.name for x in _issue.arcs}
         issue.summary = _issue.desc or issue.summary
         if _issue.teams:
-            issue.teams = {t.name for t in _issue.teams}
+            issue.teams = {x.name for x in _issue.teams}
         issue.title = _issue.collection_title or issue.title
 
     def _search_series(
         self,
         publisher_id: int,
         title: str,
-        volume: int | None = None,
-        start_year: int | None = None,
-    ) -> MokkariSeries | None:
+        volume: Optional[int] = None,
+        start_year: Optional[int] = None,
+    ) -> Optional[MokkariSeries]:
         _series = None
         params = {"publisher_id": publisher_id, "name": title}
         if volume:
@@ -120,7 +120,7 @@ class MokkariTalker:
         series.title = _series.name or series.title
         series.volume = _series.volume or series.volume
 
-    def _search_publisher(self, title: str) -> MokkariPublisher | None:
+    def _search_publisher(self, title: str) -> Optional[MokkariPublisher]:
         _publisher = None
         publisher_list = self.session.publishers_list({"name": title})
         if not publisher_list:

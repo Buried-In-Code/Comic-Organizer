@@ -1,9 +1,8 @@
-from __future__ import annotations
-
 import json
 import re
 from datetime import date
 from pathlib import Path
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel as PyModel
 from pydantic import Extra, Field
@@ -32,8 +31,8 @@ class BaseModel(PyModel):
 
 
 class Publisher(BaseModel):
-    imprint: str | None = None
-    sources: dict[str, int] = Field(default_factory=dict)
+    imprint: Optional[str] = None
+    sources: Dict[str, int] = Field(default_factory=dict)
     title: str
 
     @property
@@ -42,8 +41,8 @@ class Publisher(BaseModel):
 
 
 class Series(BaseModel):
-    sources: dict[str, int] = Field(default_factory=dict)
-    start_year: int | None = Field(default=None, gt=1900)
+    sources: Dict[str, int] = Field(default_factory=dict)
+    start_year: Optional[int] = Field(default=None, gt=1900)
     title: str
     volume: int = Field(default=1, gt=0)
 
@@ -55,21 +54,21 @@ class Series(BaseModel):
 
 
 class Issue(BaseModel):
-    characters: list[str] = Field(default_factory=list)
-    cover_date: date | None = None
-    creators: dict[str, list[str]] = Field(default_factory=dict)
+    characters: List[str] = Field(default_factory=list)
+    cover_date: Optional[date] = None
+    creators: Dict[str, List[str]] = Field(default_factory=dict)
     format: str = "Comic"
-    genres: list[str] = Field(default_factory=list)
+    genres: List[str] = Field(default_factory=list)
     language_iso: str = "en"
-    locations: list[str] = Field(default_factory=list)
+    locations: List[str] = Field(default_factory=list)
     number: str
-    page_count: int | None = Field(default=None, gt=0)
-    sources: dict[str, int] = Field(default_factory=dict)
-    store_date: date | None = None
-    story_arcs: list[str] = Field(default_factory=list)
-    summary: str | None = None
-    teams: list[str] = Field(default_factory=list)
-    title: str | None = None
+    page_count: Optional[int] = Field(default=None, gt=0)
+    sources: Dict[str, int] = Field(default_factory=dict)
+    store_date: Optional[date] = None
+    story_arcs: List[str] = Field(default_factory=list)
+    summary: Optional[str] = None
+    teams: List[str] = Field(default_factory=list)
+    title: Optional[str] = None
 
     @property
     def file_name(self) -> str:
@@ -100,10 +99,10 @@ class Metadata(BaseModel):
     publisher: Publisher
     series: Series
     issue: Issue
-    notes: str | None = None
+    notes: Optional[str] = None
 
     @staticmethod
-    def from_file(comic_info_file: Path) -> Metadata:
+    def from_file(comic_info_file: Path) -> "Metadata":
         with comic_info_file.open("r", encoding="UTF-8") as info_file:
             content = yaml_setup().load(info_file)
             return Metadata(**content["data"])
@@ -120,5 +119,5 @@ class Metadata(BaseModel):
             )
 
 
-def generate_meta() -> dict[str, str]:
+def generate_meta() -> Dict[str, str]:
     return {"date": date.today().isoformat(), "tool": {"name": "Dex-Starr", "version": __version__}}

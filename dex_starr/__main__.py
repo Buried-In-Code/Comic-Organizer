@@ -1,8 +1,7 @@
-from __future__ import annotations
-
 import logging
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
+from typing import Dict, List, Union
 
 from pathvalidate.argparse import sanitize_filepath_arg
 from rich import box
@@ -63,8 +62,8 @@ def write_info_file(archive: Archive, settings: Settings, metadata: Metadata):
 
 def pull_info(
     metadata: Metadata,
-    services: dict[str, HimonTalker | MokkariTalker | SimyanTalker | EsakTalker],
-    resolution_order: list[str] = None,
+    services: Dict[str, Union[HimonTalker, MokkariTalker, SimyanTalker, EsakTalker]],
+    resolution_order: List[str] = None,
     resolve_manually: bool = False,
 ):
     if not resolution_order:

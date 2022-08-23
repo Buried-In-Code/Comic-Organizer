@@ -1,4 +1,4 @@
-from __future__ import annotations
+from typing import List, Optional, Union
 
 from rich import box
 from rich.console import Console
@@ -24,8 +24,8 @@ CONSOLE = Console(
 
 
 def create_menu(
-    options: list[str], prompt: str | None = None, default: str | None = None
-) -> int | None:
+    options: List[str], prompt: Optional[str] = None, default: Optional[str] = None
+) -> Optional[int]:
     if not options:
         return 0
     for index, item in enumerate(options):
@@ -56,7 +56,7 @@ def create_progress_bar() -> Progress:
     )
 
 
-def create_table(columns: list[str | Column], title: str = "", show_footer: bool = False):
+def create_table(columns: List[Union[str, Column]], title: str = "", show_footer: bool = False):
     return Table(
         *columns,
         title=title,

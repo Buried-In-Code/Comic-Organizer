@@ -1,4 +1,4 @@
-from __future__ import annotations
+from typing import Optional
 
 from rich.prompt import Prompt
 from simyan.comicvine import Comicvine
@@ -16,7 +16,7 @@ class SimyanTalker:
     def __init__(self, api_key: str):
         self.session = Comicvine(api_key=api_key, cache=SQLiteCache(expiry=14))
 
-    def _search_issue(self, series_id: int, number: str) -> SimyanIssue | None:
+    def _search_issue(self, series_id: int, number: str) -> Optional[SimyanIssue]:
         _issue = None
         try:
             issue_list = self.session.issue_list(
@@ -70,8 +70,8 @@ class SimyanTalker:
         issue.title = _issue.name or issue.title
 
     def _search_volume(
-        self, publisher_id: int, title: str, start_year: int | None = None
-    ) -> Volume | None:
+        self, publisher_id: int, title: str, start_year: Optional[int] = None
+    ) -> Optional[Volume]:
         volume = None
         try:
             volume_list = self.session.volume_list({"filter": f"name:{title}"})
@@ -117,7 +117,7 @@ class SimyanTalker:
         series.start_year = volume.start_year or series.start_year
         series.title = volume.name or series.title
 
-    def _search_publisher(self, title: str) -> SimyanPublisher | None:
+    def _search_publisher(self, title: str) -> Optional[SimyanPublisher]:
         _publisher = None
         try:
             publisher_list = self.session.publisher_list({"filter": f"name:{title}"})

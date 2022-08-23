@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from datetime import date, datetime
 
 from rich.prompt import DefaultType, InvalidResponse, PromptBase, Text
