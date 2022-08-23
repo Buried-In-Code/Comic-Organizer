@@ -189,7 +189,7 @@ class MetronInfo(BaseModel):
         if self.age_rating == "Unknown":
             self.age_rating = None
         with info_file.open("w", encoding="UTF-8") as stream:
-            content = self.dict(by_alias=True)
+            content = self.dict(by_alias=True, exclude_none=True)
             content["@xmlns:xsd"] = "https://www.w3.org/2001/XMLSchema"
             content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
 
