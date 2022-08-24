@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Dict, List, Union
 
 from pathvalidate.argparse import sanitize_filepath_arg
+from pydantic import ValidationError
 from rich import box
 from rich.logging import RichHandler
 from rich.panel import Panel
@@ -34,18 +35,27 @@ from .settings import Settings
 def read_info_file(archive: Archive) -> Metadata:
     info_file = archive.extracted_folder / "Metadata.json"
     if info_file.exists():
-        CONSOLE.print("Parsing Metadata.json", style="logging.level.debug")
-        return Metadata.from_file(info_file)
+        try:
+            CONSOLE.print("Parsing Metadata.json", style="logging.level.debug")
+            return Metadata.from_file(info_file)
+        except ValidationError:
+            CONSOLE.print("Unable to parse MetadataInfo.json", style="logging.level.warning")
     info_file = archive.extracted_folder / "MetronInfo.xml"
     if info_file.exists():
-        CONSOLE.print("Parsing MetronInfo.xml", style="logging.level.debug")
-        metron_info = MetronInfo.from_file(info_file)
-        return metron_info.to_metadata()
+        try:
+            CONSOLE.print("Parsing MetronInfo.xml", style="logging.level.debug")
+            metron_info = MetronInfo.from_file(info_file)
+            return metron_info.to_metadata()
+        except ValidationError:
+            CONSOLE.print("Unable to parse MetronInfo.xml", style="logging.level.warning")
     info_file = archive.extracted_folder / "ComicInfo.xml"
     if info_file.exists():
-        CONSOLE.print("Parsing ComicInfo.xml", style="logging.level.debug")
-        comic_info = ComicInfo.from_file(info_file)
-        return comic_info.to_metadata()
+        try:
+            CONSOLE.print("Parsing ComicInfo.xml", style="logging.level.debug")
+            comic_info = ComicInfo.from_file(info_file)
+            return comic_info.to_metadata()
+        except ValidationError:
+            CONSOLE.print("Unable to parse ComicInfo.xml", style="logging.level.warning")
     return create_metadata()
 
 
