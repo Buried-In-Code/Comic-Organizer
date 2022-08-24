@@ -45,16 +45,27 @@
               ]
             },
             "creators": {
-              "patternProperties": {
-                ".*": {
-                  "items": {
+              "items": {
+                "properties": {
+                  "name": {
                     "type": "string"
                   },
-                  "type": "array",
-                  "uniqueItems": true
-                }
+                  "roles": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array",
+                    "uniqueItems": true
+                  }
+                },
+                "required": [
+                  "name",
+                  "roles"
+                ],
+                "type": "object"
               },
-              "type": "object"
+              "type": "array",
+              "uniqueItems": true
             },
             "format": {
               "default": "Comic",
@@ -67,8 +78,9 @@
               "type": "array",
               "uniqueItems": true
             },
-            "languageIso": {
-              "default": "EN",
+            "language": {
+              "default": "en",
+              "pattern": "[a-z]+",
               "type": "string"
             },
             "locations": {
@@ -103,7 +115,18 @@
             },
             "storyArcs": {
               "items": {
-                "type": "string"
+                "properties": {
+                  "number": {
+                    "type": "integer"
+                  },
+                  "title": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "title"
+                ],
+                "type": "object"
               },
               "type": "array",
               "uniqueItems": true
@@ -136,7 +159,7 @@
             "creators",
             "format",
             "genres",
-            "languageIso",
+            "language",
             "locations",
             "number",
             "pageCount",

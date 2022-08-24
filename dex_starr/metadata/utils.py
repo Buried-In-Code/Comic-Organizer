@@ -1,13 +1,15 @@
+__all__ = ["create_metadata", "to_comic_info", "to_metron_info"]
+
 from typing import Dict, List, Tuple
 
 from rich.prompt import IntPrompt, Prompt
 
-from dex_starr.console import CONSOLE, create_menu
-from dex_starr.metadata.comic_info import ComicInfo
-from dex_starr.metadata.metadata import Issue, Metadata, Publisher, Series
-from dex_starr.metadata.metron_info import Arc, Credit, MetronInfo, Resource
-from dex_starr.metadata.metron_info import Series as MetronSeries
-from dex_starr.metadata.metron_info import Source
+from ..console import CONSOLE, create_menu
+from .comic_info import ComicInfo
+from .metadata import Issue, Metadata, Publisher, Series
+from .metron_info import Arc, Credit, MetronInfo, Resource
+from .metron_info import Series as MetronSeries
+from .metron_info import Source
 
 
 def create_metadata() -> Metadata:
@@ -29,13 +31,10 @@ def create_metadata() -> Metadata:
 
 
 def to_comic_info(metadata: Metadata) -> ComicInfo:
-    writers = [k for k, v in metadata.issue.creators.items() if "Writer" in v]
-    pencillers = [k for k, v in metadata.issue.creators.items() if "Penciller" in v]
-    inkers = [k for k, v in metadata.issue.creators.items() if "Inker" in v]
-    colorists = [k for k, v in metadata.issue.creators.items() if "Colorist" in v]
-    letterers = [k for k, v in metadata.issue.creators.items() if "Letterer" in v]
-    cover_artists = [k for k, v in metadata.issue.creators.items() if "Cover Artist" in v]
-    editors = [k for k, v in metadata.issue.creators.items() if "Editor" in v]
+    roles = ["Writer", "Penciller", "Inker", "Colorist", "Letterer", "Cover Artist", "Editor"]
+    creators = {}
+    for role in roles:
+        creators[role] = [x.name for x in metadata.issue.creators if role in x.roles]
     return ComicInfo(
         title=metadata.issue.title,
         series=metadata.series.title,
@@ -50,24 +49,26 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
         year=metadata.issue.cover_date.year if metadata.issue.cover_date else None,
         month=metadata.issue.cover_date.month if metadata.issue.cover_date else None,
         day=metadata.issue.cover_date.day if metadata.issue.cover_date else None,
-        writer=", ".join(writers) if writers else None,
-        penciller=", ".join(pencillers) if pencillers else None,
-        inker=", ".join(inkers) if inkers else None,
-        colorist=", ".join(colorists) if colorists else None,
-        letterer=", ".join(letterers) if letterers else None,
-        cover_artist=", ".join(cover_artists) if cover_artists else None,
-        editor=", ".join(editors) if editors else None,
+        writer=", ".join(creators["Writer"]) if creators["Writer"] else None,
+        penciller=", ".join(creators["Penciller"]) if creators["Penciller"] else None,
+        inker=", ".join(creators["Inker"]) if creators["Inker"] else None,
+        colorist=", ".join(creators["Colorist"]) if creators["Colorist"] else None,
+        letterer=", ".join(creators["Letterer"]) if creators["Letterer"] else None,
+        cover_artist=", ".join(creators["Cover Artist"]) if creators["Cover Artist"] else None,
+        editor=", ".join(creators["Editor"]) if creators["Editor"] else None,
         publisher=metadata.publisher.title,
         imprint=metadata.publisher.imprint,
         genre=", ".join(metadata.issue.genres) if metadata.issue.genres else None,
         # Web
         page_count=metadata.issue.page_count,
-        language_iso=metadata.issue.language_iso.lower(),
-        # Format
+        language_iso=metadata.issue.language,
+        format=metadata.issue.format,
         characters=", ".join(metadata.issue.characters) if metadata.issue.characters else None,
         teams=", ".join(metadata.issue.teams) if metadata.issue.teams else None,
         locations=", ".join(metadata.issue.locations) if metadata.issue.locations else None,
-        story_arc=", ".join(metadata.issue.story_arcs) if metadata.issue.story_arcs else None,
+        story_arc=", ".join([x.title for x in metadata.issue.story_arcs])
+        if metadata.issue.story_arcs
+        else None,
         # Series Group
         # TODO: Add pages
     )
@@ -82,18 +83,22 @@ def get_source(sources: Dict[str, int], resolution_order: List[str]) -> Tuple[in
 
 
 def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInfo:
-    issue_source = get_source(metadata.issue.sources, resolution_order)
-    series_source = get_source(metadata.series.sources, resolution_order)
-    publisher_source = get_source(metadata.publisher.sources, resolution_order)
+    source = get_source(metadata.issue.sources, resolution_order)
     return MetronInfo(
-        id=Source(source=issue_source[1], value=issue_source[0]) if issue_source else None,
-        publisher=Resource(id=publisher_source[0], value=metadata.publisher.title),
+        id=Source(source=source[1], value=source[0]) if source else None,
+        publisher=Resource(
+            id=metadata.publisher.sources.get(source[1]) if source else None,
+            value=metadata.publisher.title,
+        ),
         series=MetronSeries(
-            name=Resource(id=series_source[0], value=metadata.series.title),
+            name=Resource(
+                id=metadata.series.sources.get(source[1]) if source else None,
+                value=metadata.series.title,
+            ),
             sort_name=metadata.series.title,
             volume=metadata.series.volume,
             format=metadata.issue.format,
-            lang=metadata.issue.language_iso.lower(),
+            lang=metadata.issue.language,
         ),
         collection_title=metadata.issue.title,
         number=metadata.issue.number,
@@ -106,15 +111,17 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
         notes=metadata.notes,
         genres=[Resource(value=x) for x in metadata.issue.genres],
         # TODO: Add tags
-        story_arcs=[Arc(name=Resource(value=x)) for x in metadata.issue.story_arcs],
+        story_arcs=[
+            Arc(name=Resource(value=x.title), number=x.number) for x in metadata.issue.story_arcs
+        ],
         characters=[Resource(value=x) for x in metadata.issue.characters],
         teams=[Resource(value=x) for x in metadata.issue.teams],
         locations=[Resource(value=x) for x in metadata.issue.locations],
         # TODO: Add reprints
         # TODO: Add GTIN - ISBN & UPC
         credits=[
-            Credit(creator=Resource(value=name), roles=[Resource(value=r) for r in roles])
-            for name, roles in metadata.issue.creators.items()
+            Credit(creator=Resource(value=x.name), roles=[Resource(value=r) for r in x.roles])
+            for x in metadata.issue.creators
         ],
         # TODO: Add pages
     )

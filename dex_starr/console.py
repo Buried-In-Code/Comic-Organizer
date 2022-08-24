@@ -1,6 +1,31 @@
-from datetime import date, datetime
+__all__ = [
+    "CONSOLE",
+    "DatePrompt",
+    "DatetimePrompt",
+    "create_menu",
+]
 
-from rich.prompt import DefaultType, InvalidResponse, PromptBase, Text
+from datetime import date, datetime
+from typing import List, Optional
+
+from rich.console import Console
+from rich.prompt import DefaultType, IntPrompt, InvalidResponse, PromptBase, Text
+from rich.theme import Theme
+
+CONSOLE = Console(
+    theme=Theme(
+        {
+            "prompt": "green",
+            "prompt.choices": "white",
+            "prompt.default": "dim italic white",
+            "logging.level.debug": "dim italic white",
+            "logging.level.info": "white",
+            "logging.level.warning": "red",
+            "logging.level.error": "bold red",
+            "logging.level.critical": "magenta",
+        }
+    )
+)
 
 
 class DatePrompt(PromptBase[date]):
@@ -53,3 +78,19 @@ class DatetimePrompt(PromptBase[datetime]):
             raise InvalidResponse(self.illegal_choice_message)
 
         return mapped_value
+
+
+def create_menu(
+    options: List[str], prompt: Optional[str] = None, default: Optional[str] = None
+) -> Optional[int]:
+    if not options:
+        return 0
+    for index, item in enumerate(options):
+        CONSOLE.print(f"[prompt]{index + 1}:[/] [prompt.choices]{item}[/]")
+    if default:
+        CONSOLE.print(f"[prompt]0:[/] [prompt.default]{default}[/]")
+    selected = IntPrompt.ask(prompt=prompt, default=0 if default else None, console=CONSOLE)
+    if selected < 0 or selected > len(options) or (selected == 0 and not default):
+        CONSOLE.print(f"Invalid Option: `{selected}`", style="prompt.invalid")
+        return create_menu(options=options, prompt=prompt, default=default)
+    return selected

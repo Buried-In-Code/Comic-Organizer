@@ -9,7 +9,7 @@ from rich.logging import RichHandler
 from rich.panel import Panel
 from rich.prompt import Prompt
 
-from dex_starr import (
+from . import (
     IMAGE_EXTENSIONS,
     SUPPORTED_EXTENSIONS,
     __version__,
@@ -18,17 +18,17 @@ from dex_starr import (
     get_cache_root,
     list_files,
 )
-from dex_starr.archive import Archive
-from dex_starr.console import CONSOLE
-from dex_starr.metadata.comic_info import ComicInfo
-from dex_starr.metadata.metadata import Metadata
-from dex_starr.metadata.metron_info import MetronInfo
-from dex_starr.metadata.utils import create_metadata, to_comic_info, to_metron_info
-from dex_starr.services.esak import EsakTalker
-from dex_starr.services.himon import HimonTalker
-from dex_starr.services.mokkari import MokkariTalker
-from dex_starr.services.simyan import SimyanTalker
-from dex_starr.settings import Settings
+from .archive import Archive
+from .console import CONSOLE
+from .metadata.comic_info import ComicInfo
+from .metadata.metadata import Metadata
+from .metadata.metron_info import MetronInfo
+from .metadata.utils import create_metadata, to_comic_info, to_metron_info
+from .services.esak import EsakTalker
+from .services.himon import HimonTalker
+from .services.mokkari import MokkariTalker
+from .services.simyan import SimyanTalker
+from .settings import Settings
 
 
 def read_info_file(archive: Archive) -> Metadata:

@@ -1,3 +1,5 @@
+__all__ = ["ComicInfo"]
+
 from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -6,10 +8,8 @@ import xmltodict
 from pydantic import BaseModel, Extra, Field, validator
 from rich.prompt import Prompt
 
-from dex_starr.console import CONSOLE, create_menu
-from dex_starr.metadata.metadata import Issue, Metadata, Publisher, Series
-
-manga_values = {None: "Unknown", False: "No", True: "Yes"}
+from ..console import CONSOLE, create_menu
+from .metadata import Creator, Issue, Metadata, Publisher, Series, StoryArc
 
 
 def to_pascal_case(value: str) -> str:
@@ -45,8 +45,8 @@ class ComicInfo(BaseModel):
     language_iso: Optional[str] = Field(alias="LanguageISO", default=None)
     format: Optional[str] = None
     black_and_white: Optional[bool] = None
-    manga: Optional[bool] = None
-    right_to_left: bool = Field(alias="Manga", default=False)
+    manga: Optional[bool] = False
+    right_to_left: Optional[bool] = False
     characters: Optional[str] = None
     teams: Optional[str] = None
     locations: Optional[str] = None
@@ -67,21 +67,24 @@ class ComicInfo(BaseModel):
     def __init__(self, **data):
         if "Pages" in data:
             data["Pages"] = data["Pages"]["Page"]
+        data["RightToLeft"] = data["Manga"] if "Manga" in data else False
         super().__init__(**data)
 
     @validator("black_and_white", "manga", pre=True)
     def validate_optional_bool(cls, v) -> Optional[bool]:
-        if v and v == "No":
+        if v:
+            if v in ["Yes", "YesAndRightToLeft"]:
+                return True
             return False
-        if v and v in ["Yes", "YesAndRightToLeft"]:
-            return True
         return None
 
     @validator("right_to_left", pre=True)
-    def validate_rtl(cls, v) -> bool:
-        if v and v == "YesAndRightToLeft":
-            return True
-        return False
+    def validate_rtl(cls, v) -> Optional[bool]:
+        if v:
+            if v == "YesAndRightToLeft":
+                return True
+            return False
+        return None
 
     @property
     def story_arc_list(self) -> List[str]:
@@ -235,23 +238,25 @@ class ComicInfo(BaseModel):
             ),
             series=Series(
                 # Sources
-                start_year=self.volume,
+                start_year=self.volume if self.volume and self.volume > 1900 else None,
                 title=self.series,
-                # Volume
+                volume=self.volume if self.volume and self.volume < 1900 else 1,
             ),
             issue=Issue(
                 characters=self.character_list,
                 cover_date=self.cover_date,
-                creators={k: sorted(creators[k]) for k in sorted(creators)},
+                creators=sorted(
+                    Creator(name=name, roles=sorted(roles)) for name, roles in creators.items()
+                ),
                 format=self.format,
                 genres=self.genre_list,
-                language_iso=self.language_iso.lower() if self.language_iso else "en",
+                language=self.language_iso.lower() if self.language_iso else "en",
                 locations=self.location_list,
                 number=self.number,
                 page_count=self.page_count,
                 # Sources
                 # Store date
-                story_arcs=self.story_arc_list,
+                story_arcs=sorted({StoryArc(title=x) for x in self.story_arc_list}),
                 summary=self.summary,
                 teams=self.team_list,
                 title=self.title,
@@ -271,6 +276,8 @@ class ComicInfo(BaseModel):
     def to_file(self, info_file: Path):
         if self.manga is False:
             self.manga = None
+        if self.right_to_left is False:
+            self.right_to_left = None
         with info_file.open("w", encoding="UTF-8") as stream:
             content = self.dict(by_alias=True, exclude_none=True)
             content["@xmlns:xsd"] = "https://www.w3.org/2001/XMLSchema"

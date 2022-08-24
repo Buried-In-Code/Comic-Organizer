@@ -120,7 +120,7 @@ python-versions = "*"
 
 [[package]]
 name = "esak"
-version = "1.3.1"
+version = "1.3.2"
 description = "Python wrapper for the Marvel API."
 category = "main"
 optional = false
@@ -203,7 +203,7 @@ python-versions = "*"
 
 [[package]]
 name = "marshmallow"
-version = "3.17.0"
+version = "3.17.1"
 description = "A lightweight library for converting complex datatypes to and from native Python datatypes."
 category = "main"
 optional = false
@@ -213,10 +213,10 @@ python-versions = ">=3.7"
 packaging = ">=17.0"
 
 [package.extras]
-tests = ["simplejson", "pytz", "pytest"]
-lint = ["pre-commit (>=2.4,<3.0)", "flake8-bugbear (==22.6.22)", "flake8 (==4.0.1)", "mypy (==0.961)"]
-docs = ["autodocsumm (==0.2.8)", "sphinx-version-warning (==1.1.2)", "alabaster (==0.7.12)", "sphinx-issues (==3.0.1)", "sphinx (==4.5.0)"]
-dev = ["tox", "pre-commit (>=2.4,<3.0)", "flake8-bugbear (==22.6.22)", "flake8 (==4.0.1)", "mypy (==0.961)", "simplejson", "pytz", "pytest"]
+dev = ["pytest", "pytz", "simplejson", "mypy (==0.971)", "flake8 (==5.0.4)", "flake8-bugbear (==22.8.22)", "pre-commit (>=2.4,<3.0)", "tox"]
+docs = ["sphinx (==5.1.1)", "sphinx-issues (==3.0.1)", "alabaster (==0.7.12)", "sphinx-version-warning (==1.1.2)", "autodocsumm (==0.2.9)"]
+lint = ["mypy (==0.971)", "flake8 (==5.0.4)", "flake8-bugbear (==22.8.22)", "pre-commit (>=2.4,<3.0)"]
+tests = ["pytest", "pytz", "simplejson"]
 
 [[package]]
 name = "mokkari"
@@ -658,7 +658,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "urllib3"
-version = "1.26.11"
+version = "1.26.12"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 category = "main"
 optional = false
@@ -666,7 +666,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, 
 
 [package.extras]
 brotli = ["brotlicffi (>=0.8.0)", "brotli (>=1.0.9)", "brotlipy (>=0.6.0)"]
-secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "certifi", "ipaddress"]
+secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "certifi", "urllib3-secure-extra", "ipaddress"]
 socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
@@ -697,7 +697,7 @@ python-versions = ">=3.4"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "d163760384af1e052c4175cd9eb4a72061a740ad22e7adec42bd0dfaff0a37fb"
+content-hash = "5b422f07488214fc5fe6abb6c2d5e426ebd88243e1eca506f03f1b4a50d9fc86"
 
 [metadata.files]
 atomicwrites = [
@@ -931,8 +931,8 @@ coverage = [
 ]
 distlib = []
 esak = [
-    {file = "esak-1.3.1-py3-none-any.whl", hash = "sha256:e46696f3fe044845a82b1d94094315f3116d3563387eaa0ccc95adb6ec89cb52"},
-    {file = "esak-1.3.1.tar.gz", hash = "sha256:f2fb6da23cf39650fcf041ff2317441536a407eda6bd19cb257dcc99e1a289c8"},
+    {file = "esak-1.3.2-py3-none-any.whl", hash = "sha256:0289945acb1bb88b977d9894f25df1b9afb1b687a09fa39f88c0ad287095efab"},
+    {file = "esak-1.3.2.tar.gz", hash = "sha256:fe4e2aafa2aef5cbc1c89dbf821284d5b4c81b565b027ffd0b1ad43cd9d742ce"},
 ]
 filelock = [
     {file = "filelock-3.8.0-py3-none-any.whl", hash = "sha256:617eb4e5eedc82fc5f47b6d61e4d11cb837c56cb4544e39081099fa17ad109d4"},
@@ -1023,8 +1023,8 @@ iniconfig = [
     {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
 ]
 marshmallow = [
-    {file = "marshmallow-3.17.0-py3-none-any.whl", hash = "sha256:00040ab5ea0c608e8787137627a8efae97fabd60552a05dc889c888f814e75eb"},
-    {file = "marshmallow-3.17.0.tar.gz", hash = "sha256:635fb65a3285a31a30f276f30e958070f5214c7196202caa5c7ecf28f5274bc7"},
+    {file = "marshmallow-3.17.1-py3-none-any.whl", hash = "sha256:1172ce82765bf26c24a3f9299ed6dbeeca4d213f638eaa39a37772656d7ce408"},
+    {file = "marshmallow-3.17.1.tar.gz", hash = "sha256:48e2d88d4ab431ad5a17c25556d9da529ea6e966876f2a38d274082e270287f0"},
 ]
 mokkari = [
     {file = "mokkari-2.3.0-py3-none-any.whl", hash = "sha256:aa3f421cbeed108c0f9eb5d1a8c92469297b228be342ebc36a7ec43b44a3f454"},
@@ -1495,7 +1495,10 @@ tox-pyenv = [
     {file = "tox_pyenv-1.1.0-py2.py3-none-any.whl", hash = "sha256:e470c18af115fe52eeff95e7e3cdd0793613eca19709966fc2724b79d55246cb"},
 ]
 typing-extensions = []
-urllib3 = []
+urllib3 = [
+    {file = "urllib3-1.26.12-py2.py3-none-any.whl", hash = "sha256:b930dd878d5a8afb066a637fbb35144fe7901e3b209d1cd4f524bd0e9deee997"},
+    {file = "urllib3-1.26.12.tar.gz", hash = "sha256:3fa96cf423e6987997fc326ae8df396db2a8b7c667747d47ddd8ecba91f4a74e"},
+]
 virtualenv = [
     {file = "virtualenv-20.16.3-py2.py3-none-any.whl", hash = "sha256:4193b7bc8a6cd23e4eb251ac64f29b4398ab2c233531e66e40b19a6b7b0d30c1"},
     {file = "virtualenv-20.16.3.tar.gz", hash = "sha256:d86ea0bb50e06252d79e6c241507cb904fcd66090c3271381372d6221a3970f9"},

@@ -1,3 +1,16 @@
+__all__ = [
+    "Page",
+    "Resource",
+    "Credit",
+    "GTIN",
+    "Reprint",
+    "Arc",
+    "Price",
+    "Series",
+    "Source",
+    "MetronInfo",
+]
+
 from datetime import date
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -6,8 +19,9 @@ import xmltodict
 from pydantic import BaseModel as PyModel
 from pydantic import Extra, Field
 
-from dex_starr.metadata.metadata import Issue, Metadata, Publisher
-from dex_starr.metadata.metadata import Series as MetadataSeries
+from .metadata import Creator, Issue, Metadata, Publisher
+from .metadata import Series as MetadataSeries
+from .metadata import StoryArc
 
 
 def to_pascal_case(value: str) -> str:
@@ -35,7 +49,7 @@ class Page(BaseModel):
 
 
 class Resource(BaseModel):
-    id: int = Field(alias="@id", gt=0, default=1)
+    id: Optional[int] = Field(alias="@id", gt=0, default=None)
     value: str = Field(alias="#text")
 
 
@@ -140,20 +154,25 @@ class MetronInfo(BaseModel):
                 volume=self.series.volume,
             ),
             issue=Issue(
-                characters=[c.value for c in self.characters],
+                characters=sorted(x.value for x in self.characters),
                 cover_date=self.cover_date,
-                creators={c.creator.value: sorted(r.value for r in c.roles) for c in self.credits},
+                creators=sorted(
+                    Creator(name=x.creator.value, roles=sorted(r.value for r in x.roles))
+                    for x in self.credits
+                ),
                 format=self.series.format,
-                genres=sorted({x.value for x in self.genres}),
-                language_iso=self.series.lang,
-                locations=sorted({x.value for x in self.locations}),
+                genres=sorted(x.value for x in self.genres),
+                language=self.series.lang,
+                locations=sorted(x.value for x in self.locations),
                 number=self.number,
                 page_count=self.page_count,
                 sources={self.id.source: self.id.value} if self.id else {},
                 store_date=self.store_date,
-                story_arcs=sorted({x.value for x in self.stories}),
+                story_arcs=sorted(
+                    StoryArc(title=x.name.value, number=x.number) for x in self.story_arcs
+                ),
                 summary=self.summary,
-                teams=sorted({t.value for t in self.teams}),
+                teams=sorted(x.value for x in self.teams),
                 title=self.collection_title,
             ),
             notes=self.notes,

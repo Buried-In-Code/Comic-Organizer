@@ -1,3 +1,5 @@
+__all__ = ["Publisher", "Series", "Creator", "StoryArc", "Issue", "Metadata"]
+
 import json
 import re
 from datetime import date
@@ -7,7 +9,7 @@ from typing import Dict, List, Optional
 from pydantic import BaseModel as PyModel
 from pydantic import Extra, Field
 
-from dex_starr import __version__, yaml_setup
+from .. import __version__, yaml_setup
 
 
 def sanitize(dirty: str) -> str:
@@ -39,6 +41,11 @@ class Publisher(BaseModel):
     def file_name(self) -> str:
         return sanitize(self.title)
 
+    def __lt__(self, other):
+        if not isinstance(other, Publisher):
+            raise NotImplementedError()
+        return self.title < other.title
+
 
 class Series(BaseModel):
     sources: Dict[str, int] = Field(default_factory=dict)
@@ -52,20 +59,51 @@ class Series(BaseModel):
             return sanitize(self.title)
         return sanitize(f"{self.title} v{self.volume}")
 
+    def __lt__(self, other):
+        if not isinstance(other, Series):
+            raise NotImplementedError()
+        if self.title != other.title:
+            return self.title < other.title
+        if self.volume != other.volume:
+            return self.volume < other.volume
+        return self.start_year < other.start_year
+
+
+class Creator(BaseModel):
+    name: str
+    roles: List[str] = Field(default_factory=list)
+
+    def __lt__(self, other):
+        if not isinstance(other, Creator):
+            raise NotImplementedError()
+        return self.name < other.name
+
+
+class StoryArc(BaseModel):
+    title: str
+    number: Optional[int] = None
+
+    def __lt__(self, other):
+        if not isinstance(other, StoryArc):
+            raise NotImplementedError()
+        if self.title != other.title:
+            return self.title < other.title
+        return self.number < other.number
+
 
 class Issue(BaseModel):
     characters: List[str] = Field(default_factory=list)
     cover_date: Optional[date] = None
-    creators: Dict[str, List[str]] = Field(default_factory=dict)
+    creators: List[Creator] = Field(default_factory=list)
     format: str = "Comic"
     genres: List[str] = Field(default_factory=list)
-    language_iso: str = "en"
+    language: str = "en"
     locations: List[str] = Field(default_factory=list)
     number: str
     page_count: Optional[int] = Field(default=None, gt=0)
     sources: Dict[str, int] = Field(default_factory=dict)
     store_date: Optional[date] = None
-    story_arcs: List[str] = Field(default_factory=list)
+    story_arcs: List[StoryArc] = Field(default_factory=list)
     summary: Optional[str] = None
     teams: List[str] = Field(default_factory=list)
     title: Optional[str] = None
@@ -94,6 +132,15 @@ class Issue(BaseModel):
             return f"{filename}-TP"
         return f"-#{self.number.zfill(3)}"
 
+    def __lt__(self, other):
+        if not isinstance(other, Issue):
+            raise NotImplementedError()
+        if self.format != other.format:
+            return self.format < other.format
+        if self.number != other.number:
+            return self.number < other.number
+        return self.cover_date < other.cover_date
+
 
 class Metadata(BaseModel):
     publisher: Publisher
@@ -117,6 +164,15 @@ class Metadata(BaseModel):
                 indent=2,
                 ensure_ascii=False,
             )
+
+    def __lt__(self, other):
+        if not isinstance(other, Metadata):
+            raise NotImplementedError()
+        if self.publisher != other.publisher:
+            return self.publisher < other.publisher
+        if self.series != other.series:
+            return self.series < other.series
+        return self.issue < other.issue
 
 
 def generate_meta() -> Dict[str, str]:

@@ -1,9 +1,11 @@
+__all__ = ["SQLiteCache"]
+
 import json
 import sqlite3
 from datetime import date, timedelta
 from typing import Any, Dict, Optional
 
-from dex_starr import get_cache_root
+from .. import get_cache_root
 
 
 class SQLiteCache:

@@ -1,3 +1,5 @@
+__all__ = ["Archive"]
+
 import shutil
 from pathlib import Path
 from typing import Optional
@@ -6,16 +8,10 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from patoolib import extract_archive
 from py7zr import SevenZipFile
 
-from dex_starr import (
-    IMAGE_EXTENSIONS,
-    SUPPORTED_INFO_FILES,
-    filter_files,
-    get_cache_root,
-    list_files,
-)
-from dex_starr.console import CONSOLE
-from dex_starr.metadata.metadata import Metadata
-from dex_starr.settings import GeneralSettings
+from . import IMAGE_EXTENSIONS, SUPPORTED_INFO_FILES, filter_files, get_cache_root, list_files
+from .console import CONSOLE
+from .metadata.metadata import Metadata
+from .settings import GeneralSettings
 
 
 class Archive:

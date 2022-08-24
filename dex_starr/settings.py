@@ -1,9 +1,18 @@
+__all__ = [
+    "Settings",
+    "GeneralSettings",
+    "ComicvineSettings",
+    "LeagueOfComicGeeks",
+    "MarvelSettings",
+    "MetronSettings",
+]
+
 from pathlib import Path
 from typing import List, Optional
 
 from pydantic import BaseModel, Extra, Field, validator
 
-from dex_starr import get_config_root, yaml_setup
+from . import get_config_root, yaml_setup
 
 _settings_file = get_config_root() / "settings.yaml"
 
