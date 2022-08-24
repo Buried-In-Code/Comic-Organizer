@@ -10,7 +10,6 @@ from rich.prompt import Prompt
 
 from ..console import CONSOLE, create_menu
 from ..metadata.metadata import Creator, Issue, Metadata, Series, StoryArc
-from . import tidy_creators
 from .sqlite_cache import SQLiteCache
 
 
@@ -41,7 +40,6 @@ class EsakTalker:
                         roles=[clean_title(esak_creator.role.title())],
                     )
                 )
-        issue.creators = tidy_creators(issue.creators)
         # endregion
         issue.format = esak_comic.format or issue.format
         # Genres

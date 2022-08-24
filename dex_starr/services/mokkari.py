@@ -11,7 +11,6 @@ from rich.prompt import Prompt
 
 from ..console import CONSOLE, create_menu
 from ..metadata.metadata import Creator, Issue, Metadata, Publisher, Series, StoryArc
-from . import tidy_creators
 from .sqlite_cache import SQLiteCache
 
 
@@ -37,7 +36,6 @@ class MokkariTalker:
                         roles=sorted(x.name for x in credit.roles),
                     )
                 )
-        issue.creators = tidy_creators(issue.creators)
         # endregion
         format_name = mokkari_issue.series.series_type or issue.format
         if format_name in ["Annual", "Trade Paperback"]:

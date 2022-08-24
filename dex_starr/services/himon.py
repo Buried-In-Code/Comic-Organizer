@@ -11,7 +11,6 @@ from rich.prompt import Prompt
 
 from ..console import CONSOLE, create_menu
 from ..metadata.metadata import Creator, Issue, Metadata, Publisher, Series
-from . import tidy_creators
 from .sqlite_cache import SQLiteCache
 
 
@@ -56,7 +55,6 @@ class HimonTalker:
                         roles=sorted(himon_creator.roles.values()),
                     )
                 )
-        issue.creators = tidy_creators(issue.creators)
         # endregion
         issue.format = himon_comic.format or issue.format
         # Genres

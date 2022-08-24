@@ -11,7 +11,6 @@ from simyan.schemas.volume import Volume
 
 from ..console import CONSOLE, create_menu
 from ..metadata.metadata import Creator, Issue, Metadata, Publisher, Series, StoryArc
-from . import tidy_creators
 from .sqlite_cache import SQLiteCache
 
 
@@ -56,7 +55,6 @@ class SimyanTalker:
                         ),
                     )
                 )
-        issue.creators = tidy_creators(issue.creators)
         # endregion
         # Format
         # Genres
