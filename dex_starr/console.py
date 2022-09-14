@@ -20,9 +20,9 @@ CONSOLE = Console(
             "prompt.default": "dim italic white",
             "logging.level.debug": "dim italic white",
             "logging.level.info": "white",
-            "logging.level.warning": "red",
+            "logging.level.warning": "yellow",
             "logging.level.error": "bold red",
-            "logging.level.critical": "magenta",
+            "logging.level.critical": "bold magenta",
         }
     )
 )
