@@ -67,8 +67,8 @@ test = [
 Dex-Starr = "dex_starr.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/Buried-In-Code/Dex-Starr"
 Documentation = "https://github.com/Buried-In-Code/Dex-Starr#readme"
+Homepage = "https://github.com/Buried-In-Code/Dex-Starr"
 Issues = "https://github.com/Buried-In-Code/Dex-Starr/issues"
 Source = "https://github.com/Buried-In-Code/Dex-Starr"
 
@@ -86,13 +86,13 @@ show_missing = true
 [tool.coverage.run]
 source = ["dex_starr"]
 
-[tool.pdm]
-version = {source = "file", path = "dex_starr/__init__.py"}
-
 [tool.isort]
 default_section = "THIRDPARTY"
 line_length = 100
 profile = "black"
+
+[tool.pdm]
+version = {source = "file", path = "dex_starr/__init__.py"}
 
 [tool.pytest.ini_options]
 addopts = ["--cov", "-x"]

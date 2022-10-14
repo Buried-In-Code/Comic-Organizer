@@ -254,7 +254,7 @@ def uniform_creators(creators: Iterable[Creator]) -> List[Creator]:
     auto_resolve = {
         "Colorist": "Colourist",
         "Penciler": "Penciller",
-        "Editor-In-Chief": "Editor In Chief"
+        "Editor-In-Chief": "Editor In Chief",
     }
     for creator in creators:
         unknown_creator_roles = []
@@ -266,7 +266,7 @@ def uniform_creators(creators: Iterable[Creator]) -> List[Creator]:
             if role in auto_resolve:
                 CONSOLE.print(
                     f"Resolving '{role}' to '{auto_resolve[role]}' for {creator.name}",
-                    style="logging.level.debug"
+                    style="logging.level.debug",
                 )
                 creator.roles.append(auto_resolve[role])
                 continue
