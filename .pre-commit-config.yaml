@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.38.0
+    rev: v3.1.0
     hooks:
       - id: pyupgrade
         args:
@@ -50,13 +50,25 @@ repos:
           - --autofix
           - --indent=2
   - repo: https://github.com/psf/black
-    rev: 22.8.0
+    rev: 22.10.0
     hooks:
       - id: black
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.4
+    hooks:
+      - id: bandit
+        args:
+          - -c=pyproject.toml
+        additional_dependencies:
+          - bandit[toml]
   - repo: https://github.com/PyCQA/flake8
     rev: 5.0.4
     hooks:
       - id: flake8
+        additional_dependencies:
+          - flake8-builtins
+          - flake8-docstrings
+          - flake8-rst-docstrings
   - repo: https://github.com/PyCQA/isort
     rev: 5.10.1
     hooks:

@@ -189,10 +189,10 @@ valid_creator_roles = [
     "Breakdowns",
     "Chief Creative Officer",
     "Collection Editor",
-    "Color Assists",
-    "Color Flats",
-    "Color Separations",
-    "Colorist",
+    "Colour Assists",
+    "Colour Flats",
+    "Colour Separations",
+    "Colourist",
     "Consulting Editor",
     "Cover Artist",
     "Creator",
@@ -229,7 +229,9 @@ valid_creator_roles = [
     "Writer",
 ]
 valid_genres = [
+    "Action",
     "Adult",
+    "Adventure",
     "Crime",
     "Espionage",
     "Fantasy",
@@ -242,12 +244,18 @@ valid_genres = [
     "Science Fiction",
     "Sport",
     "Super-Hero",
+    "Video Games",
     "War",
     "Western",
 ]
 
 
 def uniform_creators(creators: Iterable[Creator]) -> List[Creator]:
+    auto_resolve = {
+        "Colorist": "Colourist",
+        "Penciler": "Penciller",
+        "Editor-In-Chief": "Editor In Chief"
+    }
     for creator in creators:
         unknown_creator_roles = []
         for role in creator.roles:
@@ -255,7 +263,17 @@ def uniform_creators(creators: Iterable[Creator]) -> List[Creator]:
                 continue
             unknown_creator_roles.append(role)
         for role in unknown_creator_roles:
-            CONSOLE.print(f"Unknown Creator role found: `{role}`", style="logging.level.warning")
+            if role in auto_resolve:
+                CONSOLE.print(
+                    f"Resolving '{role}' to '{auto_resolve[role]}' for {creator.name}",
+                    style="logging.level.debug"
+                )
+                creator.roles.append(auto_resolve[role])
+                continue
+            CONSOLE.print(
+                f"Unknown Creator role found for {creator.name}: `{role}`",
+                style="logging.level.warning",
+            )
             if index := create_menu(
                 options=valid_creator_roles,
                 prompt="Select a replacement role",
@@ -274,6 +292,10 @@ def uniform_genres(genres: Iterable[str]) -> List[str]:
             continue
         unknown_genres.append(genre)
     for genre in unknown_genres:
+        if genre == "Comedy":
+            CONSOLE.print("Resolved 'Comedy' to 'Humor'", style="logging.level.debug")
+            genres.append("Humor")
+            continue
         CONSOLE.print(f"Unknown genre found: `{genre}`", style="logging.level.warning")
         if index := create_menu(
             options=valid_genres, prompt="Select a replacement genre", default="None of the Above"
