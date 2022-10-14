@@ -6,7 +6,7 @@ from typing import Optional
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from patoolib import extract_archive
-from py7zr import SevenZipFile
+from patoolib.util import PatoolError
 
 from . import IMAGE_EXTENSIONS, SUPPORTED_INFO_FILES, filter_files, get_cache_root, list_files
 from .console import CONSOLE
@@ -27,17 +27,23 @@ class Archive:
         return True
 
     def _extract_seven(self, extracted_folder: Path) -> bool:
+        from py7zr import SevenZipFile
+
         with SevenZipFile(self.source_file, "r") as stream:
             stream.extractall(path=extracted_folder)
         self.extracted_folder = extracted_folder
         return True
 
     def _extract_archive(self, extracted_folder: Path) -> bool:
-        output = extract_archive(
-            self.source_file, outdir=extracted_folder, verbosity=-1, interactive=False
-        )
-        self.extracted_folder = Path(output)
-        return True
+        try:
+            output = extract_archive(
+                self.source_file, outdir=extracted_folder, verbosity=-1, interactive=False
+            )
+            self.extracted_folder = Path(output)
+            return True
+        except PatoolError as err:
+            CONSOLE.print(err, style="logging.level.error")
+            return False
 
     def extract(self) -> bool:
         CONSOLE.print(f"Extracting `{self.source_file.name}`", style="logging.level.info")
@@ -79,6 +85,8 @@ class Archive:
                     stream.write(file, file.relative_to(self.extracted_folder))
 
     def _archive_seven(self, archive_file: Path):
+        from py7zr import SevenZipFile
+
         with SevenZipFile(archive_file, "w") as stream:
             for file in list_files(self.extracted_folder):
                 if file.suffix in IMAGE_EXTENSIONS:

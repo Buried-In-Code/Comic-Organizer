@@ -104,7 +104,7 @@ class MetronInfo(BaseModel):
     stories: List[Resource] = Field(default_factory=list)
     summary: Optional[str] = None
     prices: Optional[Price] = None
-    cover_date: date
+    cover_date: Optional[date] = None
     store_date: Optional[date] = None
     page_count: Optional[int] = None
     notes: Optional[str] = None

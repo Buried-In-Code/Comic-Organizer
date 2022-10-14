@@ -28,12 +28,12 @@ class MokkariTalker:
             for creator in issue.creators:
                 if name == creator.name:
                     found = True
-                    creator.roles = sorted({*creator.roles, *[x.name for x in credit.roles]})
+                    creator.roles = sorted({*creator.roles, *[x.name for x in credit.role]})
             if not found:
                 issue.creators.append(
                     Creator(
                         name=name,
-                        roles=sorted(x.name for x in credit.roles),
+                        roles=sorted(x.name for x in credit.role),
                     )
                 )
         # endregion

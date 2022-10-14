@@ -39,7 +39,7 @@ def read_info_file(archive: Archive) -> Metadata:
             CONSOLE.print("Parsing Metadata.json", style="logging.level.debug")
             return Metadata.from_file(info_file)
         except ValidationError:
-            CONSOLE.print("Unable to parse MetadataInfo.json", style="logging.level.warning")
+            CONSOLE.print("Unable to parse Metadata.json", style="logging.level.warning")
     info_file = archive.extracted_folder / "MetronInfo.xml"
     if info_file.exists():
         try:
@@ -179,8 +179,8 @@ def main():
             write_info_file(archive, settings, metadata)
 
             if archive.archive(metadata, settings.general):
-                pass
-                # archive.source_file.unlink(missing_ok=True)
+                if not args.debug:
+                    archive.source_file.unlink(missing_ok=True)
             else:
                 CONSOLE.print(
                     f"Unable to archive: {archive.result_file.name}", style="logging.level.error"

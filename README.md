@@ -46,12 +46,11 @@ Dex-Starr can also pull information from a list of sources to populate missing f
 
 ## Installation/Execution
 
-1. Make sure you have [Poetry](https://python-poetry.org) installed: `poetry --version`
-2. Make sure you have a supported version of [Python](https://www.python.org/) installed: `python --version`
-3. Clone the repo: `git clone https://github.com/Buried-In-Code/Dex-Starr`
-4. Navigate to the folder: `cd Dex-Starr`
-5. Install dependencies: `poetry install`
-6. Run Dex-Starr: `poetry run Dex-Starr`
+1. Make sure you have [Python](https://www.python.org/) installed: `python --version`
+2. Make sure you have [Poetry](https://python-poetry.org) installed: `poetry --version`
+3. Clone this repo: `git clone https://github.com/Buried-In-Code/Dex-Starr`
+4. Install the project and its dependencies via poetry: `poetry install`
+5. Run the program: `poetry run Dex-Starr`
 
 ### Arguments
 

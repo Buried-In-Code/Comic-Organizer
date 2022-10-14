@@ -8,13 +8,11 @@ __all__ = [
 ]
 
 from pathlib import Path
-from typing import List, Optional
+from typing import ClassVar, List, Optional
 
 from pydantic import BaseModel, Extra, Field, validator
 
 from . import get_config_root, yaml_setup
-
-_settings_file = get_config_root() / "settings.yaml"
 
 
 def to_space_case(value: str) -> str:
@@ -64,6 +62,7 @@ class GeneralSettings(SettingsModel):
 
 
 class Settings(SettingsModel):
+    FILENAME: ClassVar = get_config_root() / "settings.yaml"
     general: GeneralSettings = GeneralSettings()
     comicvine: ComicvineSettings = ComicvineSettings()
     league_of_comic_geeks: LeagueOfComicGeeks = Field(
@@ -72,16 +71,16 @@ class Settings(SettingsModel):
     marvel: MarvelSettings = MarvelSettings()
     metron: MetronSettings = MetronSettings()
 
-    @staticmethod
-    def load() -> "Settings":
-        if not _settings_file.exists():
+    @classmethod
+    def load(cls) -> "Settings":
+        if not cls.FILENAME.exists():
             Settings().save()
-        with _settings_file.open("r", encoding="UTF-8") as stream:
+        with cls.FILENAME.open("r", encoding="UTF-8") as stream:
             content = yaml_setup().load(stream)
         return Settings(**content)
 
     def save(self):
-        with _settings_file.open("w", encoding="UTF-8") as stream:
+        with self.FILENAME.open("w", encoding="UTF-8") as stream:
             content = self.dict(by_alias=True)
             content["General"]["Collection Folder"] = str(content["General"]["Collection Folder"])
             yaml_setup().dump(content, stream)
