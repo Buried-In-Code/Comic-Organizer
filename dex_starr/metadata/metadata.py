@@ -1,6 +1,7 @@
 __all__ = ["Publisher", "Series", "Creator", "StoryArc", "Issue", "Metadata"]
 
 import json
+import logging
 import re
 from datetime import date
 from pathlib import Path
@@ -9,8 +10,10 @@ from typing import Dict, Iterable, List, Optional
 from pydantic import BaseModel as PyModel
 from pydantic import Extra, Field
 
-from .. import __version__, yaml_setup
-from ..console import CONSOLE, create_menu
+from dex_starr import __version__
+from dex_starr.console import create_menu
+
+LOGGER = logging.getLogger(__name__)
 
 
 def sanitize(dirty: str) -> str:
@@ -152,7 +155,7 @@ class Metadata(BaseModel):
     @staticmethod
     def from_file(comic_info_file: Path) -> "Metadata":
         with comic_info_file.open("r", encoding="UTF-8") as info_file:
-            content = yaml_setup().load(info_file)
+            content = json.load(info_file)
             return Metadata(**content["data"])
 
     def to_file(self, comic_info_file: Path):
@@ -264,23 +267,17 @@ def uniform_creators(creators: Iterable[Creator]) -> List[Creator]:
             unknown_creator_roles.append(role)
         for role in unknown_creator_roles:
             if role in auto_resolve:
-                CONSOLE.print(
-                    f"Resolving '{role}' to '{auto_resolve[role]}' for {creator.name}",
-                    style="logging.level.debug",
-                )
+                LOGGER.debug(f"Resolving '{role}' to '{auto_resolve[role]}' for {creator.name}")
                 creator.roles.append(auto_resolve[role])
                 continue
-            CONSOLE.print(
-                f"Unknown Creator role found for {creator.name}: `{role}`",
-                style="logging.level.warning",
-            )
+            LOGGER.info(f"Unknown Creator role found for {creator.name}: '{role}'")
             if index := create_menu(
                 options=valid_creator_roles,
                 prompt="Select a replacement role",
                 default="None of the Above",
             ):
                 creator.roles.append(valid_creator_roles[index - 1])
-        creator.roles = [x for x in creator.roles if x in valid_creator_roles]
+        creator.roles = {x for x in creator.roles if x in valid_creator_roles}
     return sorted(x for x in creators if x.roles)
 
 
@@ -293,12 +290,12 @@ def uniform_genres(genres: Iterable[str]) -> List[str]:
         unknown_genres.append(genre)
     for genre in unknown_genres:
         if genre == "Comedy":
-            CONSOLE.print("Resolved 'Comedy' to 'Humor'", style="logging.level.debug")
+            LOGGER.debug("Resolved 'Comedy' to 'Humor'")
             genres.append("Humor")
             continue
-        CONSOLE.print(f"Unknown genre found: `{genre}`", style="logging.level.warning")
+        LOGGER.info(f"Unknown genre found: '{genre}'")
         if index := create_menu(
             options=valid_genres, prompt="Select a replacement genre", default="None of the Above"
         ):
             genres.append(valid_genres[index - 1])
-    return sorted(x for x in genres if x in valid_genres)
+    return sorted(x for x in set(genres) if x in valid_genres)

@@ -1,5 +1,6 @@
 __all__ = ["ComicInfo"]
 
+import logging
 from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -10,6 +11,8 @@ from rich.prompt import Prompt
 
 from ..console import CONSOLE, create_menu
 from .metadata import Creator, Issue, Metadata, Publisher, Series, StoryArc
+
+LOGGER = logging.getLogger(__name__)
 
 
 def to_pascal_case(value: str) -> str:
@@ -54,7 +57,7 @@ class ComicInfo(BaseModel):
     story_arc: Optional[str] = None
     series_group: Optional[str] = None
     age_rating: Optional[str] = None
-    pages: Dict[str, List[Dict[str, str]]] = Field(default_factory=dict)
+    pages: List[Dict[str, str]] = Field(default_factory=list)
     community_rating: Optional[float] = None
 
     class Config:
@@ -176,7 +179,7 @@ class ComicInfo(BaseModel):
         return sorted(x.strip() for x in self.locations.split(","))
 
     def _fill_missing_fields(self):
-        CONSOLE.print("Filling in missing fields", style="logging.level.info")
+        LOGGER.info("Fill in missing fields")
         if self.publisher is None:
             self.publisher = Prompt.ask("Publisher title", console=CONSOLE)
         if self.series is None:

@@ -1,17 +1,19 @@
 __all__ = ["Archive"]
 
+import logging
 import shutil
 from pathlib import Path
 from typing import Optional
-from zipfile import ZIP_DEFLATED, ZipFile
+from zipfile import ZIP_DEFLATED, BadZipFile, ZipFile
 
 from patoolib import extract_archive
 from patoolib.util import PatoolError
 
 from . import IMAGE_EXTENSIONS, SUPPORTED_INFO_FILES, filter_files, get_cache_root, list_files
-from .console import CONSOLE
 from .metadata.metadata import Metadata
 from .settings import GeneralSettings
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Archive:
@@ -21,10 +23,14 @@ class Archive:
         self.result_file: Optional[Path] = None
 
     def _extract_zip(self, extracted_folder: Path) -> bool:
-        with ZipFile(self.source_file, "r") as stream:
-            stream.extractall(path=extracted_folder)
-        self.extracted_folder = extracted_folder
-        return True
+        try:
+            with ZipFile(self.source_file, "r") as stream:
+                stream.extractall(path=extracted_folder)
+            self.extracted_folder = extracted_folder
+            return True
+        except BadZipFile as err:
+            LOGGER.error(err)
+            return False
 
     def _extract_seven(self, extracted_folder: Path) -> bool:
         from py7zr import SevenZipFile
@@ -42,16 +48,15 @@ class Archive:
             self.extracted_folder = Path(output)
             return True
         except PatoolError as err:
-            CONSOLE.print(err, style="logging.level.error")
+            LOGGER.error(err)
             return False
 
     def extract(self) -> bool:
-        CONSOLE.print(f"Extracting `{self.source_file.name}`", style="logging.level.info")
+        LOGGER.info(f"Extracting '{self.source_file.name}'")
         extracted_folder = get_cache_root() / self.source_file.stem
         if extracted_folder.exists():
-            CONSOLE.print(
-                f"{extracted_folder.name} already exists in {extracted_folder.parent.name}",
-                style="logging.level.error",
+            LOGGER.error(
+                f"{extracted_folder.name} already exists in {extracted_folder.parent.name}"
             )
             return False
         extracted_folder.mkdir(parents=True, exist_ok=True)
@@ -62,9 +67,7 @@ class Archive:
             return self._extract_seven(extracted_folder)
         if self.source_file.suffix in [".cbr", ".cbt"]:
             return self._extract_archive(extracted_folder)
-        CONSOLE.print(
-            f"Unknown archive format given: {self.source_file.name}", style="logging.level.error"
-        )
+        LOGGER.error(f"Unknown archive format given: {self.source_file.name}")
         return False
 
     def _rename_images(self):
@@ -105,7 +108,7 @@ class Archive:
         )
         if self.result_file.exists():
             return False
-        CONSOLE.print(f"Archiving `{self.result_file.name}`", style="logging.level.info")
+        LOGGER.info(f"Archiving '{self.result_file.name}'")
         self._rename_images()
 
         archive_file = self.extracted_folder.parent / self.result_file.name

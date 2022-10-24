@@ -12,8 +12,14 @@ from typing import ClassVar, List, Optional
 
 from pydantic import BaseModel, Extra, Field, validator
 
-from . import get_config_root, yaml_setup
+from dex_starr import get_config_root
 
+try:
+    import tomllib as tomlreader  # Python >= 3.11
+except ModuleNotFoundError:
+    import tomli as tomlreader  # Python < 3.11
+
+import tomli_w as tomlwriter
 
 def to_space_case(value: str) -> str:
     return value.replace("_", " ").title()
@@ -62,7 +68,7 @@ class GeneralSettings(SettingsModel):
 
 
 class Settings(SettingsModel):
-    FILENAME: ClassVar = get_config_root() / "settings.yaml"
+    FILENAME: ClassVar = get_config_root() / "settings.toml"
     general: GeneralSettings = GeneralSettings()
     comicvine: ComicvineSettings = ComicvineSettings()
     league_of_comic_geeks: LeagueOfComicGeeks = Field(
@@ -75,12 +81,12 @@ class Settings(SettingsModel):
     def load(cls) -> "Settings":
         if not cls.FILENAME.exists():
             Settings().save()
-        with cls.FILENAME.open("r", encoding="UTF-8") as stream:
-            content = yaml_setup().load(stream)
+        with cls.FILENAME.open("rb") as stream:
+            content = tomlreader.load(stream)
         return Settings(**content)
 
     def save(self):
-        with self.FILENAME.open("w", encoding="UTF-8") as stream:
-            content = self.dict(by_alias=True)
-            content["General"]["Collection Folder"] = str(content["General"]["Collection Folder"])
-            yaml_setup().dump(content, stream)
+        with self.FILENAME.open("wb") as stream:
+            content = self.dict(by_alias=False)
+            content["general"]["collection_folder"] = str(content["general"]["collection_folder"])
+            tomlwriter.dump(content, stream)

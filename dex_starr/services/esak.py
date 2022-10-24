@@ -1,5 +1,6 @@
 __all__ = ["EsakTalker"]
 
+import logging
 import re
 from typing import Optional
 
@@ -11,6 +12,8 @@ from rich.prompt import Prompt
 from ..console import CONSOLE, create_menu
 from ..metadata.metadata import Creator, Issue, Metadata, Series, StoryArc
 from .sqlite_cache import SQLiteCache
+
+LOGGER = logging.getLogger(__name__)
 
 
 def clean_title(title: str) -> str:
@@ -86,7 +89,7 @@ class EsakTalker:
         if not esak_comic and format:
             return self._search_comic(series_id, number)
         if not esak_comic:
-            CONSOLE.print("Unable to find a matching comic", style="logging.level.warning")
+            LOGGER.warning("Unable to find a matching comic")
         return esak_comic
 
     def lookup_comic(self, issue: Issue, series_id: int) -> Optional[Comic]:
@@ -125,13 +128,13 @@ class EsakTalker:
         if not esak_series and start_year:
             return self._search_series(title)
         if not series_list:
-            CONSOLE.print("Unable to find a matching series", style="logging.level.warning")
+            LOGGER.warning("Unable to find a matching series")
         return esak_series
 
     def lookup_series(self, series: Series) -> Optional[EsakSeries]:
         esak_series = None
         if "Marvel" in series.sources:
-            esak_series = self.session.series(series.sources["Marvel`"])
+            esak_series = self.session.series(series.sources["Marvel"])
         if not esak_series:
             esak_series = self._search_series(series.title, series.start_year)
         while not esak_series:

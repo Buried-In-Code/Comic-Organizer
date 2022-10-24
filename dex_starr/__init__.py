@@ -11,13 +11,10 @@ __all__ = [
     "get_project_root",
     "list_files",
     "safe_list_get",
-    "yaml_setup",
 ]
 
 from pathlib import Path
 from typing import Any, List
-
-from ruamel.yaml import YAML
 
 IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 SUPPORTED_EXTENSIONS = [".cbz", ".cbr", ".cbt", ".cb7"]
@@ -76,17 +73,3 @@ def safe_list_get(list_: List[Any], index: int = 0, default: Any = None) -> Any:
         return list_[index]
     except IndexError:
         return default
-
-
-def yaml_setup() -> YAML:
-    def null_representer(self, data):
-        return self.represent_scalar("tag:yaml.org,2002:null", "~")
-
-    yaml = YAML(pure=True)
-    yaml.default_flow_style = False
-    yaml.width = 2147483647
-    yaml.indent(mapping=2, sequence=4, offset=2)
-    yaml.representer.add_representer(type(None), null_representer)
-    # yaml.emitter.alt_null = '~'
-    yaml.version = (1, 2)
-    return yaml

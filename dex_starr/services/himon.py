@@ -1,6 +1,7 @@
 __all__ = ["HimonTalker"]
 
 import html
+import logging
 from typing import Optional
 
 from himon.exceptions import ServiceError
@@ -12,6 +13,8 @@ from rich.prompt import Prompt
 from ..console import CONSOLE, create_menu
 from ..metadata.metadata import Creator, Issue, Metadata, Publisher, Series
 from .sqlite_cache import SQLiteCache
+
+LOGGER = logging.getLogger(__name__)
 
 
 def generate_search_terms(series_title: str, format: str, number: Optional[str] = None):
@@ -128,7 +131,7 @@ class HimonTalker:
         if not comic and publisher_name:
             return self._search_comic(title=title, format=format, number=number)
         if not comic:
-            CONSOLE.print("Unable to find a matching comic", style="logging.level.warning")
+            LOGGER.warning("Unable to find a matching comic")
         return comic
 
     def lookup_comic(self, metadata: Metadata) -> Optional[Comic]:

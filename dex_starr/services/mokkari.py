@@ -1,6 +1,7 @@
 __all__ = ["MokkariTalker"]
 
 import html
+import logging
 from typing import Optional
 
 from mokkari.issue import Issue as MokkariIssue
@@ -12,6 +13,8 @@ from rich.prompt import Prompt
 from ..console import CONSOLE, create_menu
 from ..metadata.metadata import Creator, Issue, Metadata, Publisher, Series, StoryArc
 from .sqlite_cache import SQLiteCache
+
+LOGGER = logging.getLogger(__name__)
 
 
 class MokkariTalker:
@@ -66,7 +69,7 @@ class MokkariTalker:
         mokkari_issue = None
         issue_list = self.session.issues_list({"series_id": series_id, "number": number})
         if not issue_list:
-            CONSOLE.print("Unable to find a matching issue", style="logging.level.warning")
+            LOGGER.warning("Unable to find a matching issue")
             return None
         issue_list = sorted(issue_list, key=lambda i: i.issue_name)
         issue_index = create_menu(
@@ -125,7 +128,7 @@ class MokkariTalker:
         if not mokkari_series and volume:
             return self._search_series(publisher_id, title, start_year=start_year)
         if not mokkari_series:
-            CONSOLE.print("Unable to find a matching series", style="logging.level.warning")
+            LOGGER.warning("Unable to find a matching series")
         return mokkari_series
 
     def lookup_series(self, series: Series, publisher_id: int) -> Optional[MokkariSeries]:
@@ -151,7 +154,7 @@ class MokkariTalker:
         mokkari_publisher = None
         publisher_list = self.session.publishers_list({"name": title})
         if not publisher_list:
-            CONSOLE.print("Unable to find a matching publisher", style="logging.level.warning")
+            LOGGER.warning("Unable to find a matching publisher")
             return None
         publisher_list = sorted(publisher_list, key=lambda p: p.name)
         publisher_index = create_menu(
