@@ -21,6 +21,7 @@ except ModuleNotFoundError:
 
 import tomli_w as tomlwriter
 
+
 def to_space_case(value: str) -> str:
     return value.replace("_", " ").title()
 
