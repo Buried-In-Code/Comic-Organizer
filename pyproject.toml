@@ -41,7 +41,7 @@ keywords = ["comics", "comic", "metadata", "tagging", "tagger"]
 license = "GPL-3.0-or-later"
 name = "dex-starr"
 readme = "README.md"
-requires-python = ">= 3.8, < 4.0"
+requires-python = ">= 3.8"
 
 [project.optional-dependencies]
 cb7 = [
