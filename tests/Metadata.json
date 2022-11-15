@@ -1,0 +1,141 @@
+{
+  "data": {
+    "issue": {
+      "characters": [
+        "Aquaman",
+        "Barry Allen",
+        "Batman",
+        "Cyborg",
+        "Deadman",
+        "Hal Jordan",
+        "Hawkman",
+        "Mera",
+        "Pandora",
+        "Ray Palmer",
+        "Superman",
+        "Wonder Woman"
+      ],
+      "coverDate": "2011-10-01",
+      "creators": [
+        {
+          "name": "Alex Sinclair",
+          "roles": [
+            "Colourist",
+            "Cover Artist"
+          ]
+        },
+        {
+          "name": "Dan DiDio",
+          "roles": [
+            "Publisher"
+          ]
+        },
+        {
+          "name": "David Finch",
+          "roles": [
+            "Cover Artist"
+          ]
+        },
+        {
+          "name": "Eddie Berganza",
+          "roles": [
+            "Editor"
+          ]
+        },
+        {
+          "name": "Geoff Johns",
+          "roles": [
+            "Writer"
+          ]
+        },
+        {
+          "name": "Jim Lee",
+          "roles": [
+            "Penciller",
+            "Cover Artist"
+          ]
+        },
+        {
+          "name": "Pat Brosseau",
+          "roles": [
+            "Letterer"
+          ]
+        },
+        {
+          "name": "Rex Ogle",
+          "roles": [
+            "Associate Editor"
+          ]
+        },
+        {
+          "name": "Richard Friend",
+          "roles": [
+            "Cover Artist"
+          ]
+        },
+        {
+          "name": "Scott Williams",
+          "roles": [
+            "Inker",
+            "Cover Artist"
+          ]
+        }
+      ],
+      "format": "Comic",
+      "genres": [
+        "Crime",
+        "Super-Hero"
+      ],
+      "language": "en",
+      "locations": [
+        "Gotham City",
+        "Metropolis"
+      ],
+      "number": "1",
+      "pageCount": 32,
+      "sources": {
+        "Comicvine": 290431
+      },
+      "storeDate": "2011-08-31",
+      "storyArcs": [
+        {
+          "number": 1,
+          "title": "Origin"
+        },
+        {
+          "number": null,
+          "title": "The New 52!"
+        }
+      ],
+      "summary": "In a universe where super heroes are strange and new, Batman has discovered a dark evil that requires him to unite the World Greatest Heroes!",
+      "teams": [
+        "Justice League",
+        "Parademons"
+      ],
+      "title": null
+    },
+    "notes": "Nothing really to say.",
+    "publisher": {
+      "imprint": null,
+      "sources": {
+        "Comic Vine": 12345
+      },
+      "title": "DC Comics"
+    },
+    "series": {
+      "sources": {
+        "Comic Vine": 65478
+      },
+      "startYear": null,
+      "title": "Justice League",
+      "volume": 2
+    }
+  },
+  "meta": {
+    "date": "2022-11-15",
+    "tool": {
+      "name": "Dex-Starr",
+      "version": "0.2.0"
+    }
+  }
+}

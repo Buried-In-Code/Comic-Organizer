@@ -1,52 +1,43 @@
 __all__ = [
-    "Page",
     "Resource",
+    "RoleResource",
     "Credit",
     "GTIN",
     "Arc",
+    "GenreResource",
     "Price",
     "Series",
     "Source",
     "MetronInfo",
-    "Format",
 ]
 
 from datetime import date
-from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import xmltodict
 from pydantic import BaseModel as PyModel
-from pydantic import Extra, Field
+from pydantic import Extra, Field, validator
 
-from dex_starr.schemas.metadata import Creator, Issue, Metadata, Publisher
-from dex_starr.schemas.metadata import Series as MetadataSeries
-from dex_starr.schemas.metadata import StoryArc
-
-
-class Format(Enum):
-    ANNUAL = "Annual"
-    GRAPHIC_NOVEL = "Graphic Novel"
-    LIMITED = "Limited"
-    ONE_SHOT = "One-Shot"
-    SERIES = "Series"
-    TRADE_PAPERBACK = "Trade Paperback"
-
-    @staticmethod
-    def load(value: str) -> "Format":
-        for format in Format:
-            if format.value == value:
-                return format
-        if value == "Comic":
-            return Format.SERIES
-        raise ValueError(f"Unable to find Format: '{value}'")
-
-    def __str__(self):
-        return self.value
-
-    def __repr__(self):
-        return self.value
+from dex_starr.schemas.comic_info import Page
+from dex_starr.schemas.metadata import (
+    Creator,
+    FormatType,
+    Genre,
+    Issue,
+    Metadata,
+    Publisher,
+    Role,
+    Series,
+    StoryArc,
+)
+from dex_starr.schemas.metron_info.enums import (
+    AgeRating,
+    FormatType,
+    Genre,
+    InformationSource,
+    Role,
+)
 
 
 def to_pascal_case(value: str) -> str:
@@ -62,25 +53,25 @@ class BaseModel(PyModel):
         extra = Extra.allow
 
 
-class Page(BaseModel):
-    image: int = Field(alias="@Image")
-    type: str = Field(alias="@Type", default="Story")
-    double_page: bool = Field(alias="@DoublePage", default=False)
-    image_size: int = Field(alias="@ImageSize", default=0)
-    key: str = Field(alias="@Key", default="")
-    bookmark: str = Field(alias="@Bookmark", default="")
-    image_width: int = Field(alias="@ImageWidth", default=-1)
-    image_height: int = Field(alias="@ImageHeight", default=-1)
-
-
 class Resource(BaseModel):
     id: Optional[int] = Field(alias="@id", gt=0, default=None)
     value: str = Field(alias="#text")
 
 
+class RoleResource(BaseModel):
+    id: Optional[int] = Field(alias="@id", gt=0, default=None)
+    value: Role = Field(alias="#text")
+
+    @validator("value", pre=True)
+    def value_to_enum(cls, v) -> Role:
+        if isinstance(v, str):
+            return Role.load(v)
+        return v
+
+
 class Credit(BaseModel):
     creator: Resource
-    roles: List[Resource] = Field(default_factory=list)
+    roles: List[RoleResource] = Field(default_factory=list)
 
     def __init__(self, **data):
         if "Roles" in data:
@@ -99,6 +90,17 @@ class Arc(BaseModel):
     number: Optional[int] = Field(default=None, gt=0)
 
 
+class GenreResource(BaseModel):
+    id: Optional[int] = Field(alias="@id", gt=0, default=None)
+    value: Genre = Field(alias="#text")
+
+    @validator("value", pre=True)
+    def value_to_enum(cls, v) -> Genre:
+        if isinstance(v, str):
+            return Genre.load(v)
+        return v
+
+
 class Price(BaseModel):
     country: str = Field(alias="@country")
     value: float = Field(alias="#text")
@@ -110,12 +112,24 @@ class Series(BaseModel):
     name: str
     sort_name: Optional[str] = None
     volume: int = 1
-    format: Optional[str] = None
+    format: Optional[FormatType] = None
+
+    @validator("format", pre=True)
+    def format_to_enum(cls, v) -> FormatType:
+        if isinstance(v, str):
+            return FormatType.load(v)
+        return v
 
 
 class Source(BaseModel):
-    source: str = Field(alias="@source")
+    source: InformationSource = Field(alias="@source")
     value: int = Field(alias="#text", gt=0)
+
+    @validator("source", pre=True)
+    def source_to_enum(cls, v) -> InformationSource:
+        if isinstance(v, str):
+            return InformationSource.load(v)
+        return v
 
 
 class MetronInfo(BaseModel):
@@ -127,11 +141,11 @@ class MetronInfo(BaseModel):
     stories: List[Resource] = Field(default_factory=list)
     summary: Optional[str] = None
     prices: List[Price] = Field(default_factory=list)
-    cover_date: Optional[date] = None
+    cover_date: date
     store_date: Optional[date] = None
-    page_count: Optional[int] = None
+    page_count: int = 0
     notes: Optional[str] = None
-    genres: List[Resource] = Field(default_factory=list)
+    genres: List[GenreResource] = Field(default_factory=list)
     tags: List[Resource] = Field(default_factory=list)
     story_arcs: List[Arc] = Field(alias="Arcs", default_factory=list)
     characters: List[Resource] = Field(default_factory=list)
@@ -139,30 +153,42 @@ class MetronInfo(BaseModel):
     locations: List[Resource] = Field(default_factory=list)
     reprints: List[Resource] = Field(default_factory=list)
     gtin: Optional[GTIN] = Field(alias="GTIN", default=None)
-    black_and_white: Optional[bool] = False
-    age_rating: Optional[str] = "Unknown"
+    black_and_white: bool = False
+    age_rating: AgeRating = AgeRating.UNKNOWN
     url: Optional[str] = Field(alias="URL", default=None)
     credits: List[Credit] = Field(default_factory=list)
     pages: List[Page] = Field(default_factory=list)
 
     def __init__(self, **data):
-        mappings = {
-            "Stories": "Story",
-            "Genres": "Genre",
-            "Tags": "Tag",
-            "Arcs": "Arc",
-            "Characters": "Character",
-            "Teams": "Team",
-            "Locations": "Location",
-            "Reprints": "Reprint",
-            "Credits": "Credit",
-            "Pages": "Page",
-            "Prices": "Price",
-        }
-        for key, value in mappings.items():
-            if key in data:
-                data[key] = data[key][value]
+        if "Stories" in data:
+            data["Stories"] = data["Stories"]["Story"]
+        if "Prices" in data:
+            data["Prices"] = data["Prices"]["Price"]
+        if "Genres" in data:
+            data["Genres"] = data["Genres"]["Genre"]
+        if "Tags" in data:
+            data["Tags"] = data["Tags"]["Tag"]
+        if "Arcs" in data:
+            data["Arcs"] = data["Arcs"]["Arc"]
+        if "Characters" in data:
+            data["Characters"] = data["Characters"]["Character"]
+        if "Teams" in data:
+            data["Teams"] = data["Teams"]["Team"]
+        if "Locations" in data:
+            data["Locations"] = data["Locations"]["Location"]
+        if "Reprints" in data:
+            data["Reprints"] = data["Reprints"]["Reprint"]
+        if "Credits" in data:
+            data["Credits"] = data["Credits"]["Credit"]
+        if "Pages" in data:
+            data["Pages"] = data["Pages"]["Page"]
         super().__init__(**data)
+
+    @validator("age_rating", pre=True)
+    def age_rating_to_enum(cls, v) -> AgeRating:
+        if isinstance(v, str):
+            return AgeRating.load(v)
+        return v
 
     def to_metadata(self) -> Metadata:
         return Metadata(
@@ -197,6 +223,7 @@ class MetronInfo(BaseModel):
                 teams=sorted(x.value for x in self.teams),
                 title=self.collection_title,
             ),
+            pages=sorted(),
             notes=self.notes,
         )
 
@@ -247,10 +274,6 @@ class MetronInfo(BaseModel):
             return MetronInfo(**content)
 
     def to_file(self, info_file: Path):
-        if self.black_and_white is False:
-            self.black_and_white = None
-        if self.age_rating == "Unknown":
-            self.age_rating = None
         with info_file.open("w", encoding="UTF-8") as stream:
             content = self.dict(by_alias=True, exclude_none=True)
             content["@xmlns:noNamespaceSchemaLocation"] = "MetronInfo.xsd"
