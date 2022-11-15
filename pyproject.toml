@@ -75,7 +75,7 @@ Source = "https://github.com/Buried-In-Code/Dex-Starr"
 
 [tool.bandit]
 recursive = true
-skips = ["B101"]
+skips = ["B101", "B320", "B410"]
 
 [tool.black]
 line-length = 100

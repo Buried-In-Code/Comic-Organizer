@@ -7,10 +7,10 @@ from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel as PyModel
-from pydantic import Extra, Field
+from pydantic import Field, validator
 
 from dex_starr import __version__
+from dex_starr.schemas import JsonModel
 from dex_starr.schemas.comic_info.enums import ComicPageType
 from dex_starr.schemas.metadata.enums import FormatType, Genre, Role
 
@@ -23,21 +23,7 @@ def sanitize(dirty: str) -> str:
     return dirty.replace(" ", "-")
 
 
-def to_camel_case(value: str) -> str:
-    temp = value.replace("_", " ").title().replace(" ", "")
-    return temp[0].lower() + temp[1:]
-
-
-class BaseModel(PyModel):
-    class Config:
-        alias_generator = to_camel_case
-        allow_population_by_field_name = True
-        anystr_strip_whitespace = True
-        validate_assignment = True
-        extra = Extra.ignore
-
-
-class Publisher(BaseModel):
+class Publisher(JsonModel):
     imprint: Optional[str] = None
     sources: Dict[str, int] = Field(default_factory=dict)
     title: str
@@ -52,7 +38,7 @@ class Publisher(BaseModel):
         return self.title < other.title
 
 
-class Series(BaseModel):
+class Series(JsonModel):
     sources: Dict[str, int] = Field(default_factory=dict)
     start_year: Optional[int] = Field(default=None, gt=1900)
     title: str
@@ -74,9 +60,15 @@ class Series(BaseModel):
         return self.start_year < other.start_year
 
 
-class Creator(BaseModel):
+class Creator(JsonModel):
     name: str
     roles: List[Role] = Field(default_factory=list)
+
+    @validator("roles", pre=True, each_item=True)
+    def role_to_enum(cls, v) -> Role:
+        if isinstance(v, str):
+            return Role.load(v)
+        return v
 
     def __lt__(self, other):
         if not isinstance(other, Creator):
@@ -84,7 +76,7 @@ class Creator(BaseModel):
         return self.name < other.name
 
 
-class StoryArc(BaseModel):
+class StoryArc(JsonModel):
     title: str
     number: Optional[int] = None
 
@@ -99,7 +91,7 @@ class StoryArc(BaseModel):
         return hash((type(self),) + tuple(self.__dict__.values()))
 
 
-class Issue(BaseModel):
+class Issue(JsonModel):
     characters: List[str] = Field(default_factory=list)
     cover_date: Optional[date] = None
     creators: List[Creator] = Field(default_factory=list)
@@ -115,6 +107,18 @@ class Issue(BaseModel):
     summary: Optional[str] = None
     teams: List[str] = Field(default_factory=list)
     title: Optional[str] = None
+
+    @validator("format", pre=True)
+    def format_to_enum(cls, v) -> FormatType:
+        if isinstance(v, str):
+            return FormatType.load(v)
+        return v
+
+    @validator("genres", pre=True, each_item=True)
+    def genre_to_enum(cls, v) -> Genre:
+        if isinstance(v, str):
+            return Genre.load(v)
+        return v
 
     @property
     def file_name(self) -> str:
@@ -152,7 +156,7 @@ class Issue(BaseModel):
         return self.cover_date < other.cover_date
 
 
-class Page(BaseModel):
+class Page(JsonModel):
     image: int
     page_type: ComicPageType = ComicPageType.STORY
     double_page: bool = False
@@ -162,8 +166,19 @@ class Page(BaseModel):
     image_width: Optional[int] = None
     image_height: Optional[int] = None
 
+    @validator("page_type", pre=True)
+    def page_type_to_enum(cls, v) -> ComicPageType:
+        if isinstance(v, str):
+            return ComicPageType.load(v)
+        return v
 
-class Metadata(BaseModel):
+    def __lt__(self, other):
+        if not isinstance(other, Page):
+            raise NotImplementedError()
+        return self.image < other.image
+
+
+class Metadata(JsonModel):
     publisher: Publisher
     series: Series
     issue: Issue

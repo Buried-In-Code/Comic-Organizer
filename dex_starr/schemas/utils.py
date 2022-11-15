@@ -5,11 +5,19 @@ from typing import Dict, List, Tuple
 from rich.prompt import IntPrompt, Prompt
 
 from dex_starr.console import CONSOLE, create_menu
-from dex_starr.schemas.comic_info import ComicInfo
-from dex_starr.schemas.metadata import Issue, Metadata, Publisher, Series
-from dex_starr.schemas.metron_info import Arc, Credit, Format, MetronInfo, Resource
-from dex_starr.schemas.metron_info import Series as MetronSeries
-from dex_starr.schemas.metron_info import Source
+from dex_starr.schemas.comic_info.schema import ComicInfo
+from dex_starr.schemas.metadata.schema import Issue, Metadata, Publisher, Series
+from dex_starr.schemas.metron_info.enums import FormatType as Format
+from dex_starr.schemas.metron_info.schema import (
+    Arc,
+    Credit,
+    GenreResource,
+    MetronInfo,
+    Resource,
+    RoleResource,
+)
+from dex_starr.schemas.metron_info.schema import Series as MetronSeries
+from dex_starr.schemas.metron_info.schema import Source
 
 
 def create_metadata() -> Metadata:
@@ -58,11 +66,11 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
         editor=", ".join(creators["Editor"]) if creators["Editor"] else None,
         publisher=metadata.publisher.title,
         imprint=metadata.publisher.imprint,
-        genre=", ".join(metadata.issue.genres) if metadata.issue.genres else None,
+        genre=", ".join(x.value for x in metadata.issue.genres) if metadata.issue.genres else None,
         # Web
         page_count=metadata.issue.page_count,
         language_iso=metadata.issue.language,
-        format=metadata.issue.format,
+        format=metadata.issue.format.value,
         characters=", ".join(metadata.issue.characters) if metadata.issue.characters else None,
         teams=", ".join(metadata.issue.teams) if metadata.issue.teams else None,
         locations=", ".join(metadata.issue.locations) if metadata.issue.locations else None,
@@ -96,7 +104,7 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
             name=metadata.series.title,
             sort_name=metadata.series.title,
             volume=metadata.series.volume,
-            format=Format.load(metadata.issue.format).value,
+            format=Format.load(metadata.issue.format.value),
         ),
         collection_title=metadata.issue.title,
         number=metadata.issue.number,
@@ -107,7 +115,7 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
         store_date=metadata.issue.store_date,
         page_count=metadata.issue.page_count,
         notes=metadata.notes,
-        genres=[Resource(value=x) for x in metadata.issue.genres],
+        genres=[GenreResource(value=x) for x in metadata.issue.genres],
         # TODO: Add tags
         story_arcs=[Arc(name=x.title, number=x.number) for x in metadata.issue.story_arcs],
         characters=[Resource(value=x) for x in metadata.issue.characters],
@@ -116,7 +124,9 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
         # TODO: Add reprints
         # TODO: Add GTIN - ISBN & UPC
         credits=[
-            Credit(creator=Resource(value=x.name), roles=[Resource(value=r) for r in x.roles])
+            Credit(
+                creator=Resource(value=x.name), roles=[RoleResource(value=r.value) for r in x.roles]
+            )
             for x in metadata.issue.creators
         ],
         # TODO: Add pages

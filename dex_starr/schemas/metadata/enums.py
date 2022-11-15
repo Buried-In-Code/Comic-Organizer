@@ -33,6 +33,8 @@ class Role(Enum):
                 return entry
         if value == "Colorist":
             return Role.COLOURIST
+        if value == "Cover":
+            return Role.COVER_ARTIST
         raise ValueError(f"Unable to find Role: '{value}'")
 
     def __str__(self):

@@ -6,39 +6,17 @@ from pathlib import Path
 from typing import List, Optional
 
 import xmltodict
-from pydantic import BaseModel as PyModel
-from pydantic import Extra, Field
+from pydantic import Field, validator
 
+from dex_starr.schemas import XmlModel
 from dex_starr.schemas.comic_info.enums import AgeRating, ComicPageType, Manga, YesNo
-from dex_starr.schemas.metadata import (
-    Creator,
-    FormatType,
-    Genre,
-    Issue,
-    Metadata,
-    Publisher,
-    Role,
-    Series,
-    StoryArc,
-)
+from dex_starr.schemas.metadata.enums import FormatType, Genre, Role
+from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
 
 LOGGER = logging.getLogger(__name__)
 
 
-def to_pascal_case(value: str) -> str:
-    return value.replace("_", " ").title().replace(" ", "")
-
-
-class BaseModel(PyModel):
-    class Config:
-        alias_generator = to_pascal_case
-        allow_population_by_field_name = True
-        anystr_strip_whitespace = True
-        validate_assignment = True
-        extra = Extra.allow
-
-
-class Page(BaseModel):
+class Page(XmlModel):
     image: int = Field(alias="@Image")
     page_type: ComicPageType = Field(alias="@Type", default=ComicPageType.STORY)
     double_page: bool = Field(alias="@DoublePage", default=False)
@@ -48,8 +26,19 @@ class Page(BaseModel):
     image_width: Optional[int] = Field(alias="@ImageWidth", default=None)
     image_height: Optional[int] = Field(alias="@ImageHeight", default=None)
 
+    @validator("page_type", pre=True)
+    def page_type_to_enum(cls, v) -> ComicPageType:
+        if isinstance(v, str):
+            return ComicPageType.load(v)
+        return v
 
-class ComicInfo(BaseModel):
+    def __lt__(self, other):
+        if not isinstance(other, Page):
+            raise NotImplementedError()
+        return self.image < other.image
+
+
+class ComicInfo(XmlModel):
     title: Optional[str] = None
     series: Optional[str] = None
     number: Optional[str] = None
@@ -93,6 +82,24 @@ class ComicInfo(BaseModel):
         if "Pages" in data:
             data["Pages"] = data["Pages"]["Page"]
         super().__init__(**data)
+
+    @validator("black_and_white", pre=True)
+    def black_and_white_to_enum(cls, v) -> YesNo:
+        if isinstance(v, str):
+            return YesNo.load(v)
+        return v
+
+    @validator("manga", pre=True)
+    def manga_to_enum(cls, v) -> Manga:
+        if isinstance(v, str):
+            return Manga.load(v)
+        return v
+
+    @validator("age_rating", pre=True)
+    def age_rating_to_enum(cls, v) -> AgeRating:
+        if isinstance(v, str):
+            return AgeRating.load(v)
+        return v
 
     @property
     def story_arc_list(self) -> List[str]:
@@ -201,6 +208,11 @@ class ComicInfo(BaseModel):
                     creators[creator] = []
                 creators[creator].append(key)
         # endregion
+        try:
+            format = FormatType.load(self.format)
+        except ValueError as err:
+            print(err)
+            format = FormatType.COMIC
         return Metadata(
             publisher=Publisher(
                 imprint=self.imprint,
@@ -219,33 +231,31 @@ class ComicInfo(BaseModel):
                 creators=sorted(
                     Creator(name=name, roles=sorted(roles)) for name, roles in creators.items()
                 ),
-                format=FormatType.load(self.format),
-                genres=sorted({Genre.load(x) for x in self.genre_list}),
+                format=format,
+                genres=sorted(Genre.load(x) for x in self.genre_list),
                 language=self.language_iso.lower() if self.language_iso else "en",
                 locations=self.location_list,
                 number=self.number,
                 page_count=self.page_count,
                 # Sources
                 # Store date
-                story_arcs=sorted({StoryArc(title=x) for x in self.story_arc_list}),
+                story_arcs=sorted(StoryArc(title=x) for x in self.story_arc_list),
                 summary=self.summary,
                 teams=self.team_list,
                 title=self.title,
             ),
             pages=sorted(
-                {
-                    Page(
-                        image=x.image,
-                        page_type=x.page_type,
-                        double_page=x.double_page,
-                        image_size=x.image_size,
-                        key=x.key,
-                        bookmark=x.bookmark,
-                        image_width=x.image_width,
-                        image_height=x.image_height,
-                    )
-                    for x in self.pages
-                }
+                Page(
+                    image=x.image,
+                    page_type=x.page_type,
+                    double_page=x.double_page,
+                    image_size=x.image_size,
+                    key=x.key,
+                    bookmark=x.bookmark,
+                    image_width=x.image_width,
+                    image_height=x.image_height,
+                )
+                for x in self.pages
             ),
             notes=self.notes,
         )
