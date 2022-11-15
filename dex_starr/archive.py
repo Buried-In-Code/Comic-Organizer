@@ -9,9 +9,15 @@ from zipfile import ZIP_DEFLATED, BadZipFile, ZipFile
 from patoolib import extract_archive
 from patoolib.util import PatoolError
 
-from . import IMAGE_EXTENSIONS, SUPPORTED_INFO_FILES, filter_files, get_cache_root, list_files
-from .metadata.metadata import Metadata
-from .settings import GeneralSettings
+from dex_starr import (
+    IMAGE_EXTENSIONS,
+    SUPPORTED_INFO_FILES,
+    filter_files,
+    get_cache_root,
+    list_files,
+)
+from dex_starr.schemas.metadata import Metadata
+from dex_starr.settings import GeneralSettings
 
 LOGGER = logging.getLogger(__name__)
 

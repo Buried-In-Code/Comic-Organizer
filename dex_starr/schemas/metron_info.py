@@ -3,15 +3,16 @@ __all__ = [
     "Resource",
     "Credit",
     "GTIN",
-    "Reprint",
     "Arc",
     "Price",
     "Series",
     "Source",
     "MetronInfo",
+    "Format",
 ]
 
 from datetime import date
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -19,9 +20,33 @@ import xmltodict
 from pydantic import BaseModel as PyModel
 from pydantic import Extra, Field
 
-from .metadata import Creator, Issue, Metadata, Publisher
-from .metadata import Series as MetadataSeries
-from .metadata import StoryArc
+from dex_starr.schemas.metadata import Creator, Issue, Metadata, Publisher
+from dex_starr.schemas.metadata import Series as MetadataSeries
+from dex_starr.schemas.metadata import StoryArc
+
+
+class Format(Enum):
+    ANNUAL = "Annual"
+    GRAPHIC_NOVEL = "Graphic Novel"
+    LIMITED = "Limited"
+    ONE_SHOT = "One-Shot"
+    SERIES = "Series"
+    TRADE_PAPERBACK = "Trade Paperback"
+
+    @staticmethod
+    def load(value: str) -> "Format":
+        for format in Format:
+            if format.value == value:
+                return format
+        if value == "Comic":
+            return Format.SERIES
+        raise ValueError(f"Unable to find Format: '{value}'")
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return self.value
 
 
 def to_pascal_case(value: str) -> str:
@@ -68,12 +93,9 @@ class GTIN(BaseModel):
     upc: Optional[str] = Field(alias="UPC", default=None)
 
 
-class Reprint(BaseModel):
-    name: Resource
-
-
 class Arc(BaseModel):
-    name: Resource
+    id: Optional[int] = Field(alias="@id", gt=0, default=None)
+    name: str
     number: Optional[int] = Field(default=None, gt=0)
 
 
@@ -84,7 +106,8 @@ class Price(BaseModel):
 
 class Series(BaseModel):
     lang: str = Field(alias="@lang", default="en")
-    name: Resource
+    id: Optional[int] = Field(alias="@id", gt=0, default=None)
+    name: str
     sort_name: Optional[str] = None
     volume: int = 1
     format: Optional[str] = None
@@ -103,7 +126,7 @@ class MetronInfo(BaseModel):
     number: Optional[str] = None
     stories: List[Resource] = Field(default_factory=list)
     summary: Optional[str] = None
-    prices: Optional[Price] = None
+    prices: List[Price] = Field(default_factory=list)
     cover_date: Optional[date] = None
     store_date: Optional[date] = None
     page_count: Optional[int] = None
@@ -114,7 +137,7 @@ class MetronInfo(BaseModel):
     characters: List[Resource] = Field(default_factory=list)
     teams: List[Resource] = Field(default_factory=list)
     locations: List[Resource] = Field(default_factory=list)
-    reprints: List[Reprint] = Field(default_factory=list)
+    reprints: List[Resource] = Field(default_factory=list)
     gtin: Optional[GTIN] = Field(alias="GTIN", default=None)
     black_and_white: Optional[bool] = False
     age_rating: Optional[str] = "Unknown"
@@ -134,6 +157,7 @@ class MetronInfo(BaseModel):
             "Reprints": "Reprint",
             "Credits": "Credit",
             "Pages": "Page",
+            "Prices": "Price",
         }
         for key, value in mappings.items():
             if key in data:
@@ -148,9 +172,9 @@ class MetronInfo(BaseModel):
                 title=self.publisher.value,
             ),
             series=MetadataSeries(
-                sources={self.id.source: self.series.name.id} if self.id else {},
+                sources={self.id.source: self.series.id} if self.id else {},
                 # Start Year
-                title=self.series.name.value,
+                title=self.series.name,
                 volume=self.series.volume,
             ),
             issue=Issue(
@@ -168,9 +192,7 @@ class MetronInfo(BaseModel):
                 page_count=self.page_count,
                 sources={self.id.source: self.id.value} if self.id else {},
                 store_date=self.store_date,
-                story_arcs=sorted(
-                    StoryArc(title=x.name.value, number=x.number) for x in self.story_arcs
-                ),
+                story_arcs=sorted(StoryArc(title=x.name, number=x.number) for x in self.story_arcs),
                 summary=self.summary,
                 teams=sorted(x.value for x in self.teams),
                 title=self.collection_title,
@@ -195,11 +217,33 @@ class MetronInfo(BaseModel):
                     "Credit",
                     "Role",
                     "Page",
+                    "Price",
                 ],
             )["MetronInfo"]
-            for key in content.copy().keys():
-                if key.startswith("@xmlns"):
-                    del content[key]
+            mappings = {
+                "Stories": "Story",
+                "Genres": "Genre",
+                "Tags": "Tag",
+                "Characters": "Character",
+                "Teams": "Team",
+                "Locations": "Location",
+                "Reprints": "Reprint",
+            }
+            for key, value in mappings.items():
+                if key in content and value in content[key]:
+                    for index, entry in enumerate(content[key][value].copy()):
+                        if isinstance(entry, str):
+                            content[key][value][index] = {"#text": entry}
+            if "Credits" in content and "Credit" in content["Credits"]:
+                for index, entry in enumerate(content["Credits"]["Credit"].copy()):
+                    if isinstance(entry["Creator"], str):
+                        content["Credits"]["Credit"][index]["Creator"] = {"#text": entry["Creator"]}
+                    if "Roles" in entry and "Role" in entry["Roles"]:
+                        for role_index, role in enumerate(entry["Roles"]["Role"]):
+                            if isinstance(role, str):
+                                content["Credits"]["Credit"][index]["Roles"]["Role"][role_index] = {
+                                    "#text": role
+                                }
             return MetronInfo(**content)
 
     def to_file(self, info_file: Path):
@@ -209,7 +253,7 @@ class MetronInfo(BaseModel):
             self.age_rating = None
         with info_file.open("w", encoding="UTF-8") as stream:
             content = self.dict(by_alias=True, exclude_none=True)
-            content["@xmlns:xsd"] = "https://www.w3.org/2001/XMLSchema"
+            content["@xmlns:noNamespaceSchemaLocation"] = "MetronInfo.xsd"
             content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
 
             mappings = {
@@ -223,6 +267,7 @@ class MetronInfo(BaseModel):
                 "Reprints": "Reprint",
                 "Credits": "Credit",
                 "Pages": "Page",
+                "Prices": "Price",
             }
             for key, value in mappings.items():
                 if key in content and content[key]:
@@ -243,7 +288,6 @@ class MetronInfo(BaseModel):
                 output=stream,
                 short_empty_elements=True,
                 pretty=True,
-                indent=" " * 2,
             )
 
 

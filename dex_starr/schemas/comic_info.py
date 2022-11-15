@@ -271,9 +271,6 @@ class ComicInfo(BaseModel):
     def from_file(info_file: Path) -> "ComicInfo":
         with info_file.open("rb") as stream:
             content = xmltodict.parse(stream, force_list=["Page"])["ComicInfo"]
-            for key in content.copy().keys():
-                if key.startswith("@xmlns"):
-                    del content[key]
             return ComicInfo(**content)
 
     def to_file(self, info_file: Path):
@@ -296,5 +293,4 @@ class ComicInfo(BaseModel):
                 output=stream,
                 short_empty_elements=True,
                 pretty=True,
-                indent=" " * 2,
             )

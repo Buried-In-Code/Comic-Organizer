@@ -9,9 +9,9 @@ from esak.series import Series as EsakSeries
 from esak.session import Session as Esak
 from rich.prompt import Prompt
 
-from ..console import CONSOLE, create_menu
-from ..metadata.metadata import Creator, Issue, Metadata, Series, StoryArc
-from .sqlite_cache import SQLiteCache
+from dex_starr.console import CONSOLE, create_menu
+from dex_starr.schemas.metadata import Creator, Issue, Metadata, Series, StoryArc
+from dex_starr.services.sqlite_cache import SQLiteCache
 
 LOGGER = logging.getLogger(__name__)
 

@@ -15,7 +15,7 @@
             <xs:element name="Prices" type="pricesType" minOccurs="0" />
             <xs:element name="CoverDate" type="xs:date" />
             <xs:element name="StoreDate" type="xs:date" minOccurs="0" />
-            <xs:element name="PageCount" type="xs:int" default="0" />
+            <xs:element name="PageCount" type="xs:int" minOccurs="0" default="0" />
             <xs:element name="Notes" type="xs:string" minOccurs="0" />
             <xs:element name="Genres" type="genresType" minOccurs="0" />
             <xs:element name="Tags" type="tagsType" minOccurs="0" />
@@ -58,12 +58,13 @@
 
     <xs:complexType name="seriesType">
         <xs:all>
-            <xs:element name="Name" type="resourceType" />
+            <xs:element name="Name" type="xs:string" />
             <xs:element name="SortName" type="xs:string" minOccurs="0" />
             <xs:element name="Volume" type="xs:int" minOccurs="0" />
             <xs:element name="Format" type="formatType" minOccurs="0" />
         </xs:all>
         <xs:attribute name="lang" type="languageCode" default="en" />
+        <xs:attribute name="id" type="xs:positiveInteger" />
     </xs:complexType>
 
     <xs:complexType name="charactersType">
@@ -90,15 +91,9 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="reprintType">
-        <xs:sequence>
-            <xs:element name="Name" type="resourceType" />
-        </xs:sequence>
-    </xs:complexType>
-
     <xs:complexType name="reprintsType">
         <xs:sequence>
-            <xs:element name="Reprint" type="reprintType" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element name="Reprint" type="resourceType" minOccurs="0" maxOccurs="unbounded" />
         </xs:sequence>
     </xs:complexType>
 
@@ -110,9 +105,10 @@
 
     <xs:complexType name="arcType">
         <xs:all>
-            <xs:element name="Name" type="resourceType" />
+            <xs:element name="Name" type="xs:string" />
             <xs:element name="Number" type="xs:positiveInteger" minOccurs="0" />
         </xs:all>
+        <xs:attribute name="id" type="xs:positiveInteger" />
     </xs:complexType>
 
     <xs:complexType name="creditsType">

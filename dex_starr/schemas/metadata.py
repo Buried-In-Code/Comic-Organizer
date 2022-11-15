@@ -94,6 +94,9 @@ class StoryArc(BaseModel):
             return self.title < other.title
         return self.number < other.number
 
+    def __hash__(self):
+        return hash((type(self),) + tuple(self.__dict__.values()))
+
 
 class Issue(BaseModel):
     characters: List[str] = Field(default_factory=list)

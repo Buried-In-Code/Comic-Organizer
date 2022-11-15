@@ -5,7 +5,7 @@ import sqlite3
 from datetime import date, timedelta
 from typing import Any, Dict, Optional
 
-from .. import get_cache_root
+from dex_starr import get_cache_root
 
 
 class SQLiteCache:

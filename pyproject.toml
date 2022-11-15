@@ -56,6 +56,8 @@ docs = [
   "mkdocstrings[python] >= 0.19.0"
 ]
 test = [
+  "lxml >= 4.9.1",
+  "jsonschema >= 4.17.0",
   "pytest >= 7.2.0",
   "pytest-cov >= 4.0.0",
   "tox >= 3.27.1",

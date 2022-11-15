@@ -4,12 +4,12 @@ from typing import Dict, List, Tuple
 
 from rich.prompt import IntPrompt, Prompt
 
-from ..console import CONSOLE, create_menu
-from .comic_info import ComicInfo
-from .metadata import Issue, Metadata, Publisher, Series
-from .metron_info import Arc, Credit, MetronInfo, Resource
-from .metron_info import Series as MetronSeries
-from .metron_info import Source
+from dex_starr.console import CONSOLE, create_menu
+from dex_starr.schemas.comic_info import ComicInfo
+from dex_starr.schemas.metadata import Issue, Metadata, Publisher, Series
+from dex_starr.schemas.metron_info import Arc, Credit, Format, MetronInfo, Resource
+from dex_starr.schemas.metron_info import Series as MetronSeries
+from dex_starr.schemas.metron_info import Source
 
 
 def create_metadata() -> Metadata:
@@ -91,14 +91,12 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
             value=metadata.publisher.title,
         ),
         series=MetronSeries(
-            name=Resource(
-                id=metadata.series.sources.get(source[1]) if source else None,
-                value=metadata.series.title,
-            ),
+            lang=metadata.issue.language,
+            id=metadata.series.sources.get(source[1]) if source else None,
+            name=metadata.series.title,
             sort_name=metadata.series.title,
             volume=metadata.series.volume,
-            format=metadata.issue.format,
-            lang=metadata.issue.language,
+            format=Format.load(metadata.issue.format).value,
         ),
         collection_title=metadata.issue.title,
         number=metadata.issue.number,
@@ -111,9 +109,7 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
         notes=metadata.notes,
         genres=[Resource(value=x) for x in metadata.issue.genres],
         # TODO: Add tags
-        story_arcs=[
-            Arc(name=Resource(value=x.title), number=x.number) for x in metadata.issue.story_arcs
-        ],
+        story_arcs=[Arc(name=x.title, number=x.number) for x in metadata.issue.story_arcs],
         characters=[Resource(value=x) for x in metadata.issue.characters],
         teams=[Resource(value=x) for x in metadata.issue.teams],
         locations=[Resource(value=x) for x in metadata.issue.locations],
