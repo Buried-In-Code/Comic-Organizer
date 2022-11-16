@@ -1,45 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ComicInfo xmlns:xsd="https://www.w3.org/2001/XMLSchema" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance">
-	<Title>Title</Title>
-	<Series>Justice League</Series>
-	<Number>1</Number>
-	<Count>1</Count>
-	<Volume>2</Volume>
-	<AlternateSeries>Alternate Series</AlternateSeries>
-	<AlternateNumber>Alternate Number</AlternateNumber>
-	<AlternateCount>2</AlternateCount>
-	<Summary>In a universe where super heroes are strange and new, Batman has discovered a dark evil that requires him to unite the World Greatest Heroes!</Summary>
-	<Notes>Nothing really to say.</Notes>
-	<Year>2011</Year>
-	<Month>10</Month>
-	<Day>1</Day>
-	<Writer>Geoff Johns</Writer>
-	<Penciller>Jim Lee</Penciller>
-	<Inker>Scott Williams</Inker>
-	<Colorist>Alex Sinclair</Colorist>
-	<Letterer>Pat Brosseau</Letterer>
-	<CoverArtist>Cover Artist</CoverArtist>
-	<Editor>Eddie Berganza</Editor>
-	<Publisher>DC Comics</Publisher>
-	<Imprint>Imprint</Imprint>
-	<Genre>Crime, Super-Hero</Genre>
-	<Web>https://website.url</Web>
-	<PageCount>32</PageCount>
-	<LanguageISO>en</LanguageISO>
-	<Format>Series</Format>
-	<BlackAndWhite>Unknown</BlackAndWhite>
-	<Manga>Unknown</Manga>
-	<Characters>Aquaman, Barry Allen, Batman, Cyborg, Deadman, Hal Jordan, Hawkman, Mera, Pandora, Ray Palmer, Superman, Wonder Woman</Characters>
-	<Teams>Justice League, Parademons</Teams>
-	<Locations>Gotham City, Metropolis</Locations>
-	<ScanInformation>Scan Information</ScanInformation>
-	<StoryArc>Origin, The New 52!</StoryArc>
-	<SeriesGroup>Series Group</SeriesGroup>
 	<AgeRating>Unknown</AgeRating>
+	<BlackAndWhite>No</BlackAndWhite>
+	<Characters>Green Lantern - Hal Jordan, Green Lantern - John Stewart, Green Lantern - Abin Sur, James Jordan, Jillian Pearlman, Shane Sellers, Shark - Karshon</Characters>
+	<CoverArtist>Carlos Pacheco, Jesús Merino, Peter Steigerwald</CoverArtist>
+	<Day>1</Day>
+	<Editor>Peter J. Tomasi</Editor>
+	<Format>Comic</Format>
+	<Genre>Super-Hero</Genre>
+	<Inker>Jesús Merino</Inker>
+	<LanguageISO>en</LanguageISO>
+	<Letterer>Rob Leigh</Letterer>
+	<Locations>3600 Sectors of Space, California, Coast City, Edwards Air Force Base</Locations>
+	<Manga>No</Manga>
+	<Month>7</Month>
+	<Number>1</Number>
+	<PageCount>40</PageCount>
 	<Pages>
-		<Page Image="1" Type="Story" DoublePage="false" ImageSize="1000" Key="abc" Bookmark="abc" ImageWidth="123" ImageHeight="123"/>
+		<Page Image="0" Type="Story" ImageSize="1733120" ImageWidth="1920" ImageHeight="2951"/>
+		<Page Image="1" Type="Story" ImageSize="1320938" ImageWidth="1920" ImageHeight="2951"/>
+		<Page Image="2" Type="Story" ImageSize="1298224" ImageWidth="1920" ImageHeight="2951"/>
 	</Pages>
-	<CommunityRating>1.23</CommunityRating>
-	<MainCharacterOrTeam>Justice League</MainCharacterOrTeam>
-	<Review>Review</Review>
+	<Penciller>Carlos Pacheco</Penciller>
+	<Publisher>DC Comics</Publisher>
+	<Series>Green Lantern</Series>
+	<StoryArc>Green Lantern: Rebirth</StoryArc>
+	<Summary>Strap in and hang on as one of DC's greatest icons, Hal Jordan returns to the forefront of the DCU in a new monthly series. Green Lantern challenges your imagination and leaves you breathless as you witness the adventures of one of the greatest heroes in the DCU. From the runways at Edwards Air Force Base to the darkest corner of Space Sector 2814, the Green Lantern will proudly shine his light! This special 40-page debut issue kicks off the 3-part tale \"No Fear.\" Spinning out of the pages of Green Lantern: Rebirth, Hal Jordan returns to the DCU as the Emerald Warrior, ready to reclaim his life and the light of the Green Lantern. But the forces of darkness have already begun to rise, looking to claim the power of the Green Lantern for themselves.</Summary>
+	<Teams>Green Lantern Corps, The Manhunters</Teams>
+	<Title>Airbourne</Title>
+	<Volume>4</Volume>
+	<Writer>Geoff Johns</Writer>
+	<Year>2005</Year>
 </ComicInfo>

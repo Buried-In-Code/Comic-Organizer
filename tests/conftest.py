@@ -17,7 +17,9 @@ def files_folder() -> Path:
 
 @pytest.fixture(scope="session")
 def output_folder() -> Path:
-    return Path(__file__).parent / "output"
+    temp = Path(__file__).parent / "output"
+    temp.mkdir(parents=True, exist_ok=True)
+    return temp
 
 
 @pytest.fixture(scope="session")

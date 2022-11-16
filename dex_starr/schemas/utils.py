@@ -5,9 +5,10 @@ from typing import Dict, List, Tuple
 from rich.prompt import IntPrompt, Prompt
 
 from dex_starr.console import CONSOLE, create_menu
-from dex_starr.schemas.comic_info.schema import ComicInfo
+from dex_starr.schemas.comic_info.schema import ComicInfo, Page
 from dex_starr.schemas.metadata.schema import Issue, Metadata, Publisher, Series
 from dex_starr.schemas.metron_info.enums import FormatType as Format
+from dex_starr.schemas.metron_info.enums import InformationSource, Role
 from dex_starr.schemas.metron_info.schema import (
     Arc,
     Credit,
@@ -42,7 +43,9 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
     roles = ["Writer", "Penciller", "Inker", "Colorist", "Letterer", "Cover Artist", "Editor"]
     creators = {}
     for role in roles:
-        creators[role] = [x.name for x in metadata.issue.creators if role in x.roles]
+        creators[role] = [
+            x.name for x in metadata.issue.creators if role in [r.value for r in x.roles]
+        ]
     return ComicInfo(
         title=metadata.issue.title,
         series=metadata.series.title,
@@ -78,7 +81,19 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
         if metadata.issue.story_arcs
         else None,
         # Series Group
-        # TODO: Add pages
+        pages=sorted(
+            Page(
+                image=x.image,
+                page_type=x.page_type,
+                double_page=x.double_page,
+                image_size=x.image_size,
+                key=x.key,
+                bookmark=x.bookmark,
+                image_width=x.image_width,
+                image_height=x.image_height,
+            )
+            for x in metadata.pages
+        ),
     )
 
 
@@ -91,9 +106,19 @@ def get_source(sources: Dict[str, int], resolution_order: List[str]) -> Tuple[in
 
 
 def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInfo:
+    credits = []
+    for creator in metadata.issue.creators:
+        roles = set()
+        for role in creator.roles:
+            try:
+                roles.add(RoleResource(value=Role.load(role.value)))
+            except ValueError as err:
+                print(err)
+                roles.add(RoleResource(value=Role.OTHER))
+        credits.append(Credit(creator=Resource(value=creator.name), roles=sorted(roles)))
     source = get_source(metadata.issue.sources, resolution_order)
     return MetronInfo(
-        id=Source(source=source[1], value=source[0]) if source else None,
+        id=Source(source=InformationSource.load(source[1]), value=source[0]) if source else None,
         publisher=Resource(
             id=metadata.publisher.sources.get(source[1]) if source else None,
             value=metadata.publisher.title,
@@ -123,11 +148,18 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
         locations=[Resource(value=x) for x in metadata.issue.locations],
         # TODO: Add reprints
         # TODO: Add GTIN - ISBN & UPC
-        credits=[
-            Credit(
-                creator=Resource(value=x.name), roles=[RoleResource(value=r.value) for r in x.roles]
+        credits=credits,
+        pages=sorted(
+            Page(
+                image=x.image,
+                page_type=x.page_type,
+                double_page=x.double_page,
+                image_size=x.image_size,
+                key=x.key,
+                bookmark=x.bookmark,
+                image_width=x.image_width,
+                image_height=x.image_height,
             )
-            for x in metadata.issue.creators
-        ],
-        # TODO: Add pages
+            for x in metadata.pages
+        ),
     )

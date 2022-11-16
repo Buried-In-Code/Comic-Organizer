@@ -1,10 +1,73 @@
 {
   "$id": "Metadata.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema",
+  "additionalProperties": false,
   "definitions": {
+    "format": {
+      "enum": [
+        "Comic",
+        "Digital Chapter",
+        "Annual",
+        "Trade Paperback",
+        "Hardcover",
+        "Graphic Novel"
+      ],
+      "type": "string"
+    },
+    "genre": {
+      "enum": [
+        "Adult",
+        "Crime",
+        "Espionage",
+        "Fantasy",
+        "Historical",
+        "Horror",
+        "Humor",
+        "Manga",
+        "Parody",
+        "Romance",
+        "Science Fiction",
+        "Sport",
+        "Super-Hero",
+        "War",
+        "Western"
+      ],
+      "type": "string"
+    },
+    "role": {
+      "enum": [
+        "Writer",
+        "Story",
+        "Artist",
+        "Penciller",
+        "Inker",
+        "Colourist",
+        "Letterer",
+        "Designer",
+        "Cover Artist",
+        "Variant Cover Artist",
+        "Editor",
+        "Assistant Editor",
+        "Associate Editor",
+        "Consulting Editor",
+        "Senior Editor",
+        "Group Editor",
+        "Executive Editor",
+        "Editor in Chief",
+        "Creator",
+        "Translator",
+        "Other"
+      ],
+      "type": "string"
+    },
     "sources": {
+      "additionalProperties": false,
       "properties": {
         "Comicvine": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "Grand Comics Database": {
           "minimum": 1,
           "type": "integer"
         },
@@ -26,8 +89,10 @@
   },
   "properties": {
     "data": {
+      "additionalProperties": false,
       "properties": {
         "issue": {
+          "additionalProperties": false,
           "properties": {
             "characters": {
               "items": {
@@ -46,13 +111,14 @@
             },
             "creators": {
               "items": {
+                "additionalProperties": false,
                 "properties": {
                   "name": {
                     "type": "string"
                   },
                   "roles": {
                     "items": {
-                      "type": "string"
+                      "$ref": "#/definitions/role"
                     },
                     "type": "array",
                     "uniqueItems": true
@@ -68,12 +134,12 @@
               "uniqueItems": true
             },
             "format": {
-              "default": "Comic",
-              "type": "string"
+              "$ref": "#/definitions/format",
+              "default": "Comic"
             },
             "genres": {
               "items": {
-                "type": "string"
+                "$ref": "#/definitions/genre"
               },
               "type": "array",
               "uniqueItems": true
@@ -115,6 +181,7 @@
             },
             "storyArcs": {
               "items": {
+                "additionalProperties": false,
                 "properties": {
                   "number": {
                     "default": null,
@@ -183,7 +250,66 @@
             "null"
           ]
         },
+        "pages": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "bookmark": {
+                "default": null,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "doublePage": {
+                "default": false,
+                "type": "boolean"
+              },
+              "image": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "imageHeight": {
+                "default": null,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "imageSize": {
+                "default": 0,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "imageWidth": {
+                "default": null,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "key": {
+                "default": null,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "pageType": {
+                "default": "Story",
+                "type": "string"
+              }
+            },
+            "required": [
+              "image"
+            ],
+            "type": "object"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
         "publisher": {
+          "additionalProperties": false,
           "properties": {
             "imprint": {
               "default": null,
@@ -207,6 +333,7 @@
           "type": "object"
         },
         "series": {
+          "additionalProperties": false,
           "properties": {
             "sources": {
               "$ref": "#/definitions/sources",
@@ -246,12 +373,14 @@
       "type": "object"
     },
     "meta": {
+      "additionalProperties": false,
       "properties": {
         "date": {
           "format": "date",
           "type": "string"
         },
         "tool": {
+          "additionalProperties": false,
           "properties": {
             "name": {
               "type": "string"

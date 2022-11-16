@@ -272,6 +272,9 @@ class ComicInfo(XmlModel):
             content["@xmlns:xsd"] = "https://www.w3.org/2001/XMLSchema"
             content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
 
+            for index, page in enumerate(content["Pages"].copy()):
+                if not page["@DoublePage"]:
+                    del content["Pages"][index]["@DoublePage"]
             if "Pages" in content and content["Pages"]:
                 content["Pages"] = {"Page": content["Pages"]}
             else:

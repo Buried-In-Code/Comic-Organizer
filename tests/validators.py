@@ -19,7 +19,7 @@ class JsonValidator:
             validate(instance=data, schema=self.schema)
             return True
         except ValidationError as err:
-            print(err)
+            print(err.message)
         return False
 
 

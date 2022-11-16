@@ -2,40 +2,16 @@
   "data": {
     "issue": {
       "characters": [
-        "Aquaman",
-        "Barry Allen",
-        "Batman",
-        "Cyborg",
-        "Deadman",
-        "Hal Jordan",
-        "Hawkman",
-        "Mera",
-        "Pandora",
-        "Ray Palmer",
-        "Superman",
-        "Wonder Woman"
+        "Green Lantern - Hal Jordan",
+        "Green Lantern - John Stewart",
+        "Green Lantern - Abin Sur",
+        "James Jordan",
+        "Jillian Pearlman",
+        "Shane Sellers",
+        "Shark - Karshon"
       ],
-      "coverDate": "2011-10-01",
+      "coverDate": "2005-07-01",
       "creators": [
-        {
-          "name": "Alex Sinclair",
-          "roles": [
-            "Colourist",
-            "Cover Artist"
-          ]
-        },
-        {
-          "name": "David Finch",
-          "roles": [
-            "Cover Artist"
-          ]
-        },
-        {
-          "name": "Eddie Berganza",
-          "roles": [
-            "Editor"
-          ]
-        },
         {
           "name": "Geoff Johns",
           "roles": [
@@ -43,86 +19,135 @@
           ]
         },
         {
-          "name": "Jim Lee",
+          "name": "Ethan Van Sciver",
+          "roles": [
+            "Artist"
+          ]
+        },
+        {
+          "name": "Carlos Pacheco",
           "roles": [
             "Penciller",
             "Cover Artist"
           ]
         },
         {
-          "name": "Pat Brosseau",
+          "name": "Jes\u00fas Merino",
+          "roles": [
+            "Inker",
+            "Cover Artist"
+          ]
+        },
+        {
+          "name": "Moose Baumann",
+          "roles": [
+            "Colourist"
+          ]
+        },
+        {
+          "name": "Rob Leigh",
           "roles": [
             "Letterer"
           ]
         },
         {
-          "name": "Rex Ogle",
-          "roles": [
-            "Associate Editor"
-          ]
-        },
-        {
-          "name": "Richard Friend",
+          "name": "Peter Steigerwald",
           "roles": [
             "Cover Artist"
           ]
         },
         {
-          "name": "Scott Williams",
+          "name": "Alex Ross",
           "roles": [
-            "Inker",
-            "Cover Artist"
+            "Variant Cover Artist"
+          ]
+        },
+        {
+          "name": "Harvey Richards",
+          "roles": [
+            "Assistant Editor"
+          ]
+        },
+        {
+          "name": "Peter J. Tomasi",
+          "roles": [
+            "Editor"
+          ]
+        },
+        {
+          "name": "Dan DiDio",
+          "roles": [
+            "Executive Editor"
           ]
         }
       ],
       "format": "Comic",
       "genres": [
-        "Crime",
         "Super-Hero"
       ],
       "language": "en",
       "locations": [
-        "Gotham City",
-        "Metropolis"
+        "3600 Sectors of Space",
+        "California",
+        "Coast City",
+        "Edwards Air Force Base"
       ],
       "number": "1",
-      "pageCount": 32,
+      "pageCount": 40,
       "sources": {
-        "Comicvine": 290431
+        "Comicvine": 111265,
+        "League of Comic Geeks": 4579722
       },
-      "storeDate": "2011-08-31",
+      "storeDate": "2005-05-18",
       "storyArcs": [
         {
-          "number": 1,
-          "title": "Origin"
-        },
-        {
-          "number": null,
-          "title": "The New 52!"
+          "title": "Green Lantern: Rebirth"
         }
       ],
-      "summary": "In a universe where super heroes are strange and new, Batman has discovered a dark evil that requires him to unite the World Greatest Heroes!",
+      "summary": "Strap in and hang on as one of DC's greatest icons, Hal Jordan returns to the forefront of the DCU in a new monthly series. Green Lantern challenges your imagination and leaves you breathless as you witness the adventures of one of the greatest heroes in the DCU. From the runways at Edwards Air Force Base to the darkest corner of Space Sector 2814, the Green Lantern will proudly shine his light! This special 40-page debut issue kicks off the 3-part tale \\\"No Fear.\\\" Spinning out of the pages of Green Lantern: Rebirth, Hal Jordan returns to the DCU as the Emerald Warrior, ready to reclaim his life and the light of the Green Lantern. But the forces of darkness have already begun to rise, looking to claim the power of the Green Lantern for themselves.",
       "teams": [
-        "Justice League",
-        "Parademons"
+        "Green Lantern Corps",
+        "The Manhunters"
       ],
-      "title": null
+      "title": "Airbourne"
     },
-    "notes": "Nothing really to say.",
+    "pages": [
+      {
+        "image": 0,
+        "imageHeight": 2951,
+        "imageSize": 1733120,
+        "imageWidth": 1920,
+        "pageType": "FrontCover"
+      },
+      {
+        "image": 1,
+        "imageHeight": 2951,
+        "imageSize": 1320938,
+        "imageWidth": 1920
+      },
+      {
+        "image": 2,
+        "imageHeight": 2951,
+        "imageSize": 1298224,
+        "imageWidth": 1920
+      }
+    ],
     "publisher": {
       "imprint": null,
       "sources": {
-        "Comic Vine": 12345
+        "Comicvine": 10,
+        "League of Comic Geeks": 1
       },
       "title": "DC Comics"
     },
     "series": {
       "sources": {
-        "Comic Vine": 65478
+        "Comicvine": 18216,
+        "League of Comic Geeks": 110787
       },
-      "startYear": null,
-      "title": "Justice League",
-      "volume": 2
+      "startYear": 2005,
+      "title": "Green Lantern",
+      "volume": 4
     }
   },
   "meta": {

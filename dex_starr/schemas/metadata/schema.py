@@ -12,7 +12,7 @@ from pydantic import Field, validator
 from dex_starr import __version__
 from dex_starr.schemas import JsonModel
 from dex_starr.schemas.comic_info.enums import ComicPageType
-from dex_starr.schemas.metadata.enums import FormatType, Genre, Role
+from dex_starr.schemas.metadata.enums import FormatType, Genre, Role, Source
 
 LOGGER = logging.getLogger(__name__)
 
@@ -25,8 +25,17 @@ def sanitize(dirty: str) -> str:
 
 class Publisher(JsonModel):
     imprint: Optional[str] = None
-    sources: Dict[str, int] = Field(default_factory=dict)
+    sources: Dict[Source, int] = Field(default_factory=dict)
     title: str
+
+    @validator("sources", pre=True)
+    def source_to_enum(cls, v) -> Dict[Source, int]:
+        output = {}
+        for key, value in v.items():
+            if isinstance(key, str):
+                key = Source.load(key)
+            output[key] = value
+        return output
 
     @property
     def file_name(self) -> str:
@@ -39,10 +48,19 @@ class Publisher(JsonModel):
 
 
 class Series(JsonModel):
-    sources: Dict[str, int] = Field(default_factory=dict)
+    sources: Dict[Source, int] = Field(default_factory=dict)
     start_year: Optional[int] = Field(default=None, gt=1900)
     title: str
     volume: int = Field(default=1, gt=0)
+
+    @validator("sources", pre=True)
+    def source_to_enum(cls, v) -> Dict[Source, int]:
+        output = {}
+        for key, value in v.items():
+            if isinstance(key, str):
+                key = Source.load(key)
+            output[key] = value
+        return output
 
     @property
     def file_name(self) -> str:
@@ -101,7 +119,7 @@ class Issue(JsonModel):
     locations: List[str] = Field(default_factory=list)
     number: str
     page_count: Optional[int] = Field(default=None, gt=0)
-    sources: Dict[str, int] = Field(default_factory=dict)
+    sources: Dict[Source, int] = Field(default_factory=dict)
     store_date: Optional[date] = None
     story_arcs: List[StoryArc] = Field(default_factory=list)
     summary: Optional[str] = None
@@ -119,6 +137,15 @@ class Issue(JsonModel):
         if isinstance(v, str):
             return Genre.load(v)
         return v
+
+    @validator("sources", pre=True)
+    def source_to_enum(cls, v) -> Dict[Source, int]:
+        output = {}
+        for key, value in v.items():
+            if isinstance(key, str):
+                key = Source.load(key)
+            output[key] = value
+        return output
 
     @property
     def file_name(self) -> str:

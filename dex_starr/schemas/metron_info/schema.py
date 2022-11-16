@@ -24,6 +24,7 @@ from dex_starr.schemas import XmlModel
 from dex_starr.schemas.comic_info.schema import Page
 from dex_starr.schemas.metadata.enums import FormatType as MetadataFormat
 from dex_starr.schemas.metadata.enums import Role as MetadataRole
+from dex_starr.schemas.metadata.enums import Source as MetadataSource
 from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher
 from dex_starr.schemas.metadata.schema import Series as MetadataSeries
 from dex_starr.schemas.metadata.schema import StoryArc
@@ -50,6 +51,14 @@ class RoleResource(XmlModel):
         if isinstance(v, str):
             return Role.load(v)
         return v
+
+    def __lt__(self, other):
+        if not isinstance(other, RoleResource):
+            raise NotImplementedError()
+        return self.value < other.value
+
+    def __hash__(self):
+        return hash((type(self),) + (self.value,))
 
 
 class Credit(XmlModel):
@@ -192,11 +201,15 @@ class MetronInfo(XmlModel):
         return Metadata(
             publisher=Publisher(
                 # Imprint
-                sources={self.id.source.value: self.publisher.id} if self.id else {},
+                sources={MetadataSource.load(self.id.source.value): self.publisher.id}
+                if self.id
+                else {},
                 title=self.publisher.value,
             ),
             series=MetadataSeries(
-                sources={self.id.source.value: self.series.id} if self.id else {},
+                sources={MetadataSource.load(self.id.source.value): self.series.id}
+                if self.id
+                else {},
                 # Start Year
                 title=self.series.name,
                 volume=self.series.volume,
@@ -211,7 +224,9 @@ class MetronInfo(XmlModel):
                 locations=sorted(x.value for x in self.locations),
                 number=self.number,
                 page_count=self.page_count,
-                sources={self.id.source.value: self.id.value} if self.id else {},
+                sources={MetadataSource.load(self.id.source.value): self.id.value}
+                if self.id
+                else {},
                 store_date=self.store_date,
                 story_arcs=sorted(StoryArc(title=x.name, number=x.number) for x in self.story_arcs),
                 summary=self.summary,
@@ -283,10 +298,14 @@ class MetronInfo(XmlModel):
     def to_file(self, info_file: Path):
         with info_file.open("w", encoding="UTF-8") as stream:
             content = self.dict(by_alias=True, exclude_none=True)
-            if not content["BlackAndWhite"]:
-                del content["BlackAndWhite"]
             content["@xmlns:noNamespaceSchemaLocation"] = "MetronInfo.xsd"
             content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
+
+            for index, page in enumerate(content["Pages"].copy()):
+                if not page["@DoublePage"]:
+                    del content["Pages"][index]["@DoublePage"]
+            if not content["BlackAndWhite"]:
+                del content["BlackAndWhite"]
 
             mappings = {
                 "Stories": "Story",
