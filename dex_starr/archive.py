@@ -16,7 +16,7 @@ from dex_starr import (
     get_cache_root,
     list_files,
 )
-from dex_starr.schemas.metadata import Metadata
+from dex_starr.schemas.metadata.schema import Metadata
 from dex_starr.settings import GeneralSettings
 
 LOGGER = logging.getLogger(__name__)

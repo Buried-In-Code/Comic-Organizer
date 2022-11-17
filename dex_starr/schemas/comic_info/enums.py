@@ -11,7 +11,7 @@ class YesNo(Enum):
     @staticmethod
     def load(value: str) -> "YesNo":
         for entry in YesNo:
-            if entry.value == value:
+            if entry.value.lower() == value.lower():
                 return entry
         raise ValueError(f"Unable to find YesNo: '{value}'")
 
@@ -36,7 +36,7 @@ class Manga(Enum):
     @staticmethod
     def load(value: str) -> "Manga":
         for entry in Manga:
-            if entry.value == value:
+            if entry.value.lower() == value.lower():
                 return entry
         raise ValueError(f"Unable to find Manga: '{value}'")
 
@@ -72,7 +72,7 @@ class AgeRating(Enum):
     @staticmethod
     def load(value: str) -> "AgeRating":
         for entry in AgeRating:
-            if entry.value == value:
+            if entry.value.lower() == value.lower():
                 return entry
         raise ValueError(f"Unable to find AgeRating: '{value}'")
 
@@ -104,7 +104,7 @@ class ComicPageType(Enum):
     @staticmethod
     def load(value: str) -> "ComicPageType":
         for entry in ComicPageType:
-            if entry.value == value:
+            if entry.value.lower() == value.lower():
                 return entry
         raise ValueError(f"Unable to find ComicPageType: '{value}'")
 

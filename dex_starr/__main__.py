@@ -21,9 +21,9 @@ from dex_starr import (
 )
 from dex_starr.archive import Archive
 from dex_starr.console import CONSOLE
-from dex_starr.schemas.comic_info import ComicInfo
-from dex_starr.schemas.metadata import Metadata
-from dex_starr.schemas.metron_info import MetronInfo
+from dex_starr.schemas.comic_info.schema import ComicInfo
+from dex_starr.schemas.metadata.schema import Metadata
+from dex_starr.schemas.metron_info.schema import MetronInfo
 from dex_starr.schemas.utils import create_metadata, to_comic_info, to_metron_info
 from dex_starr.services.esak import EsakTalker
 from dex_starr.services.himon import HimonTalker

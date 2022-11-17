@@ -1,4 +1,4 @@
-__all__ = ["FormatType", "InformationSource", "Role", "Genre", "AgeRating", "ComicPageType"]
+__all__ = ["Format", "InformationSource", "Role", "Genre", "AgeRating", "ComicPageType"]
 
 from enum import Enum
 
@@ -6,7 +6,7 @@ from dex_starr.schemas.comic_info.enums import ComicPageType
 from dex_starr.schemas.metadata.enums import Genre
 
 
-class FormatType(Enum):
+class Format(Enum):
     ANNUAL = "Annual"
     GRAPHIC_NOVEL = "Graphic Novel"
     LIMITED = "Limited"  # Used for mini/maxi series
@@ -15,13 +15,13 @@ class FormatType(Enum):
     TRADE_PAPERBACK = "Trade Paperback"
 
     @staticmethod
-    def load(value: str) -> "FormatType":
-        for entry in FormatType:
-            if entry.value == value:
+    def load(value: str) -> "Format":
+        for entry in Format:
+            if entry.value.lower() == value.lower():
                 return entry
-        if value == "Comic":
-            return FormatType.SERIES
-        raise ValueError(f"Unable to find FormatType: '{value}'")
+        if value.lower() == "comic":
+            return Format.SERIES
+        raise ValueError(f"Unable to find Format: '{value}'")
 
     def __str__(self):
         return self.value
@@ -30,7 +30,7 @@ class FormatType(Enum):
         return self.value
 
     def __lt__(self, other):
-        if not isinstance(other, FormatType):
+        if not isinstance(other, Format):
             raise NotImplementedError()
         return self.value < other.value
 
@@ -45,9 +45,9 @@ class InformationSource(Enum):
     @staticmethod
     def load(value: str) -> "InformationSource":
         for entry in InformationSource:
-            if entry.value == value:
+            if entry.value.lower() == value.lower():
                 return entry
-        if value == "Comicvine":
+        if value.lower() == "comicvine":
             return InformationSource.COMIC_VINE
         raise ValueError(f"Unable to find InformationSource: '{value}'")
 
@@ -110,17 +110,17 @@ class Role(Enum):
     @staticmethod
     def load(value: str) -> "Role":
         for entry in Role:
-            if entry.value == value:
+            if entry.value.lower() == value.lower():
                 return entry
-        if value == "Cover Artist":
+        if value.lower() == "cover artist":
             return Role.COVER
-        if value == "Colourist":
+        if value.lower() == "colourist":
             return Role.COLORIST
-        if value == "Colour Separations":
+        if value.lower() == "colour separations":
             return Role.COLOR_SEPARATIONS
-        if value == "Colour Assists":
+        if value.lower() == "colour assists":
             return Role.COLOR_ASSISTS
-        if value == "Colour Flats":
+        if value.lower() == "colour flats":
             return Role.COLOR_FLATS
         raise ValueError(f"Unable to find Role: '{value}'")
 
@@ -146,7 +146,7 @@ class AgeRating(Enum):
     @staticmethod
     def load(value: str) -> "AgeRating":
         for entry in AgeRating:
-            if entry.value == value:
+            if entry.value.lower() == value.lower():
                 return entry
         raise ValueError(f"Unable to find AgeRating: '{value}'")
 

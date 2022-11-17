@@ -11,6 +11,7 @@ __all__ = [
     "MetronInfo",
 ]
 
+import logging
 from datetime import date
 from enum import Enum
 from pathlib import Path
@@ -18,23 +19,18 @@ from typing import Any, Dict, List, Optional
 
 import xmltodict
 from pydantic import Field, validator
-from rich import print
 
 from dex_starr.schemas import XmlModel
 from dex_starr.schemas.comic_info.schema import Page
-from dex_starr.schemas.metadata.enums import FormatType as MetadataFormat
+from dex_starr.schemas.metadata.enums import Format as MetadataFormat
 from dex_starr.schemas.metadata.enums import Role as MetadataRole
 from dex_starr.schemas.metadata.enums import Source as MetadataSource
 from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher
 from dex_starr.schemas.metadata.schema import Series as MetadataSeries
 from dex_starr.schemas.metadata.schema import StoryArc
-from dex_starr.schemas.metron_info.enums import (
-    AgeRating,
-    FormatType,
-    Genre,
-    InformationSource,
-    Role,
-)
+from dex_starr.schemas.metron_info.enums import AgeRating, Format, Genre, InformationSource, Role
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Resource(XmlModel):
@@ -108,12 +104,12 @@ class Series(XmlModel):
     name: str
     sort_name: Optional[str] = None
     volume: int = 1
-    format: Optional[FormatType] = None
+    format: Optional[Format] = None
 
     @validator("format", pre=True)
-    def format_to_enum(cls, v) -> FormatType:
+    def format_to_enum(cls, v) -> Format:
         if isinstance(v, str):
-            return FormatType.load(v)
+            return Format.load(v)
         return v
 
 
@@ -186,26 +182,26 @@ class MetronInfo(XmlModel):
             roles = set()
             for role in credit.roles:
                 try:
-                    roles.add(MetadataRole.load(role.value.value))
+                    roles.add(MetadataRole.load(str(role.value)))
                 except ValueError as err:
-                    print(err)
+                    LOGGER.warning(err)
                     roles.add(MetadataRole.OTHER)
             creators.append(Creator(name=credit.creator.value, roles=sorted(roles)))
         try:
-            format = MetadataFormat.load(self.series.format.value)
+            format = MetadataFormat.load(str(self.series.format))
         except ValueError as err:
-            print(err)
+            LOGGER.warning(err)
             format = MetadataFormat.COMIC
         return Metadata(
             publisher=Publisher(
                 # Imprint
-                sources={MetadataSource.load(self.id.source.value): self.publisher.id}
+                sources={MetadataSource.load(str(self.id.source)): self.publisher.id}
                 if self.id
                 else {},
                 title=self.publisher.value,
             ),
             series=MetadataSeries(
-                sources={MetadataSource.load(self.id.source.value): self.series.id}
+                sources={MetadataSource.load(str(self.id.source)): self.series.id}
                 if self.id
                 else {},
                 # Start Year
@@ -222,7 +218,7 @@ class MetronInfo(XmlModel):
                 locations=sorted(x.value for x in self.locations),
                 number=self.number,
                 page_count=self.page_count,
-                sources={MetadataSource.load(self.id.source.value): self.id.value}
+                sources={MetadataSource.load(str(self.id.source)): self.id.value}
                 if self.id
                 else {},
                 store_date=self.store_date,

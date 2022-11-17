@@ -11,7 +11,8 @@ from himon.schemas.series import Series as HimonSeries
 from rich.prompt import Prompt
 
 from dex_starr.console import CONSOLE, create_menu
-from dex_starr.schemas.metadata import Creator, Issue, Metadata, Publisher, Series
+from dex_starr.schemas.metadata.enums import Format, Role, Source
+from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher, Series
 from dex_starr.services.sqlite_cache import SQLiteCache
 
 LOGGER = logging.getLogger(__name__)
@@ -46,26 +47,27 @@ class HimonTalker:
         # region Set Creators
         for himon_creator in himon_comic.creators:
             name = html.unescape(himon_creator.name)
+            himon_roles = {Role.load(x) for x in himon_creator.roles.values()}
             found = False
             for creator in issue.creators:
                 if name == creator.name:
                     found = True
-                    creator.roles = sorted({*creator.roles, *himon_creator.roles.values()})
+                    creator.roles = sorted({*creator.roles, *himon_roles})
             if not found:
                 issue.creators.append(
                     Creator(
                         name=name,
-                        roles=sorted(himon_creator.roles.values()),
+                        roles=sorted(himon_roles),
                     )
                 )
         # endregion
-        issue.format = himon_comic.format or issue.format
+        issue.format = Format.load(himon_comic.format) or issue.format
         # Genres
         # Language
         # Locations
         # Number
         issue.page_count = himon_comic.page_count or issue.page_count
-        issue.sources["League of Comic Geeks"] = himon_comic.comic_id
+        issue.sources[Source.LEAGUE_OF_COMIC_GEEKS] = himon_comic.comic_id
         # Store Date
         # Story Arcs
         issue.summary = himon_comic.description
@@ -73,13 +75,13 @@ class HimonTalker:
         issue.title = issue.title or himon_comic.title
 
     def update_series(self, himon_series: HimonSeries, series: Series):
-        series.sources["League of Comic Geeks"] = himon_series.series_id
+        series.sources[Source.LEAGUE_OF_COMIC_GEEKS] = himon_series.series_id
         series.start_year = himon_series.year_begin or series.start_year
         series.title = himon_series.title or series.title
         series.volume = himon_series.volume or series.volume
 
     def update_publisher(self, himon_series: HimonSeries, publisher: Publisher):
-        publisher.sources["League of Comic Geeks"] = himon_series.publisher_id
+        publisher.sources[Source.LEAGUE_OF_COMIC_GEEKS] = himon_series.publisher_id
         publisher.title = himon_series.publisher_name or publisher.title
 
     def _search_comic(
@@ -136,12 +138,17 @@ class HimonTalker:
 
     def lookup_comic(self, metadata: Metadata) -> Optional[Comic]:
         himon_comic = None
-        if "League of Comic Geeks" in metadata.issue.sources:
-            himon_comic = self.session.comic(metadata.issue.sources["League of Comic Geeks"])
+        if Source.LEAGUE_OF_COMIC_GEEKS in metadata.issue.sources:
+            try:
+                himon_comic = self.session.comic(
+                    metadata.issue.sources[Source.LEAGUE_OF_COMIC_GEEKS]
+                )
+            except ServiceError:
+                himon_comic = None
         if not himon_comic:
             himon_comic = self._search_comic(
                 metadata.series.title,
-                metadata.issue.format,
+                str(metadata.issue.format),
                 metadata.issue.number,
                 publisher_name=metadata.publisher.title,
                 series_name=metadata.series.title,

@@ -13,7 +13,7 @@ from pydantic import Field, validator
 from dex_starr import __version__
 from dex_starr.schemas import JsonModel
 from dex_starr.schemas.comic_info.enums import ComicPageType
-from dex_starr.schemas.metadata.enums import FormatType, Genre, Role, Source
+from dex_starr.schemas.metadata.enums import Format, Genre, Role, Source
 
 LOGGER = logging.getLogger(__name__)
 
@@ -47,6 +47,14 @@ class Publisher(JsonModel):
             raise NotImplementedError()
         return self.title < other.title
 
+    def __eq__(self, other):
+        if not isinstance(other, Publisher):
+            raise NotImplementedError()
+        return self.title == other.title
+
+    def __hash__(self):
+        return hash((type(self), self.title))
+
 
 class Series(JsonModel):
     sources: Dict[Source, int] = Field(default_factory=dict)
@@ -78,6 +86,18 @@ class Series(JsonModel):
             return self.volume < other.volume
         return self.start_year < other.start_year
 
+    def __eq__(self, other):
+        if not isinstance(other, Series):
+            raise NotImplementedError()
+        return (self.title, self.volume, self.start_year) == (
+            other.title,
+            other.volume,
+            other.start_year,
+        )
+
+    def __hash__(self):
+        return hash((type(self), self.title, self.volume, self.start_year))
+
 
 class Creator(JsonModel):
     name: str
@@ -94,6 +114,14 @@ class Creator(JsonModel):
             raise NotImplementedError()
         return self.name < other.name
 
+    def __eq__(self, other):
+        if not isinstance(other, Creator):
+            raise NotImplementedError()
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash((type(self), self.name))
+
 
 class StoryArc(JsonModel):
     title: str
@@ -106,15 +134,20 @@ class StoryArc(JsonModel):
             return self.title < other.title
         return self.number < other.number
 
+    def __eq__(self, other):
+        if not isinstance(other, StoryArc):
+            raise NotImplementedError()
+        return (self.title, self.number) == (other.title, other.number)
+
     def __hash__(self):
-        return hash((type(self),) + tuple(self.__dict__.values()))
+        return hash((type(self), self.title, self.number))
 
 
 class Issue(JsonModel):
     characters: List[str] = Field(default_factory=list)
     cover_date: Optional[date] = None
     creators: List[Creator] = Field(default_factory=list)
-    format: FormatType = FormatType.COMIC
+    format: Format = Format.COMIC
     genres: List[Genre] = Field(default_factory=list)
     language: str = "en"
     locations: List[str] = Field(default_factory=list)
@@ -128,9 +161,9 @@ class Issue(JsonModel):
     title: Optional[str] = None
 
     @validator("format", pre=True)
-    def format_to_enum(cls, v) -> FormatType:
+    def format_to_enum(cls, v) -> Format:
         if isinstance(v, str):
-            return FormatType.load(v)
+            return Format.load(v)
         return v
 
     @validator("genres", pre=True, each_item=True)
@@ -150,11 +183,11 @@ class Issue(JsonModel):
 
     @property
     def file_name(self) -> str:
-        if self.format == FormatType.ANNUAL:
+        if self.format == Format.ANNUAL:
             return f"-Annual-#{self.number.zfill(2)}"
-        if self.format == FormatType.DIGITAL_CHAPTER:
+        if self.format == Format.DIGITAL_CHAPTER:
             return f"-Chapter-#{self.number.zfill(2)}"
-        if self.format == FormatType.HARDCOVER:
+        if self.format == Format.HARDCOVER:
             if self.number != "0":
                 filename = f"-#{self.number.zfill(2)}"
             elif self.title:
@@ -162,7 +195,7 @@ class Issue(JsonModel):
             else:
                 filename = ""
             return f"{filename}-HC"
-        if self.format == FormatType.TRADE_PAPERBACK:
+        if self.format == Format.TRADE_PAPERBACK:
             if self.number != "0":
                 filename = f"-#{self.number.zfill(2)}"
             elif self.title:
@@ -170,7 +203,7 @@ class Issue(JsonModel):
             else:
                 filename = ""
             return f"{filename}-TP"
-        if self.format == FormatType.GRAPHIC_NOVEL:
+        if self.format == Format.GRAPHIC_NOVEL:
             return f"-{self.title}" if self.title else ""
         return f"-#{self.number.zfill(3)}"
 
@@ -182,6 +215,18 @@ class Issue(JsonModel):
         if self.number != other.number:
             return self.number < other.number
         return self.cover_date < other.cover_date
+
+    def __eq__(self, other):
+        if not isinstance(other, Issue):
+            raise NotImplementedError()
+        return (self.format, self.number, self.cover_date) == (
+            other.format,
+            other.number,
+            other.cover_date,
+        )
+
+    def __hash__(self):
+        return hash((type(self), self.format, self.number, self.cover_date))
 
 
 class Page(JsonModel):
@@ -204,6 +249,14 @@ class Page(JsonModel):
         if not isinstance(other, Page):
             raise NotImplementedError()
         return self.image < other.image
+
+    def __eq__(self, other):
+        if not isinstance(other, Page):
+            raise NotImplementedError()
+        return self.image == other.image
+
+    def __hash__(self):
+        return hash((type(self), self.image))
 
 
 class Metadata(JsonModel):
@@ -241,6 +294,18 @@ class Metadata(JsonModel):
         if self.series != other.series:
             return self.series < other.series
         return self.issue < other.issue
+
+    def __eq__(self, other):
+        if not isinstance(other, Metadata):
+            raise NotImplementedError()
+        return (self.publisher, self.series, self.issue) == (
+            other.publisher,
+            other.series,
+            other.issue,
+        )
+
+    def __hash__(self):
+        return hash((type(self), self.publisher, self.series, self.issue))
 
 
 def generate_meta() -> Dict[str, str]:

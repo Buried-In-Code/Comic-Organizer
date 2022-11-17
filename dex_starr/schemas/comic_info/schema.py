@@ -11,7 +11,7 @@ from pydantic import Field, validator
 
 from dex_starr.schemas import XmlModel
 from dex_starr.schemas.comic_info.enums import AgeRating, ComicPageType, Manga, YesNo
-from dex_starr.schemas.metadata.enums import FormatType, Genre, Role
+from dex_starr.schemas.metadata.enums import Format, Genre, Role
 from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
 
 LOGGER = logging.getLogger(__name__)
@@ -212,10 +212,10 @@ class ComicInfo(XmlModel):
                 creators[creator].append(key)
         # endregion
         try:
-            format = FormatType.load(self.format)
+            format = Format.load(self.format)
         except ValueError as err:
-            print(err)
-            format = FormatType.COMIC
+            LOGGER.warning(err)
+            format = Format.COMIC
         return Metadata(
             publisher=Publisher(
                 imprint=self.imprint,

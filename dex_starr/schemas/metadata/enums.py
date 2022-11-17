@@ -1,4 +1,4 @@
-__all__ = ["Role", "FormatType", "Genre", "Source"]
+__all__ = ["Role", "Format", "Genre", "Source"]
 
 from enum import Enum
 
@@ -29,11 +29,11 @@ class Role(Enum):
     @staticmethod
     def load(value: str) -> "Role":
         for entry in Role:
-            if entry.value == value:
+            if entry.value.lower() == value.lower():
                 return entry
-        if value == "Colorist":
+        if value.lower() == "colorist":
             return Role.COLOURIST
-        if value == "Cover":
+        if value.lower() == "cover":
             return Role.COVER_ARTIST
         raise ValueError(f"Unable to find Role: '{value}'")
 
@@ -49,7 +49,7 @@ class Role(Enum):
         return self.value < other.value
 
 
-class FormatType(Enum):
+class Format(Enum):
     COMIC = "Comic"
     DIGITAL_CHAPTER = "Digital Chapter"
     ANNUAL = "Annual"
@@ -58,11 +58,11 @@ class FormatType(Enum):
     GRAPHIC_NOVEL = "Graphic Novel"
 
     @staticmethod
-    def load(value: str) -> "FormatType":
-        for entry in FormatType:
-            if entry.value == value:
+    def load(value: str) -> "Format":
+        for entry in Format:
+            if entry.value.lower() == value.lower():
                 return entry
-        raise ValueError(f"Unable to find FormatType: '{value}'")
+        raise ValueError(f"Unable to find Format: '{value}'")
 
     def __str__(self):
         return self.value
@@ -71,7 +71,7 @@ class FormatType(Enum):
         return self.value
 
     def __lt__(self, other):
-        if not isinstance(other, FormatType):
+        if not isinstance(other, Format):
             raise NotImplementedError()
         return self.value < other.value
 
@@ -96,7 +96,7 @@ class Genre(Enum):
     @staticmethod
     def load(value: str) -> "Genre":
         for entry in Genre:
-            if entry.value == value:
+            if entry.value.lower() == value.lower():
                 return entry
         raise ValueError(f"Unable to find Genre: '{value}'")
 
@@ -122,9 +122,9 @@ class Source(Enum):
     @staticmethod
     def load(value: str) -> "Source":
         for entry in Source:
-            if entry.value == value:
+            if entry.value.lower() == value.lower():
                 return entry
-        if value == "Comic Vine":
+        if value.lower() == "comic vine":
             return Source.COMICVINE
         raise ValueError(f"Unable to find Source: '{value}'")
 

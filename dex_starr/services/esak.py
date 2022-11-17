@@ -5,12 +5,14 @@ import re
 from typing import Optional
 
 from esak.comic import Comic
+from esak.exceptions import ApiError
 from esak.series import Series as EsakSeries
 from esak.session import Session as Esak
 from rich.prompt import Prompt
 
 from dex_starr.console import CONSOLE, create_menu
-from dex_starr.schemas.metadata import Creator, Issue, Metadata, Series, StoryArc
+from dex_starr.schemas.metadata.enums import Format, Role, Source
+from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Series, StoryArc
 from dex_starr.services.sqlite_cache import SQLiteCache
 
 LOGGER = logging.getLogger(__name__)
@@ -31,26 +33,27 @@ class EsakTalker:
         # Cover date
         # region Set Creators
         for esak_creator in esak_comic.creators:
+            esak_role = Role.load(clean_title(esak_creator.role.title()))
             found = False
             for creator in issue.creators:
                 if esak_creator.name == creator.name:
                     found = True
-                    creator.roles = sorted({*creator.roles, clean_title(esak_creator.role.title())})
+                    creator.roles = sorted({*creator.roles, esak_role})
             if not found:
                 issue.creators.append(
                     Creator(
                         name=esak_creator.name,
-                        roles=[clean_title(esak_creator.role.title())],
+                        roles=[esak_role],
                     )
                 )
         # endregion
-        issue.format = esak_comic.format or issue.format
+        issue.format = Format.load(esak_comic.format) or issue.format
         # Genres
         # Language
         # Locations
         issue.number = esak_comic.issue_number or issue.number
         issue.page_count = esak_comic.page_count or issue.page_count
-        issue.sources["Marvel"] = esak_comic.id
+        issue.sources[Source.MARVEL] = esak_comic.id
         issue.store_date = esak_comic.dates.on_sale or issue.store_date
         # region Set Story Arcs
         for esak_event in esak_comic.events:
@@ -73,7 +76,10 @@ class EsakTalker:
         params = {"noVariants": True, "series": series_id, "issueNumber": number}
         if format in ["Trade Paperback", "Hardcover"]:
             params["format"] = format.lower()
-        comic_list = self.session.comics_list(params=params)
+        try:
+            comic_list = self.session.comics_list(params=params)
+        except ApiError:
+            comic_list = []
         comic_list = sorted(comic_list, key=lambda c: c.issue_number)
         if comic_list:
             comic_index = create_menu(
@@ -94,10 +100,13 @@ class EsakTalker:
 
     def lookup_comic(self, issue: Issue, series_id: int) -> Optional[Comic]:
         esak_comic = None
-        if "Marvel" in issue.sources:
-            esak_comic = self.session.comic(issue.sources["Marvel"])
+        if Source.MARVEL in issue.sources:
+            try:
+                esak_comic = self.session.comic(issue.sources[Source.MARVEL])
+            except ApiError:
+                esak_comic = None
         if not esak_comic:
-            esak_comic = self._search_comic(series_id, issue.number, issue.format)
+            esak_comic = self._search_comic(series_id, issue.number, str(issue.format))
         while not esak_comic:
             search = Prompt.ask("Comic number", default="Exit", console=CONSOLE)
             if search.lower() == "exit":
@@ -106,7 +115,7 @@ class EsakTalker:
         return esak_comic
 
     def update_series(self, esak_series: EsakSeries, series: Series):
-        series.sources["Marvel"] = esak_series.id
+        series.sources[Source.MARVEL] = esak_series.id
         series.start_year = esak_series.start_year or series.start_year
         series.title = clean_title(esak_series.title) or series.title
 
@@ -115,7 +124,10 @@ class EsakTalker:
         params = {"title": title}
         if start_year:
             params["startYear"] = start_year
-        series_list = self.session.series_list(params)
+        try:
+            series_list = self.session.series_list(params)
+        except ApiError:
+            series_list = []
         series_list = sorted(series_list, key=lambda s: (s.title, s.start_year))
         if series_list:
             series_index = create_menu(
@@ -133,8 +145,11 @@ class EsakTalker:
 
     def lookup_series(self, series: Series) -> Optional[EsakSeries]:
         esak_series = None
-        if "Marvel" in series.sources:
-            esak_series = self.session.series(series.sources["Marvel"])
+        if Source.MARVEL in series.sources:
+            try:
+                esak_series = self.session.series(series.sources[Source.MARVEL])
+            except ApiError:
+                esak_series = None
         if not esak_series:
             esak_series = self._search_series(series.title, series.start_year)
         while not esak_series:
@@ -150,6 +165,6 @@ class EsakTalker:
         esak_series = self.lookup_series(metadata.series)
         if esak_series:
             self.update_series(esak_series, metadata.series)
-            esak_comic = self.lookup_comic(metadata.issue, metadata.series.sources["Marvel"])
+            esak_comic = self.lookup_comic(metadata.issue, metadata.series.sources[Source.MARVEL])
             if esak_comic:
                 self.update_issue(esak_comic, metadata.issue)

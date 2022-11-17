@@ -35,7 +35,7 @@ class SettingsModel(BaseModel):
 
 
 class MetronSettings(SettingsModel):
-    generate_info_file: bool = True
+    generate_info_file: bool = Field(alias="Generate MetronInfo File", default=True)
     password: Optional[str] = None
     username: Optional[str] = None
 
@@ -70,7 +70,9 @@ class GeneralSettings(SettingsModel):
 
 class Settings(SettingsModel):
     FILENAME: ClassVar = get_config_root() / "settings.toml"
-    general: GeneralSettings = GeneralSettings()
+    general: GeneralSettings = GeneralSettings(
+        resolution_order=["Marvel", "League of Comic Geeks", "Metron", "Marvel"]
+    )
     comicvine: ComicvineSettings = ComicvineSettings()
     league_of_comic_geeks: LeagueOfComicGeeks = Field(
         alias="League of Comic Geeks", default=LeagueOfComicGeeks()
