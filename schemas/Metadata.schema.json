@@ -160,12 +160,9 @@
               "type": "string"
             },
             "pageCount": {
-              "default": null,
+              "default": 1,
               "minimum": 1,
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": "integer"
             },
             "sources": {
               "$ref": "#/definitions/sources",

@@ -313,7 +313,7 @@ class MetronInfo(XmlModel):
             for key, value in mappings.items():
                 if key in content and content[key]:
                     content[key] = {value: content[key]}
-            if "Credits" in content:
+            if "Credits" in content and "Credit" in content["Credits"]:
                 for credit in content["Credits"]["Credit"]:
                     if "Roles" in credit and credit["Roles"]:
                         credit["Roles"] = {"Role": credit["Roles"]}

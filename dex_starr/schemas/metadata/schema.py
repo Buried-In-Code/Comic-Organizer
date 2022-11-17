@@ -152,7 +152,7 @@ class Issue(JsonModel):
     language: str = "en"
     locations: List[str] = Field(default_factory=list)
     number: str
-    page_count: Optional[int] = Field(default=None, gt=0)
+    page_count: int = Field(default=0, ge=0)
     sources: Dict[Source, int] = Field(default_factory=dict)
     store_date: Optional[date] = None
     story_arcs: List[StoryArc] = Field(default_factory=list)

@@ -34,7 +34,7 @@ def create_metadata() -> Metadata:
     formats = list(Format)
     index = create_menu(options=formats, prompt="Issue format", default=Format.COMIC)
     issue = Issue(
-        format=formats[index - 1],
+        format=formats[index - 1] if index else Format.COMIC,
         number=Prompt.ask("Issue number", console=CONSOLE),
     )
     return Metadata(publisher=publisher, series=series, issue=issue)
