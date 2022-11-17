@@ -2,8 +2,9 @@ __all__ = ["ComicInfo", "Page"]
 
 import logging
 from datetime import date
+from enum import Enum
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import xmltodict
 from pydantic import Field, validator
@@ -79,8 +80,10 @@ class ComicInfo(XmlModel):
     community_rating: Optional[float] = Field(default=None, ge=0, le=5)
 
     def __init__(self, **data):
-        if "Pages" in data:
-            data["Pages"] = data["Pages"]["Page"]
+        mappings = {"Pages": "Page"}
+        for key, value in mappings.items():
+            if key in data:
+                data[key] = data[key][value]
         super().__init__(**data)
 
     @validator("black_and_white", pre=True)
@@ -267,18 +270,19 @@ class ComicInfo(XmlModel):
             return ComicInfo(**content)
 
     def to_file(self, info_file: Path):
-        with info_file.open("w", encoding="UTF-8") as stream:
-            content = self.dict(by_alias=True, exclude_none=True)
-            content["@xmlns:xsd"] = "https://www.w3.org/2001/XMLSchema"
-            content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
+        content = self.dict(by_alias=True, exclude_none=True)
+        content = clean_contents(content)
 
-            for index, page in enumerate(content["Pages"].copy()):
-                if not page["@DoublePage"]:
-                    del content["Pages"][index]["@DoublePage"]
-            if "Pages" in content and content["Pages"]:
-                content["Pages"] = {"Page": content["Pages"]}
-            else:
-                del content["Pages"]
+        content["@xmlns:xsd"] = "https://www.w3.org/2001/XMLSchema"
+        content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
+
+        with info_file.open("w", encoding="UTF-8") as stream:
+            mappings = {
+                "Pages": "Page",
+            }
+            for key, value in mappings.items():
+                if key in content and content[key]:
+                    content[key] = {value: content[key]}
 
             xmltodict.unparse(
                 {"ComicInfo": {k: content[k] for k in sorted(content)}},
@@ -286,3 +290,28 @@ class ComicInfo(XmlModel):
                 short_empty_elements=True,
                 pretty=True,
             )
+
+
+def clean_contents(content: Dict[str, Any]) -> Dict[str, Any]:
+    for key, value in content.copy().items():
+        if isinstance(key, Enum):
+            content[str(key)] = value
+            del content[key]
+        if isinstance(value, bool):
+            content[key] = "true" if value else "false"
+        elif isinstance(value, Enum) or isinstance(value, int):
+            content[key] = str(value)
+        elif isinstance(value, dict):
+            if value:
+                content[key] = clean_contents(value)
+            else:
+                del content[key]
+        elif isinstance(value, list):
+            for index, entry in enumerate(content[key]):
+                if isinstance(entry, bool):
+                    content[key][index] = "true" if entry else "false"
+                elif isinstance(entry, Enum) or isinstance(entry, int):
+                    content[key][index] = str(entry)
+                elif isinstance(entry, dict):
+                    content[key][index] = clean_contents(entry)
+    return content

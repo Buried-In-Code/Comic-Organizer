@@ -12,6 +12,7 @@ from tests.validators import JsonValidator, XmlValidator
 def test_parsing_metadata(files_folder: Path, metadata_validator: JsonValidator):
     metadata_file = files_folder / "Metadata.json"
     assert metadata_validator.validate(metadata_file)
+    Metadata.from_file(metadata_file)
 
 
 def test_parsing_comic_info(files_folder: Path, comic_info_validator: XmlValidator):
@@ -57,6 +58,7 @@ def test_converting_from_comic_info(
     metadata_file.unlink(missing_ok=True)
     comic_info.to_metadata().to_file(metadata_file)
     assert metadata_validator.validate(metadata_file)
+    Metadata.from_file(metadata_file)
 
 
 def test_converting_to_metron_info(
@@ -84,3 +86,4 @@ def test_converting_from_metron_info(
     metadata_file.unlink(missing_ok=True)
     metron_info.to_metadata().to_file(metadata_file)
     assert metadata_validator.validate(metadata_file)
+    Metadata.from_file(metadata_file)

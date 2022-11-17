@@ -66,8 +66,12 @@ class Credit(XmlModel):
     roles: List[RoleResource] = Field(default_factory=list)
 
     def __init__(self, **data):
-        if "Roles" in data:
-            data["Roles"] = data["Roles"]["Role"]
+        mappings = {
+            "Roles": "Role",
+        }
+        for key, value in mappings.items():
+            if key in data:
+                data[key] = data[key][value]
         super().__init__(**data)
 
 
@@ -152,28 +156,22 @@ class MetronInfo(XmlModel):
     pages: List[Page] = Field(default_factory=list)
 
     def __init__(self, **data):
-        if "Stories" in data:
-            data["Stories"] = data["Stories"]["Story"]
-        if "Prices" in data:
-            data["Prices"] = data["Prices"]["Price"]
-        if "Genres" in data:
-            data["Genres"] = data["Genres"]["Genre"]
-        if "Tags" in data:
-            data["Tags"] = data["Tags"]["Tag"]
-        if "Arcs" in data:
-            data["Arcs"] = data["Arcs"]["Arc"]
-        if "Characters" in data:
-            data["Characters"] = data["Characters"]["Character"]
-        if "Teams" in data:
-            data["Teams"] = data["Teams"]["Team"]
-        if "Locations" in data:
-            data["Locations"] = data["Locations"]["Location"]
-        if "Reprints" in data:
-            data["Reprints"] = data["Reprints"]["Reprint"]
-        if "Credits" in data:
-            data["Credits"] = data["Credits"]["Credit"]
-        if "Pages" in data:
-            data["Pages"] = data["Pages"]["Page"]
+        mappings = {
+            "Stories": "Story",
+            "Prices": "Price",
+            "Genres": "Genre",
+            "Tags": "Tag",
+            "Arcs": "Arc",
+            "Characters": "Character",
+            "Teams": "Team",
+            "Locations": "Location",
+            "Reprints": "Reprint",
+            "Credits": "Credit",
+            "Pages": "Page",
+        }
+        for key, value in mappings.items():
+            if key in data:
+                data[key] = data[key][value]
         super().__init__(**data)
 
     @validator("age_rating", pre=True)
@@ -296,17 +294,13 @@ class MetronInfo(XmlModel):
             return MetronInfo(**content)
 
     def to_file(self, info_file: Path):
+        content = self.dict(by_alias=True, exclude_none=True)
+        content = clean_contents(content)
+
+        content["@xmlns:noNamespaceSchemaLocation"] = "MetronInfo.xsd"
+        content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
+
         with info_file.open("w", encoding="UTF-8") as stream:
-            content = self.dict(by_alias=True, exclude_none=True)
-            content["@xmlns:noNamespaceSchemaLocation"] = "MetronInfo.xsd"
-            content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
-
-            for index, page in enumerate(content["Pages"].copy()):
-                if not page["@DoublePage"]:
-                    del content["Pages"][index]["@DoublePage"]
-            if not content["BlackAndWhite"]:
-                del content["BlackAndWhite"]
-
             mappings = {
                 "Stories": "Story",
                 "Genres": "Genre",
@@ -323,16 +317,10 @@ class MetronInfo(XmlModel):
             for key, value in mappings.items():
                 if key in content and content[key]:
                     content[key] = {value: content[key]}
-                else:
-                    del content[key]
             if "Credits" in content:
                 for credit in content["Credits"]["Credit"]:
                     if "Roles" in credit and credit["Roles"]:
                         credit["Roles"] = {"Role": credit["Roles"]}
-                    else:
-                        del credit["Roles"]
-
-            content = to_str(content)
 
             xmltodict.unparse(
                 {"MetronInfo": {k: content[k] for k in sorted(content)}},
@@ -342,20 +330,26 @@ class MetronInfo(XmlModel):
             )
 
 
-def to_str(content: Dict[str, Any]) -> Dict[str, Any]:
-    for key, value in content.items():
-        if isinstance(value, dict):
-            content[key] = to_str(content[key])
+def clean_contents(content: Dict[str, Any]) -> Dict[str, Any]:
+    for key, value in content.copy().items():
+        if isinstance(key, Enum):
+            content[str(key)] = value
+            del content[key]
+        if isinstance(value, bool):
+            content[key] = "true" if value else "false"
+        elif isinstance(value, Enum) or isinstance(value, int):
+            content[key] = str(value)
+        elif isinstance(value, dict):
+            if value:
+                content[key] = clean_contents(value)
+            else:
+                del content[key]
         elif isinstance(value, list):
             for index, entry in enumerate(content[key]):
-                if isinstance(entry, dict):
-                    content[key][index] = to_str(content[key][index])
-                elif isinstance(entry, int):
-                    content[key][index] = str(content[key][index])
-                elif isinstance(entry, Enum):
-                    content[key][index] = str(content[key][index])
-        elif isinstance(value, int):
-            content[key] = str(content[key])
-        elif isinstance(value, Enum):
-            content[key] = str(content[key])
+                if isinstance(entry, bool):
+                    content[key][index] = "true" if entry else "false"
+                elif isinstance(entry, Enum) or isinstance(entry, int):
+                    content[key][index] = str(entry)
+                elif isinstance(entry, dict):
+                    content[key][index] = clean_contents(entry)
     return content

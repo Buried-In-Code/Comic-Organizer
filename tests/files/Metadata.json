@@ -1,5 +1,5 @@
 {
-  "data": {
+  "content": {
     "issue": {
       "characters": [
         "Green Lantern - Hal Jordan",
@@ -101,6 +101,7 @@
       "storeDate": "2005-05-18",
       "storyArcs": [
         {
+          "number": null,
           "title": "Green Lantern: Rebirth"
         }
       ],
@@ -111,25 +112,37 @@
       ],
       "title": "Airbourne"
     },
+    "notes": null,
     "pages": [
       {
+        "bookmark": null,
+        "doublePage": false,
         "image": 0,
         "imageHeight": 2951,
         "imageSize": 1733120,
         "imageWidth": 1920,
+        "key": null,
         "pageType": "FrontCover"
       },
       {
+        "bookmark": null,
+        "doublePage": false,
         "image": 1,
         "imageHeight": 2951,
         "imageSize": 1320938,
-        "imageWidth": 1920
+        "imageWidth": 1920,
+        "key": null,
+        "pageType": "Story"
       },
       {
+        "bookmark": null,
+        "doublePage": false,
         "image": 2,
         "imageHeight": 2951,
         "imageSize": 1298224,
-        "imageWidth": 1920
+        "imageWidth": 1920,
+        "key": null,
+        "pageType": "Story"
       }
     ],
     "publisher": {
@@ -151,7 +164,7 @@
     }
   },
   "meta": {
-    "date": "2022-11-15",
+    "date": "2022-11-17",
     "tool": {
       "name": "Dex-Starr",
       "version": "0.2.0"

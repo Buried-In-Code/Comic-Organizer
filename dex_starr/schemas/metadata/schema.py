@@ -4,8 +4,9 @@ import json
 import logging
 import re
 from datetime import date
+from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import Field, validator
 
@@ -216,12 +217,15 @@ class Metadata(JsonModel):
     def from_file(metadata_file: Path) -> "Metadata":
         with metadata_file.open("r", encoding="UTF-8") as stream:
             content = json.load(stream)
-            return Metadata(**content["data"])
+            return Metadata(**content["content"])
 
     def to_file(self, metadata_file: Path):
+        content = self.dict(by_alias=True)
+        content = clean_contents(content)
+
         with metadata_file.open("w", encoding="UTF-8") as stream:
             json.dump(
-                {"data": self.dict(by_alias=True), "meta": generate_meta()},
+                {"content": content, "meta": generate_meta()},
                 stream,
                 sort_keys=True,
                 default=str,
@@ -241,3 +245,21 @@ class Metadata(JsonModel):
 
 def generate_meta() -> Dict[str, str]:
     return {"date": date.today().isoformat(), "tool": {"name": "Dex-Starr", "version": __version__}}
+
+
+def clean_contents(content: Dict[str, Any]) -> Dict[str, Any]:
+    for key, value in content.copy().items():
+        if isinstance(key, Enum):
+            content[str(key)] = value
+            del content[key]
+        if isinstance(value, Enum):
+            content[key] = str(value)
+        elif isinstance(value, dict):
+            content[key] = clean_contents(value)
+        elif isinstance(value, list):
+            for index, entry in enumerate(value):
+                if isinstance(entry, Enum):
+                    content[key][index] = str(entry)
+                elif isinstance(entry, dict):
+                    content[key][index] = clean_contents(entry)
+    return content

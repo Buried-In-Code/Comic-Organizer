@@ -88,7 +88,7 @@
     }
   },
   "properties": {
-    "data": {
+    "content": {
       "additionalProperties": false,
       "properties": {
         "issue": {
@@ -234,12 +234,9 @@
             "locations",
             "number",
             "pageCount",
-            "sources",
-            "storeDate",
             "storyArcs",
             "summary",
-            "teams",
-            "title"
+            "teams"
           ],
           "type": "object"
         },
@@ -327,7 +324,6 @@
             }
           },
           "required": [
-            "sources",
             "title"
           ],
           "type": "object"
@@ -357,8 +353,6 @@
             }
           },
           "required": [
-            "sources",
-            "startYear",
             "title",
             "volume"
           ],
@@ -405,7 +399,7 @@
     }
   },
   "required": [
-    "data",
+    "content",
     "meta"
   ],
   "type": "object"
