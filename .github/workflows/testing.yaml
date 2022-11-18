@@ -13,20 +13,15 @@ on:
       - docs/**
 
 jobs:
-  tox:
-    name: Tox Tests
+  generate_output:
+    name: Generate Output
     strategy:
       fail-fast: false
       matrix:
         python-version:
-          - 3.8
-          - 3.9
-          - '3.10'
           - '3.11'
         os:
           - ubuntu-latest
-          - macos-latest
-          - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
       #----------------------------------------------
@@ -37,10 +32,68 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Setup PDM
-        run: pip install pdm
       #----------------------------------------------
       - name: Install project
-        run: pdm install -G test
-      - name: Test with tox
-        run: pdm run tox -e py
+        run: pip install -e .
+      - name: Create output files
+        run: python tests/generate_output.py
+      #----------------------------------------------
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Output
+          path: tests/output/
+      #----------------------------------------------
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Schemas
+          path: schemas/
+
+  validate_output:
+    needs: generate_output
+    name: Validate Output
+
+    runs-on: ubuntu-latest
+    steps:
+      #----------------------------------------------
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: Output
+          path: ./output
+      #----------------------------------------------
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: Schemas
+          path: ./schemas
+      #----------------------------------------------
+      - name: Validate Metadata.json
+        uses: ScratchAddons/validate-json-action@master
+        with:
+          schema: schemas/Metadata.schema.json
+          jsons: output/Metadata.json
+      - name: Validate Metadata-ComicInfo.json
+        uses: ScratchAddons/validate-json-action@master
+        with:
+          schema: schemas/Metadata.schema.json
+          jsons: output/Metadata-ComicInfo.json
+      - name: Validate Metadata-MetronInfo.json
+        uses: ScratchAddons/validate-json-action@master
+        with:
+          schema: schemas/Metadata.schema.json
+          jsons: output/Metadata-MetronInfo.json
+      #----------------------------------------------
+      - name: apt-get update
+        run: sudo apt-get update -y
+      - name: Install xmllint
+        run: sudo apt-get install -y libxml2-utils
+      - name: Validate ComicInfo.xml
+        run: xmllint --noout --schema schemas/ComicInfo.xsd output/ComicInfo.xml
+      - name: Validate ComicInfo-Metadata.xml
+        run: xmllint --noout --schema schemas/ComicInfo.xsd output/ComicInfo-Metadata.xml
+      - name: Validate MetronInfo.xml
+        run: xmllint --noout --schema schemas/MetronInfo.xsd output/MetronInfo.xml
+      - name: Validate MetronInfo-Metadata.xml
+        run: xmllint --noout --schema schemas/MetronInfo.xsd output/MetronInfo-Metadata.xml
