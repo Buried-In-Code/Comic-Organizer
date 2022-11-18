@@ -219,11 +219,11 @@ class ComicInfo(XmlModel):
         return Metadata(
             publisher=Publisher(
                 imprint=self.imprint,
-                # Sources
+                # TODO: Sources
                 title=self.publisher,
             ),
             series=Series(
-                # Sources
+                # TODO: Sources
                 start_year=self.volume if self.volume and self.volume > 1900 else None,
                 title=self.series,
                 volume=self.volume if self.volume and self.volume < 1900 else 1,
@@ -240,8 +240,8 @@ class ComicInfo(XmlModel):
                 locations=self.location_list,
                 number=self.number,
                 page_count=self.page_count,
-                # Sources
-                # Store date
+                # TODO: Sources
+                # TODO: Store date
                 story_arcs=sorted(StoryArc(title=x) for x in self.story_arc_list),
                 summary=self.summary,
                 teams=self.team_list,

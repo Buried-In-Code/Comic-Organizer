@@ -11,7 +11,7 @@ from simyan.schemas.publisher import Publisher as SimyanPublisher
 from simyan.schemas.volume import Volume
 
 from dex_starr.console import CONSOLE, create_menu
-from dex_starr.schemas.metadata.enums import Role, Source
+from dex_starr.schemas.metadata.enums import Role
 from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
 from dex_starr.services.sqlite_cache import SQLiteCache
 
@@ -22,67 +22,71 @@ class SimyanTalker:
     def __init__(self, api_key: str):
         self.session = Comicvine(api_key=api_key, cache=SQLiteCache(expiry=14))
 
-    def update_issue(self, simyan_issue: SimyanIssue, issue: Issue):
-        issue.characters = sorted(
-            {
-                *issue.characters,
-                *[x.name for x in simyan_issue.characters],
-                *[x.name for x in simyan_issue.first_appearance_characters],
-                *[x.name for x in simyan_issue.deaths],
-            }
-        )
-        issue.cover_date = simyan_issue.cover_date or issue.cover_date
-        # region Set Creators
-        for simyan_creator in simyan_issue.creators:
-            simyan_roles = {
-                Role.load(x.strip().title())
-                for role in simyan_creator.role_list
-                for x in role.split(",")
-            }
-            found = False
-            for creator in issue.creators:
-                if simyan_creator.name == creator.name:
-                    found = True
-                    creator.roles = sorted({*creator.roles, *simyan_roles})
-            if not found:
-                issue.creators.append(Creator(name=simyan_creator.name, roles=sorted(simyan_roles)))
-        # endregion
-        # Format
-        # Genres
-        # Language
-        issue.locations = sorted(
-            {
-                *issue.locations,
-                *[x.name for x in simyan_issue.locations],
-                *[x.name for x in simyan_issue.first_appearance_locations],
-            }
-        )
-        issue.number = simyan_issue.number or issue.number
-        # Page Count
-        issue.sources[Source.COMICVINE] = simyan_issue.issue_id
-        issue.store_date = simyan_issue.store_date or issue.store_date
-        # region Set Story Arcs
-        issue.story_arcs = sorted(
-            {
-                *issue.story_arcs,
-                *[StoryArc(title=x.name) for x in simyan_issue.story_arcs],
-                *[StoryArc(title=x.name) for x in simyan_issue.first_appearance_story_arcs],
-            }
-        )
-        # endregion
-        issue.summary = simyan_issue.summary or issue.summary
-        issue.teams = sorted(
-            {
-                *issue.teams,
-                *[x.name for x in simyan_issue.teams],
-                *[x.name for x in simyan_issue.first_appearance_teams],
-                *[x.name for x in simyan_issue.teams_disbanded],
-            }
-        )
-        issue.title = simyan_issue.name or issue.title
+    def update_issue(self, result: SimyanIssue, issue: Issue):
+        if result.characters or result.first_appearance_characters or result.deaths:
+            issue.characters = sorted(
+                {
+                    *{x.name for x in result.characters},
+                    *{x.name for x in result.first_appearance_characters},
+                    *{x.name for x in result.deaths},
+                }
+            )
+        if result.cover_date:
+            issue.cover_date = result.cover_date
+        if result.creators:
+            issue.creators = sorted(
+                {
+                    Creator(
+                        name=x.name,
+                        roles=sorted(
+                            {
+                                Role.load(r.strip().title())
+                                for role in x.role_list
+                                for r in role.split(",")
+                            }
+                        ),
+                    )
+                    for x in result.creators
+                }
+            )
+        # TODO: Format
+        # TODO: Genres
+        # TODO: Language
+        if result.locations or result.first_appearance_locations:
+            issue.locations = sorted(
+                {
+                    *{x.name for x in result.locations},
+                    *{x.name for x in result.first_appearance_locations},
+                }
+            )
+        if result.number:
+            issue.number = result.number
+        # TODO: Page Count
+        issue.sources.comicvine = result.issue_id
+        if result.store_date:
+            issue.store_date = result.store_date
+        if result.story_arcs or result.first_appearance_story_arcs:
+            issue.story_arcs = sorted(
+                {
+                    *{StoryArc(title=x.name) for x in result.story_arcs},
+                    *{StoryArc(title=x.name) for x in result.first_appearance_story_arcs},
+                }
+            )
+        if result.summary:
+            issue.summary = result.summary
+        if result.teams or result.first_appearance_teams or result.teams_disbanded:
+            issue.teams = sorted(
+                {
+                    *{x.name for x in result.teams},
+                    *{x.name for x in result.first_appearance_teams},
+                    *{x.name for x in result.teams_disbanded},
+                }
+            )
+        if result.name:
+            issue.title = result.name
 
     def _search_issue(self, series_id: int, number: str) -> Optional[SimyanIssue]:
-        simyan_issue = None
+        output = None
         try:
             issue_list = self.session.issue_list(
                 {"filter": f"volume:{series_id},issue_number:{number}"}
@@ -100,36 +104,38 @@ class SimyanTalker:
         )
         if issue_index != 0:
             try:
-                simyan_issue = self.session.issue(issue_list[issue_index - 1].issue_id)
+                output = self.session.issue(issue_list[issue_index - 1].issue_id)
             except ServiceError:
-                simyan_issue = None
-        return simyan_issue
+                output = None
+        return output
 
     def lookup_issue(self, issue: Issue, series_id: int) -> Optional[SimyanIssue]:
-        simyan_issue = None
-        if Source.COMICVINE in issue.sources:
+        output = None
+        if issue.sources.comicvine:
             try:
-                simyan_issue = self.session.issue(issue.sources[Source.COMICVINE])
+                output = self.session.issue(issue.sources.comicvine)
             except ServiceError:
-                simyan_issue = None
-        if not simyan_issue:
-            simyan_issue = self._search_issue(series_id, issue.number)
-        while not simyan_issue:
+                output = None
+        if not output:
+            output = self._search_issue(series_id, issue.number)
+        while not output:
             search = Prompt.ask("Issue number", default="Exit", console=CONSOLE)
             if search.lower() == "exit":
                 return
-            simyan_issue = self._search_issue(series_id, search)
-        return simyan_issue
+            output = self._search_issue(series_id, search)
+        return output
 
-    def update_series(self, simyan_volume: Volume, series: Series):
-        series.sources[Source.COMICVINE] = simyan_volume.volume_id
-        series.start_year = simyan_volume.start_year or series.start_year
-        series.title = simyan_volume.name or series.title
+    def update_series(self, result: Volume, series: Series):
+        series.sources.comicvine = result.volume_id
+        if result.start_year:
+            series.start_year = result.start_year
+        if result.name:
+            series.title = result.name
 
     def _search_volume(
         self, publisher_id: int, title: str, start_year: Optional[int] = None
     ) -> Optional[Volume]:
-        simyan_volume = None
+        output = None
         try:
             volume_list = self.session.volume_list({"filter": f"name:{title}"})
         except ServiceError:
@@ -149,35 +155,36 @@ class SimyanTalker:
         )
         if volume_index != 0:
             try:
-                simyan_volume = self.session.volume(volume_list[volume_index - 1].volume_id)
+                output = self.session.volume(volume_list[volume_index - 1].volume_id)
             except ServiceError:
-                simyan_volume = None
-        if not simyan_volume and start_year:
+                output = None
+        if not output and start_year:
             return self._search_volume(publisher_id, title)
-        return simyan_volume
+        return output
 
     def lookup_volume(self, series: Series, publisher_id: int) -> Optional[Volume]:
-        simyan_volume = None
-        if Source.COMICVINE in series.sources:
+        output = None
+        if series.sources.comicvine:
             try:
-                simyan_volume = self.session.volume(series.sources[Source.COMICVINE])
+                output = self.session.volume(series.sources.comicvine)
             except ServiceError:
-                simyan_volume = None
-        if not simyan_volume:
-            simyan_volume = self._search_volume(publisher_id, series.title, series.start_year)
-        while not simyan_volume:
+                output = None
+        if not output:
+            output = self._search_volume(publisher_id, series.title, series.start_year)
+        while not output:
             search = Prompt.ask("Volume title", default="Exit", console=CONSOLE)
             if search.lower() == "exit":
                 return None
-            simyan_volume = self._search_volume(publisher_id, search)
-        return simyan_volume
+            output = self._search_volume(publisher_id, search)
+        return output
 
-    def update_publisher(self, simyan_publisher: SimyanPublisher, publisher: Publisher):
-        publisher.sources[Source.COMICVINE] = simyan_publisher.publisher_id
-        publisher.title = simyan_publisher.name or publisher.title
+    def update_publisher(self, result: SimyanPublisher, publisher: Publisher):
+        publisher.sources.comicvine = result.publisher_id
+        if result.name:
+            publisher.title = result.name or publisher.title
 
     def _search_publisher(self, title: str) -> Optional[SimyanPublisher]:
-        simyan_publisher = None
+        output = None
         try:
             publisher_list = self.session.publisher_list({"filter": f"name:{title}"})
         except ServiceError:
@@ -193,37 +200,31 @@ class SimyanTalker:
         )
         if publisher_index != 0:
             try:
-                simyan_publisher = self.session.publisher(
-                    publisher_list[publisher_index - 1].publisher_id
-                )
+                output = self.session.publisher(publisher_list[publisher_index - 1].publisher_id)
             except ServiceError:
-                simyan_publisher = None
-        return simyan_publisher
+                output = None
+        return output
 
     def lookup_publisher(self, publisher: Publisher) -> Optional[SimyanPublisher]:
-        simyan_publisher = None
-        if Source.COMICVINE in publisher.sources:
+        output = None
+        if publisher.sources.comicvine:
             try:
-                simyan_publisher = self.session.publisher(publisher.sources[Source.COMICVINE])
+                output = self.session.publisher(publisher.sources.comicvine)
             except ServiceError:
-                simyan_publisher = None
-        if not simyan_publisher:
-            simyan_publisher = self._search_publisher(publisher.title)
-        while not simyan_publisher:
+                output = None
+        if not output:
+            output = self._search_publisher(publisher.title)
+        while not output:
             search = Prompt.ask("Publisher title", default="Exit", console=CONSOLE)
             if search.lower() == "exit":
                 return None
-            simyan_publisher = self._search_publisher(search)
-        return simyan_publisher
+            output = self._search_publisher(search)
+        return output
 
     def update_metadata(self, metadata: Metadata):
-        if simyan_publisher := self.lookup_publisher(metadata.publisher):
-            self.update_publisher(simyan_publisher, metadata.publisher)
-            if simyan_volume := self.lookup_volume(
-                metadata.series, metadata.publisher.sources[Source.COMICVINE]
-            ):
-                self.update_series(simyan_volume, metadata.series)
-                if simyan_issue := self.lookup_issue(
-                    metadata.issue, metadata.series.sources[Source.COMICVINE]
-                ):
-                    self.update_issue(simyan_issue, metadata.issue)
+        if publisher := self.lookup_publisher(metadata.publisher):
+            self.update_publisher(publisher, metadata.publisher)
+            if volume := self.lookup_volume(metadata.series, metadata.publisher.sources.comicvine):
+                self.update_series(volume, metadata.series)
+                if issue := self.lookup_issue(metadata.issue, metadata.series.sources.comicvine):
+                    self.update_issue(issue, metadata.issue)

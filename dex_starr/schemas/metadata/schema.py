@@ -1,4 +1,4 @@
-__all__ = ["Publisher", "Series", "Creator", "StoryArc", "Issue", "Metadata"]
+__all__ = ["Publisher", "Series", "Creator", "StoryArc", "Issue", "Metadata", "Sources"]
 
 import json
 import logging
@@ -13,7 +13,7 @@ from pydantic import Field, validator
 from dex_starr import __version__
 from dex_starr.schemas import JsonModel
 from dex_starr.schemas.comic_info.enums import ComicPageType
-from dex_starr.schemas.metadata.enums import Format, Genre, Role, Source
+from dex_starr.schemas.metadata.enums import Format, Genre, Role
 
 LOGGER = logging.getLogger(__name__)
 
@@ -24,19 +24,47 @@ def sanitize(dirty: str) -> str:
     return dirty.replace(" ", "-")
 
 
+class Sources(JsonModel):
+    comicvine: Optional[int] = None
+    grand_comics_database: Optional[int] = None
+    league_of_comic_geeks: Optional[int] = None
+    marvel: Optional[int] = None
+    metron: Optional[int] = None
+
+    def __eq__(self, other):
+        if not isinstance(other, Sources):
+            raise NotImplementedError()
+        return (
+            self.comicvine,
+            self.grand_comics_database,
+            self.league_of_comic_geeks,
+            self.marvel,
+            self.metron,
+        ) == (
+            other.comicvine,
+            other.grand_comics_database,
+            other.league_of_comic_geeks,
+            other.marvel,
+            other.metron,
+        )
+
+    def __hash__(self):
+        return hash(
+            (
+                type(self),
+                self.comicvine,
+                self.grand_comics_database,
+                self.league_of_comic_geeks,
+                self.marvel,
+                self.metron,
+            )
+        )
+
+
 class Publisher(JsonModel):
     imprint: Optional[str] = None
-    sources: Dict[Source, int] = Field(default_factory=dict)
+    sources: Sources = Sources()
     title: str
-
-    @validator("sources", pre=True)
-    def source_to_enum(cls, v) -> Dict[Source, int]:
-        output = {}
-        for key, value in v.items():
-            if isinstance(key, str):
-                key = Source.load(key)
-            output[key] = value
-        return output
 
     @property
     def file_name(self) -> str:
@@ -57,19 +85,10 @@ class Publisher(JsonModel):
 
 
 class Series(JsonModel):
-    sources: Dict[Source, int] = Field(default_factory=dict)
+    sources: Sources = Sources()
     start_year: Optional[int] = Field(default=None, gt=1900)
     title: str
     volume: int = Field(default=1, gt=0)
-
-    @validator("sources", pre=True)
-    def source_to_enum(cls, v) -> Dict[Source, int]:
-        output = {}
-        for key, value in v.items():
-            if isinstance(key, str):
-                key = Source.load(key)
-            output[key] = value
-        return output
 
     @property
     def file_name(self) -> str:
@@ -153,7 +172,7 @@ class Issue(JsonModel):
     locations: List[str] = Field(default_factory=list)
     number: str
     page_count: int = Field(default=0, ge=0)
-    sources: Dict[Source, int] = Field(default_factory=dict)
+    sources: Sources = Sources()
     store_date: Optional[date] = None
     story_arcs: List[StoryArc] = Field(default_factory=list)
     summary: Optional[str] = None
@@ -171,15 +190,6 @@ class Issue(JsonModel):
         if isinstance(v, str):
             return Genre.load(v)
         return v
-
-    @validator("sources", pre=True)
-    def source_to_enum(cls, v) -> Dict[Source, int]:
-        output = {}
-        for key, value in v.items():
-            if isinstance(key, str):
-                key = Source.load(key)
-            output[key] = value
-        return output
 
     @property
     def file_name(self) -> str:

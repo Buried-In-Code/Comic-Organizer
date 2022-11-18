@@ -24,10 +24,9 @@ from dex_starr.schemas import XmlModel
 from dex_starr.schemas.comic_info.schema import Page
 from dex_starr.schemas.metadata.enums import Format as MetadataFormat
 from dex_starr.schemas.metadata.enums import Role as MetadataRole
-from dex_starr.schemas.metadata.enums import Source as MetadataSource
 from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher
 from dex_starr.schemas.metadata.schema import Series as MetadataSeries
-from dex_starr.schemas.metadata.schema import StoryArc
+from dex_starr.schemas.metadata.schema import Sources, StoryArc
 from dex_starr.schemas.metron_info.enums import AgeRating, Format, Genre, InformationSource, Role
 
 LOGGER = logging.getLogger(__name__)
@@ -194,17 +193,41 @@ class MetronInfo(XmlModel):
             format = MetadataFormat.COMIC
         return Metadata(
             publisher=Publisher(
-                # Imprint
-                sources={MetadataSource.load(str(self.id.source)): self.publisher.id}
-                if self.id
-                else {},
+                # TODO: Imprint
+                sources=Sources(
+                    comicvine=self.publisher.id
+                    if self.id.source == InformationSource.COMIC_VINE
+                    else None,
+                    grand_comics_database=self.publisher.id
+                    if self.id.source == InformationSource.GRAND_COMICS_DATABASE
+                    else None,
+                    league_of_comic_geeks=self.publisher.id
+                    if self.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
+                    else None,
+                    marvel=self.publisher.id
+                    if self.id.source == InformationSource.MARVEL
+                    else None,
+                    metron=self.publisher.id
+                    if self.id.source == InformationSource.METRON
+                    else None,
+                ),
                 title=self.publisher.value,
             ),
             series=MetadataSeries(
-                sources={MetadataSource.load(str(self.id.source)): self.series.id}
-                if self.id
-                else {},
-                # Start Year
+                sources=Sources(
+                    comicvine=self.series.id
+                    if self.id.source == InformationSource.COMIC_VINE
+                    else None,
+                    grand_comics_database=self.series.id
+                    if self.id.source == InformationSource.GRAND_COMICS_DATABASE
+                    else None,
+                    league_of_comic_geeks=self.series.id
+                    if self.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
+                    else None,
+                    marvel=self.series.id if self.id.source == InformationSource.MARVEL else None,
+                    metron=self.series.id if self.id.source == InformationSource.METRON else None,
+                ),
+                # TODO: Start Year
                 title=self.series.name,
                 volume=self.series.volume,
             ),
@@ -218,9 +241,19 @@ class MetronInfo(XmlModel):
                 locations=sorted(x.value for x in self.locations),
                 number=self.number,
                 page_count=self.page_count,
-                sources={MetadataSource.load(str(self.id.source)): self.id.value}
-                if self.id
-                else {},
+                sources=Sources(
+                    comicvine=self.id.value
+                    if self.id.source == InformationSource.COMIC_VINE
+                    else None,
+                    grand_comics_database=self.id.value
+                    if self.id.source == InformationSource.GRAND_COMICS_DATABASE
+                    else None,
+                    league_of_comic_geeks=self.id.value
+                    if self.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
+                    else None,
+                    marvel=self.id.value if self.id.source == InformationSource.MARVEL else None,
+                    metron=self.id.value if self.id.source == InformationSource.METRON else None,
+                ),
                 store_date=self.store_date,
                 story_arcs=sorted(StoryArc(title=x.name, number=x.number) for x in self.story_arcs),
                 summary=self.summary,

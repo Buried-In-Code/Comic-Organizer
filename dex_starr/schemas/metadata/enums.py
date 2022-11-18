@@ -1,4 +1,4 @@
-__all__ = ["Role", "Format", "Genre", "Source"]
+__all__ = ["Role", "Format", "Genre"]
 
 from enum import Enum
 
@@ -110,33 +110,5 @@ class Genre(Enum):
 
     def __lt__(self, other):
         if not isinstance(other, Genre):
-            raise NotImplementedError()
-        return self.value < other.value
-
-
-class Source(Enum):
-    COMICVINE = "Comicvine"
-    LEAGUE_OF_COMIC_GEEKS = "League of Comic Geeks"
-    MARVEL = "Marvel"
-    METRON = "Metron"
-    GRAND_COMICS_DATABASE = "Grand Comics Database"
-
-    @staticmethod
-    def load(value: str) -> "Source":
-        for entry in Source:
-            if entry.value.lower() == value.lower():
-                return entry
-        if value.lower() == "comic vine":
-            return Source.COMICVINE
-        raise ValueError(f"Unable to find Source: '{value}'")
-
-    def __str__(self):
-        return self.value
-
-    def __repr__(self):
-        return self.value
-
-    def __lt__(self, other):
-        if not isinstance(other, Source):
             raise NotImplementedError()
         return self.value < other.value

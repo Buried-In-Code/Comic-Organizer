@@ -1,14 +1,14 @@
 __all__ = ["create_metadata", "to_comic_info", "to_metron_info"]
 
 import logging
-from typing import Dict, List, Tuple
+from typing import List, Optional
 
 from rich.prompt import IntPrompt, Prompt
 
 from dex_starr.console import CONSOLE, create_menu
 from dex_starr.schemas.comic_info.schema import ComicInfo, Page
-from dex_starr.schemas.metadata.enums import Format, Source
-from dex_starr.schemas.metadata.schema import Issue, Metadata, Publisher, Series
+from dex_starr.schemas.metadata.enums import Format
+from dex_starr.schemas.metadata.schema import Issue, Metadata, Publisher, Series, Sources
 from dex_starr.schemas.metron_info.enums import Format as MetronFormat
 from dex_starr.schemas.metron_info.enums import InformationSource, Role
 from dex_starr.schemas.metron_info.schema import (
@@ -51,11 +51,11 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
         title=metadata.issue.title,
         series=metadata.series.title,
         number=metadata.issue.number,
-        # Count
+        # TODO: Count
         volume=metadata.series.volume,
-        # Alternate Series
-        # Alternate Number
-        # Alternate Count
+        # TODO: Alternate Series
+        # TODO: Alternate Number
+        # TODO: Alternate Count
         summary=metadata.issue.summary,
         notes=metadata.notes,
         year=metadata.issue.cover_date.year if metadata.issue.cover_date else None,
@@ -71,7 +71,7 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
         publisher=metadata.publisher.title,
         imprint=metadata.publisher.imprint,
         genre=", ".join(str(x) for x in metadata.issue.genres) if metadata.issue.genres else None,
-        # Web
+        # TODO: Web
         page_count=metadata.issue.page_count,
         language_iso=metadata.issue.language,
         format=str(metadata.issue.format),
@@ -81,7 +81,7 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
         story_arc=", ".join([x.title for x in metadata.issue.story_arcs])
         if metadata.issue.story_arcs
         else None,
-        # Series Group
+        # TODO: Series Group
         pages=sorted(
             Page(
                 image=x.image,
@@ -98,13 +98,26 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
     )
 
 
-def get_source(sources: Dict[Source, int], resolution_order: List[str]) -> Tuple[int, Source]:
-    resolution_order = [Source.load(x) for x in resolution_order]
-    result = None
-    for source in reversed(resolution_order):
-        if source in sources:
-            result = (sources[source], source)
-    return result
+def priority_source(sources: Sources, resolution_order: List[str]) -> Optional[InformationSource]:
+    source_list = [key for key, value in sources.__dict__.items() if value]
+    for entry in resolution_order:
+        if entry.lower().replace(" ", "_") in source_list:
+            return InformationSource(entry)
+    return None
+
+
+def get_source(sources: Sources, information_source: InformationSource) -> Optional[int]:
+    if information_source == InformationSource.COMIC_VINE:
+        return sources.comicvine
+    if information_source == InformationSource.GRAND_COMICS_DATABASE:
+        return sources.grand_comics_database
+    if information_source == InformationSource.LEAGUE_OF_COMIC_GEEKS:
+        return sources.league_of_comic_geeks
+    if information_source == InformationSource.MARVEL:
+        return sources.marvel
+    if information_source == InformationSource.METRON:
+        return sources.metron
+    return None
 
 
 def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInfo:
@@ -118,18 +131,24 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
                 LOGGER.warning(err)
                 roles.add(RoleResource(value=Role.OTHER))
         credits.append(Credit(creator=Resource(value=creator.name), roles=sorted(roles)))
-    source = get_source(metadata.issue.sources, resolution_order)
+    information_source = priority_source(metadata.issue.sources, resolution_order)
     return MetronInfo(
-        id=MetronSource(source=InformationSource.load(str(source[1])), value=source[0])
-        if source
+        id=MetronSource(
+            source=information_source, value=get_source(metadata.issue.sources, information_source)
+        )
+        if information_source
         else None,
         publisher=Resource(
-            id=metadata.publisher.sources.get(source[1]) if source else None,
+            id=get_source(metadata.publisher.sources, information_source)
+            if information_source
+            else None,
             value=metadata.publisher.title,
         ),
         series=MetronSeries(
             lang=metadata.issue.language,
-            id=metadata.series.sources.get(source[1]) if source else None,
+            id=get_source(metadata.series.sources, information_source)
+            if information_source
+            else None,
             name=metadata.series.title,
             sort_name=metadata.series.title,
             volume=metadata.series.volume,
