@@ -53,6 +53,8 @@ jobs:
   validate_output:
     needs: generate_output
     name: Validate Output
+    strategy:
+      fail-fast: false
 
     runs-on: ubuntu-latest
     steps:
@@ -73,27 +75,16 @@ jobs:
         uses: ScratchAddons/validate-json-action@master
         with:
           schema: schemas/Metadata.schema.json
-          jsons: output/Metadata.json
-      - name: Validate Metadata-ComicInfo.json
-        uses: ScratchAddons/validate-json-action@master
-        with:
-          schema: schemas/Metadata.schema.json
-          jsons: output/Metadata-ComicInfo.json
-      - name: Validate Metadata-MetronInfo.json
-        uses: ScratchAddons/validate-json-action@master
-        with:
-          schema: schemas/Metadata.schema.json
-          jsons: output/Metadata-MetronInfo.json
+          jsons: |
+            output/Metadata.json
+            output/Metadata-ComicInfo.json
+            output/Metadata-MetronInfo.json
       #----------------------------------------------
       - name: apt-get update
         run: sudo apt-get update -y
       - name: Install xmllint
         run: sudo apt-get install -y libxml2-utils
       - name: Validate ComicInfo.xml
-        run: xmllint --noout --schema schemas/ComicInfo.xsd output/ComicInfo.xml
-      - name: Validate ComicInfo-Metadata.xml
-        run: xmllint --noout --schema schemas/ComicInfo.xsd output/ComicInfo-Metadata.xml
+        run: xmllint --noout --schema schemas/ComicInfo.xsd output/ComicInfo.xml output/ComicInfo-Metadata.xml
       - name: Validate MetronInfo.xml
-        run: xmllint --noout --schema schemas/MetronInfo.xsd output/MetronInfo.xml
-      - name: Validate MetronInfo-Metadata.xml
-        run: xmllint --noout --schema schemas/MetronInfo.xsd output/MetronInfo-Metadata.xml
+        run: xmllint --noout --schema schemas/MetronInfo.xsd output/MetronInfo.xml output/MetronInfo-Metadata.xml
