@@ -55,8 +55,6 @@ docs = [
   "mkdocstrings[python] >= 0.19.0"
 ]
 test = [
-  "lxml >= 4.9.1",
-  "jsonschema >= 4.17.0",
   "pytest >= 7.2.0",
   "pytest-cov >= 4.0.0",
   "tox >= 3.27.1",
@@ -74,7 +72,7 @@ Source = "https://github.com/Buried-In-Code/Dex-Starr"
 
 [tool.bandit]
 recursive = true
-skips = ["B101", "B320", "B410"]
+skips = ["B101"]
 
 [tool.black]
 line-length = 100

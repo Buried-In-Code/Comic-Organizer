@@ -366,7 +366,7 @@ def clean_contents(content: Dict[str, Any]) -> Dict[str, Any]:
             del content[key]
         if isinstance(value, bool):
             content[key] = "true" if value else "false"
-        elif isinstance(value, Enum) or isinstance(value, int):
+        elif isinstance(value, Enum) or isinstance(value, int) or isinstance(value, float):
             content[key] = str(value)
         elif isinstance(value, dict):
             if value:
@@ -374,10 +374,10 @@ def clean_contents(content: Dict[str, Any]) -> Dict[str, Any]:
             else:
                 del content[key]
         elif isinstance(value, list):
-            for index, entry in enumerate(content[key]):
+            for index, entry in enumerate(value):
                 if isinstance(entry, bool):
                     content[key][index] = "true" if entry else "false"
-                elif isinstance(entry, Enum) or isinstance(entry, int):
+                elif isinstance(entry, Enum) or isinstance(entry, int) or isinstance(value, float):
                     content[key][index] = str(entry)
                 elif isinstance(entry, dict):
                     content[key][index] = clean_contents(entry)
