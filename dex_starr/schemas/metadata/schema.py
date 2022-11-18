@@ -1,7 +1,6 @@
 __all__ = ["Publisher", "Series", "Creator", "StoryArc", "Issue", "Metadata", "Sources"]
 
 import json
-import logging
 import re
 from datetime import date
 from enum import Enum
@@ -14,8 +13,6 @@ from dex_starr import __version__
 from dex_starr.schemas import JsonModel
 from dex_starr.schemas.comic_info.enums import ComicPageType
 from dex_starr.schemas.metadata.enums import Format, Genre, Role
-
-LOGGER = logging.getLogger(__name__)
 
 
 def sanitize(dirty: str) -> str:

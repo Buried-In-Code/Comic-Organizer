@@ -1,6 +1,5 @@
 __all__ = ["create_metadata", "to_comic_info", "to_metron_info"]
 
-import logging
 from typing import List, Optional
 
 from rich.prompt import IntPrompt, Prompt
@@ -21,8 +20,6 @@ from dex_starr.schemas.metron_info.schema import (
 )
 from dex_starr.schemas.metron_info.schema import Series as MetronSeries
 from dex_starr.schemas.metron_info.schema import Source as MetronSource
-
-LOGGER = logging.getLogger(__name__)
 
 
 def create_metadata() -> Metadata:

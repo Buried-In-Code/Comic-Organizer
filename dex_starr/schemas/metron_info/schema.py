@@ -11,7 +11,6 @@ __all__ = [
     "MetronInfo",
 ]
 
-import logging
 from datetime import date
 from enum import Enum
 from pathlib import Path
@@ -28,8 +27,6 @@ from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publishe
 from dex_starr.schemas.metadata.schema import Series as MetadataSeries
 from dex_starr.schemas.metadata.schema import Sources, StoryArc
 from dex_starr.schemas.metron_info.enums import AgeRating, Format, Genre, InformationSource, Role
-
-LOGGER = logging.getLogger(__name__)
 
 
 class Resource(XmlModel):

@@ -1,6 +1,5 @@
 __all__ = ["ComicInfo", "Page"]
 
-import logging
 from datetime import date
 from enum import Enum
 from pathlib import Path
@@ -13,8 +12,6 @@ from dex_starr.schemas import XmlModel
 from dex_starr.schemas.comic_info.enums import AgeRating, ComicPageType, Manga, YesNo
 from dex_starr.schemas.metadata.enums import Format, Genre, Role
 from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
-
-LOGGER = logging.getLogger(__name__)
 
 
 class Page(XmlModel):

@@ -1,6 +1,5 @@
 __all__ = ["EsakTalker"]
 
-import logging
 import re
 from typing import Optional
 
@@ -14,8 +13,6 @@ from dex_starr.console import CONSOLE, create_menu
 from dex_starr.schemas.metadata.enums import Format, Role
 from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Series, StoryArc
 from dex_starr.services.sqlite_cache import SQLiteCache
-
-LOGGER = logging.getLogger(__name__)
 
 
 def clean_title(title: str) -> str:
@@ -84,7 +81,10 @@ class EsakTalker:
         if not output and format:
             return self._search_comic(series_id, number)
         if not output:
-            LOGGER.warning("Unable to find a matching comic")
+            CONSOLE.print(
+                f"Unable to find a matching comic for: {series_id}, {number}, {format}",
+                style="logging.level.info",
+            )
         return output
 
     def lookup_comic(self, issue: Issue, series_id: int) -> Optional[Comic]:
@@ -130,7 +130,10 @@ class EsakTalker:
         if not output and start_year:
             return self._search_series(title)
         if not output:
-            LOGGER.warning("Unable to find a matching series")
+            CONSOLE.print(
+                f"Unable to find a matching series for: {title}, {start_year}",
+                style="logging.level.warning",
+            )
         return output
 
     def lookup_series(self, series: Series) -> Optional[EsakSeries]:

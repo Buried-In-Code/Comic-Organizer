@@ -1,7 +1,6 @@
 __all__ = ["MokkariTalker"]
 
 import html
-import logging
 from typing import Optional
 
 from mokkari.exceptions import ApiError
@@ -15,8 +14,6 @@ from dex_starr.console import CONSOLE, create_menu
 from dex_starr.schemas.metadata.enums import Format, Genre, Role
 from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
 from dex_starr.services.sqlite_cache import SQLiteCache
-
-LOGGER = logging.getLogger(__name__)
 
 
 class MokkariTalker:
@@ -65,7 +62,10 @@ class MokkariTalker:
         except ApiError:
             issue_list = []
         if not issue_list:
-            LOGGER.warning("Unable to find a matching issue")
+            CONSOLE.print(
+                f"Unable to find a matching issue for: {series_id}, {number}",
+                style="logging.level.warning",
+            )
             return None
         issue_list = sorted(issue_list, key=lambda i: i.issue_name)
         issue_index = create_menu(
@@ -132,7 +132,11 @@ class MokkariTalker:
         if not output and volume:
             return self._search_series(publisher_id, title, start_year=start_year)
         if not output:
-            LOGGER.warning("Unable to find a matching series")
+            CONSOLE.print(
+                "Unable to find a matching series for:"
+                f" {publisher_id}, {title}, {volume}, {start_year}",
+                style="logging.level.warning",
+            )
         return output
 
     def lookup_series(self, series: Series, publisher_id: int) -> Optional[MokkariSeries]:
@@ -165,7 +169,9 @@ class MokkariTalker:
         except ApiError:
             publisher_list = []
         if not publisher_list:
-            LOGGER.warning("Unable to find a matching publisher")
+            CONSOLE.print(
+                f"Unable to find a matching publisher for: {title}", style="logging.level.warning"
+            )
             return None
         publisher_list = sorted(publisher_list, key=lambda p: p.name)
         publisher_index = create_menu(

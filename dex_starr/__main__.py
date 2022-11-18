@@ -1,4 +1,3 @@
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Dict, List, Union
 
@@ -29,33 +28,31 @@ from dex_starr.services.mokkari import MokkariTalker
 from dex_starr.services.simyan import SimyanTalker
 from dex_starr.settings import Settings
 
-LOGGER = logging.getLogger("Dex-Starr")
-
 
 def read_info_file(archive: Archive) -> Metadata:
     info_file = archive.extracted_folder / "Metadata.json"
     if info_file.exists():
         try:
-            LOGGER.debug("Parsing Metadata.json")
+            CONSOLE.print("Parsing Metadata.json", style="logging.level.debug")
             return Metadata.from_file(info_file)
         except ValidationError as err:
-            LOGGER.warning(f"Unable to parse Metadata.json: {err}")
+            CONSOLE.print(f"Unable to parse Metadata.json: {err}", style="logging.level.warning")
     info_file = archive.extracted_folder / "MetronInfo.xml"
     if info_file.exists():
         try:
-            LOGGER.debug("Parsing MetronInfo.xml")
+            CONSOLE.print("Parsing MetronInfo.xml", style="logging.level.debug")
             metron_info = MetronInfo.from_file(info_file)
             return metron_info.to_metadata()
         except ValidationError as err:
-            LOGGER.warning(f"Unable to parse MetronInfo.xml: {err}")
+            CONSOLE.print(f"Unable to parse MetronInfo.xml: {err}", style="logging.level.warning")
     info_file = archive.extracted_folder / "ComicInfo.xml"
     if info_file.exists():
         try:
-            LOGGER.debug("Parsing ComicInfo.xml")
+            CONSOLE.print("Parsing ComicInfo.xml", style="logging.level.debug")
             comic_info = ComicInfo.from_file(info_file)
             return comic_info.to_metadata()
         except ValidationError as err:
-            LOGGER.warning(f"Unable to parse ComicInfo.xml: {err}")
+            CONSOLE.print(f"Unable to parse ComicInfo.xml: {err}", style="logging.level.warning")
     return create_metadata()
 
 
@@ -83,14 +80,16 @@ def pull_info(
             continue
         if service == "Marvel" and not metadata.publisher.title.startswith("Marvel"):
             continue
-        LOGGER.info(f"Pulling from {service}")
+        CONSOLE.print(f"Pulling from {service}", style="logging.level.info")
         services[service].update_metadata(metadata)
 
 
 def parse_arguments() -> Namespace:
     parser = ArgumentParser(prog="Dex-Starr")
+    parser.version = __version__
     parser.add_argument("--manual-edit", action="store_true")
     parser.add_argument("--resolve-manually", action="store_true")
+    parser.add_argument("--version", action="version")
     parser.add_argument("--debug", action="store_true")
     return parser.parse_args()
 
@@ -140,14 +139,16 @@ def main():
             archive = Archive(archive_file)
 
             if not archive.extract():
-                LOGGER.error(f"Unable to extract: {archive.source_file.name}")
+                CONSOLE.print(
+                    f"Unable to extract: {archive.source_file.name}", style="logging.level.error"
+                )
                 continue
 
             metadata = read_info_file(archive)
             # region Delete extras
             for child in list_files(archive.extracted_folder):
                 if child.suffix not in IMAGE_EXTENSIONS:
-                    LOGGER.debug(f"Deleting {child.name}")
+                    CONSOLE.print(f"Deleting {child.name}", style="logging.level.debug")
                     child.unlink(missing_ok=True)
             # endregion
             pull_info(metadata, services, settings.general.resolution_order, args.resolve_manually)
@@ -163,10 +164,12 @@ def main():
                 if not args.debug:
                     archive.source_file.unlink(missing_ok=True)
             else:
-                LOGGER.error(f"Unable to archive: {archive.result_file.name}")
+                CONSOLE.print(
+                    f"Unable to archive: {archive.result_file.name}", style="logging.level.error"
+                )
             del_folder(archive.extracted_folder)
     except KeyboardInterrupt:
-        LOGGER.info("Shutting down Dex-Starr")
+        CONSOLE.print("Shutting down Dex-Starr", style="logging.style.info")
 
 
 if __name__ == "__main__":

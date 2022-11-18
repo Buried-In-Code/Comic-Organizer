@@ -1,7 +1,6 @@
 __all__ = ["HimonTalker"]
 
 import html
-import logging
 from typing import Optional
 
 from himon.exceptions import ServiceError
@@ -14,8 +13,6 @@ from dex_starr.console import CONSOLE, create_menu
 from dex_starr.schemas.metadata.enums import Format, Role
 from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher, Series
 from dex_starr.services.sqlite_cache import SQLiteCache
-
-LOGGER = logging.getLogger(__name__)
 
 
 def generate_search_terms(series_title: str, format: str, number: Optional[str] = None):
@@ -135,7 +132,11 @@ class HimonTalker:
         if not output and publisher_name:
             return self._search_comic(title=title, format=format, number=number)
         if not output:
-            LOGGER.warning("Unable to find a matching comic")
+            CONSOLE.print(
+                "Unable to find a matching comic for:"
+                f" {title}, {format}, {number}, {publisher_name}, {series_name}",
+                style="logging.level.warning",
+            )
         return output
 
     def lookup_comic(self, metadata: Metadata) -> Optional[Comic]:

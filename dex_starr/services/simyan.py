@@ -1,6 +1,5 @@
 __all__ = ["SimyanTalker"]
 
-import logging
 from typing import Optional
 
 from rich.prompt import Prompt
@@ -14,8 +13,6 @@ from dex_starr.console import CONSOLE, create_menu
 from dex_starr.schemas.metadata.enums import Role
 from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
 from dex_starr.services.sqlite_cache import SQLiteCache
-
-LOGGER = logging.getLogger(__name__)
 
 
 class SimyanTalker:
@@ -90,7 +87,10 @@ class SimyanTalker:
         except ServiceError:
             issue_list = []
         if not issue_list:
-            LOGGER.warning("Unable to find a matching issue")
+            CONSOLE.print(
+                f"Unable to find a matching issue for: {series_id}, {number}",
+                style="logging.level.warning",
+            )
             return None
         issue_list = sorted(issue_list, key=lambda i: i.number)
         issue_index = create_menu(
@@ -141,7 +141,10 @@ class SimyanTalker:
         if start_year:
             volume_list = filter(lambda v: v.start_year == start_year, volume_list)
         if not volume_list:
-            LOGGER.warning("Unable to find a matching volume")
+            CONSOLE.print(
+                f"Unable to find a matching volume for: {publisher_id}, {title}, {start_year}",
+                style="logging.level.warning",
+            )
             return None
         volume_list = sorted(volume_list, key=lambda v: (v.name, v.start_year or 0))
         volume_index = create_menu(
@@ -186,7 +189,9 @@ class SimyanTalker:
         except ServiceError:
             publisher_list = []
         if not publisher_list:
-            LOGGER.warning("Unable to find a matching publisher")
+            CONSOLE.print(
+                f"Unable to find a matching publisher for: {title}", style="logging.level.warning"
+            )
             return None
         publisher_list = sorted(publisher_list, key=lambda p: p.name)
         publisher_index = create_menu(

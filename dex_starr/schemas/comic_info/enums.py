@@ -1,9 +1,8 @@
 __all__ = ["YesNo", "Manga", "AgeRating", "ComicPageType"]
 
-import logging
 from enum import Enum
 
-LOGGER = logging.getLogger(__name__)
+from dex_starr.console import CONSOLE
 
 
 class YesNo(Enum):
@@ -16,7 +15,7 @@ class YesNo(Enum):
         for entry in YesNo:
             if entry.value.lower() == value.lower():
                 return entry
-        LOGGER.warning(f"Unable to find YesNo: '{value}'")
+        CONSOLE.print(f"Unable to find YesNo: '{value}'", style="logging.level.warning")
         return YesNo.UNKNOWN
 
     def __str__(self):
@@ -42,7 +41,7 @@ class Manga(Enum):
         for entry in Manga:
             if entry.value.lower() == value.lower():
                 return entry
-        LOGGER.warning(f"Unable to find Manga: '{value}'")
+        CONSOLE.print(f"Unable to find Manga: '{value}'", style="logging.level.warning")
         return Manga.UNKNOWN
 
     def __str__(self):
@@ -79,7 +78,7 @@ class AgeRating(Enum):
         for entry in AgeRating:
             if entry.value.lower() == value.lower():
                 return entry
-        LOGGER.warning(f"Unable to find AgeRating: '{value}'")
+        CONSOLE.print(f"Unable to find AgeRating: '{value}'", style="logging.level.warning")
         return AgeRating.UNKNOWN
 
     def __str__(self):
@@ -112,7 +111,7 @@ class ComicPageType(Enum):
         for entry in ComicPageType:
             if entry.value.lower() == value.lower():
                 return entry
-        LOGGER.warning(f"Unable to find ComicPageType: '{value}'")
+        CONSOLE.print(f"Unable to find ComicPageType: '{value}'", style="logging.level.warning")
         return ComicPageType.STORY
 
     def __str__(self):

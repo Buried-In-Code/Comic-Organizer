@@ -1,6 +1,5 @@
 __all__ = ["Archive"]
 
-import logging
 import shutil
 from pathlib import Path
 from typing import Optional
@@ -16,10 +15,9 @@ from dex_starr import (
     get_cache_root,
     list_files,
 )
+from dex_starr.console import CONSOLE
 from dex_starr.schemas.metadata.schema import Metadata
 from dex_starr.settings import GeneralSettings
-
-LOGGER = logging.getLogger(__name__)
 
 
 class Archive:
@@ -35,7 +33,7 @@ class Archive:
             self.extracted_folder = extracted_folder
             return True
         except BadZipFile as err:
-            LOGGER.error(err)
+            CONSOLE.print(err, style="logging.level.error")
             return False
 
     def _extract_seven(self, extracted_folder: Path) -> bool:
@@ -54,15 +52,16 @@ class Archive:
             self.extracted_folder = Path(output)
             return True
         except PatoolError as err:
-            LOGGER.error(err)
+            CONSOLE.print(err, style="logging.level.error")
             return False
 
     def extract(self) -> bool:
-        LOGGER.info(f"Extracting '{self.source_file.name}'")
+        CONSOLE.print(f"Extracting '{self.source_file.name}'", style="logging.level.info")
         extracted_folder = get_cache_root() / self.source_file.stem
         if extracted_folder.exists():
-            LOGGER.error(
-                f"{extracted_folder.name} already exists in {extracted_folder.parent.name}"
+            CONSOLE.print(
+                f"{extracted_folder.name} already exists in {extracted_folder.parent.name}",
+                style="logging.level.warning",
             )
             return False
         extracted_folder.mkdir(parents=True, exist_ok=True)
@@ -73,7 +72,9 @@ class Archive:
             return self._extract_seven(extracted_folder)
         if self.source_file.suffix in [".cbr", ".cbt"]:
             return self._extract_archive(extracted_folder)
-        LOGGER.error(f"Unknown archive format given: {self.source_file.name}")
+        CONSOLE.print(
+            f"Unknown archive format given: {self.source_file.name}", style="logging.level.error"
+        )
         return False
 
     def _rename_images(self):
@@ -114,7 +115,7 @@ class Archive:
         )
         if self.result_file.exists():
             return False
-        LOGGER.info(f"Archiving '{self.result_file.name}'")
+        CONSOLE.print(f"Archiving '{self.result_file.name}'", style="logging.level.info")
         self._rename_images()
 
         archive_file = self.extracted_folder.parent / self.result_file.name

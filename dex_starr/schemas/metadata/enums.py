@@ -1,9 +1,8 @@
 __all__ = ["Role", "Format", "Genre"]
 
-import logging
 from enum import Enum
 
-LOGGER = logging.getLogger(__name__)
+from dex_starr.console import CONSOLE
 
 
 class Role(Enum):
@@ -40,7 +39,7 @@ class Role(Enum):
             return Role.COVER_ARTIST
         if value.lower() == "penciler":
             return Role.PENCILLER
-        LOGGER.warning(f"Unable to find Role: '{value}'")
+        CONSOLE.print(f"Unable to find Role: '{value}'", style="logging.level.warning")
         return Role.OTHER
 
     def __str__(self):
@@ -68,7 +67,7 @@ class Format(Enum):
         for entry in Format:
             if entry.value.lower() == value.lower():
                 return entry
-        LOGGER.warning(f"Unable to find Format: '{value}'")
+        CONSOLE.print(f"Unable to find Format: '{value}'", style="logging.level.warning")
         return Format.COMIC
 
     def __str__(self):
@@ -106,7 +105,7 @@ class Genre(Enum):
         for entry in Genre:
             if entry.value.lower() == value.lower():
                 return entry
-        LOGGER.warning(f"Unable to find Genre: '{value}'")
+        CONSOLE.print(f"Unable to find Genre: '{value}'", style="logging.level.warning")
         return Genre.OTHER
 
     def __str__(self):
