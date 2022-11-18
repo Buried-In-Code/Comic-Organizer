@@ -11,10 +11,16 @@ __all__ = [
     "get_project_root",
     "list_files",
     "safe_list_get",
+    "setup_logging",
 ]
 
+import logging
 from pathlib import Path
 from typing import Any, List
+
+from rich.logging import RichHandler
+
+from dex_starr.console import CONSOLE
 
 IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 SUPPORTED_EXTENSIONS = [".cbz", ".cbr", ".cbt", ".cb7"]
@@ -73,3 +79,20 @@ def safe_list_get(list_: List[Any], index: int = 0, default: Any = None) -> Any:
         return list_[index]
     except IndexError:
         return default
+
+
+def setup_logging(debug: bool = False):
+    logging.basicConfig(
+        format="%(message)s",
+        datefmt="[%Y-%m-%d %H:%M:%S]",
+        level=logging.DEBUG if debug else logging.INFO,
+        handlers=[
+            RichHandler(
+                rich_tracebacks=True,
+                tracebacks_show_locals=True,
+                log_time_format="[%Y-%m-%d %H:%M:%S]",
+                omit_repeated_times=False,
+                console=CONSOLE,
+            )
+        ],
+    )

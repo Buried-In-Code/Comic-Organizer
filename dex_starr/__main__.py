@@ -4,7 +4,6 @@ from typing import Dict, List, Union
 
 from pydantic import ValidationError
 from rich import box
-from rich.logging import RichHandler
 from rich.panel import Panel
 from rich.prompt import Prompt
 
@@ -16,6 +15,7 @@ from dex_starr import (
     filter_files,
     get_cache_root,
     list_files,
+    setup_logging,
 )
 from dex_starr.archive import Archive
 from dex_starr.console import CONSOLE
@@ -85,23 +85,6 @@ def pull_info(
             continue
         LOGGER.info(f"Pulling from {service}")
         services[service].update_metadata(metadata)
-
-
-def setup_logging(debug: bool = False):
-    logging.basicConfig(
-        format="%(message)s",
-        datefmt="[%Y-%m-%d %H:%M:%S]",
-        level=logging.DEBUG if debug else logging.INFO,
-        handlers=[
-            RichHandler(
-                rich_tracebacks=True,
-                tracebacks_show_locals=True,
-                log_time_format="[%Y-%m-%d %H:%M:%S]",
-                omit_repeated_times=False,
-                console=CONSOLE,
-            )
-        ],
-    )
 
 
 def parse_arguments() -> Namespace:

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from dex_starr import setup_logging
 from dex_starr.schemas.comic_info.schema import ComicInfo
 from dex_starr.schemas.metadata.schema import Metadata
 from dex_starr.schemas.metron_info.schema import MetronInfo
@@ -59,7 +60,8 @@ def generate_metron_info_from_metadata():
     metron_info.to_file(output_folder() / "MetronInfo-Metadata.xml")
 
 
-if __name__ == "__main__":
+def main():
+    setup_logging()
     generate_metadata()
     generate_metadata_from_comic_info()
     generate_metadata_from_metron_info()
@@ -67,3 +69,7 @@ if __name__ == "__main__":
     generate_comic_info_from_metadata()
     generate_metron_info()
     generate_metron_info_from_metadata()
+
+
+if __name__ == "__main__":
+    main()
