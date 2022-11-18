@@ -1,9 +1,7 @@
 import logging
 from argparse import ArgumentParser, Namespace
-from pathlib import Path
 from typing import Dict, List, Union
 
-from pathvalidate.argparse import sanitize_filepath_arg
 from pydantic import ValidationError
 from rich import box
 from rich.logging import RichHandler
@@ -108,7 +106,6 @@ def setup_logging(debug: bool = False):
 
 def parse_arguments() -> Namespace:
     parser = ArgumentParser(prog="Dex-Starr")
-    parser.add_argument("import_folder", type=sanitize_filepath_arg)
     parser.add_argument("--manual-edit", action="store_true")
     parser.add_argument("--resolve-manually", action="store_true")
     parser.add_argument("--debug", action="store_true")
@@ -154,7 +151,7 @@ def main():
 
     try:
         for archive_file in filter_files(
-            Path(args.import_folder).resolve(), filter_=SUPPORTED_EXTENSIONS
+            settings.general.import_folder, filter_=SUPPORTED_EXTENSIONS
         ):
             CONSOLE.rule(f"[bold blue]Importing {archive_file.name}[/]", style="dim blue")
             archive = Archive(archive_file)

@@ -60,13 +60,12 @@ Dex-Starr can also pull information from a list of sources to populate missing f
 
 ## Execution
 
-- `Dex-Starr <import_folder> <arguments>`
+- `Dex-Starr <arguments>`
 
 ### Arguments
 
 | Argument             | Type | Description                                                                       |
 | -------------------- | ---- | --------------------------------------------------------------------------------- |
-| `import_folder`      | str  | Folder for Comics to be imported and parsed by Dex-Starr                          |
 | `--manual-edit`      | bool | Pause the Script before bundling the files to allow manual removal of Ads, etc... |
 | `--resolve-manually` | bool | Manually choose which fields are chosen by the importer                           |
 
