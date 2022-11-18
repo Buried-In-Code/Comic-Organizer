@@ -63,27 +63,34 @@
     "sources": {
       "additionalProperties": false,
       "properties": {
-        "Comicvine": {
+        "comicvine": {
           "minimum": 1,
           "type": "integer"
         },
-        "Grand Comics Database": {
+        "grandComicsDatabase": {
           "minimum": 1,
           "type": "integer"
         },
-        "League of Comic Geeks": {
+        "leagueOfComicGeeks": {
           "minimum": 1,
           "type": "integer"
         },
-        "Marvel": {
+        "marvel": {
           "minimum": 1,
           "type": "integer"
         },
-        "Metron": {
+        "metron": {
           "minimum": 1,
           "type": "integer"
         }
       },
+      "required": [
+        "comicvine",
+        "grandComicsDatabase",
+        "leagueOfComicGeeks",
+        "marvel",
+        "metron"
+      ],
       "type": "object"
     }
   },
@@ -125,8 +132,7 @@
                   }
                 },
                 "required": [
-                  "name",
-                  "roles"
+                  "name"
                 ],
                 "type": "object"
               },
@@ -192,6 +198,7 @@
                   }
                 },
                 "required": [
+                  "number",
                   "title"
                 ],
                 "type": "object"
@@ -222,18 +229,10 @@
             }
           },
           "required": [
-            "characters",
             "coverDate",
-            "creators",
             "format",
-            "genres",
-            "language",
-            "locations",
             "number",
-            "pageCount",
-            "storyArcs",
-            "summary",
-            "teams"
+            "sources"
           ],
           "type": "object"
         },
@@ -321,6 +320,7 @@
             }
           },
           "required": [
+            "sources",
             "title"
           ],
           "type": "object"
@@ -350,6 +350,8 @@
             }
           },
           "required": [
+            "sources",
+            "startYear",
             "title",
             "volume"
           ],
