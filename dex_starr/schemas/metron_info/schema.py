@@ -36,6 +36,21 @@ class Resource(XmlModel):
     id: Optional[int] = Field(alias="@id", gt=0, default=None)
     value: str = Field(alias="#text")
 
+    def __lt__(self, other):
+        if not isinstance(other, Resource):
+            raise NotImplementedError()
+        if (self.id or -1) != (other.id or -1):
+            return (self.id or -1) < (other.id or -1)
+        return self.value < other.value
+
+    def __eq__(self, other):
+        if not isinstance(other, Resource):
+            raise NotImplementedError()
+        return ((self.id or -1), self.value) == ((other.id or -1), other.value)
+
+    def __hash__(self):
+        return hash((type(self), self.id, self.value))
+
 
 class RoleResource(XmlModel):
     id: Optional[int] = Field(alias="@id", gt=0, default=None)
@@ -52,8 +67,13 @@ class RoleResource(XmlModel):
             raise NotImplementedError()
         return self.value < other.value
 
+    def __eq__(self, other):
+        if not isinstance(other, RoleResource):
+            raise NotImplementedError()
+        return self.value == other.value
+
     def __hash__(self):
-        return hash((type(self),) + (self.value,))
+        return hash((type(self), self.value))
 
 
 class Credit(XmlModel):
@@ -69,16 +89,59 @@ class Credit(XmlModel):
                 data[key] = data[key][value]
         super().__init__(**data)
 
+    def __lt__(self, other):
+        if not isinstance(other, Credit):
+            raise NotImplementedError()
+        return self.creator < other.creator
+
+    def __eq__(self, other):
+        if not isinstance(other, Credit):
+            raise NotImplementedError()
+        return self.creator == other.creator
+
+    def __hash__(self):
+        return hash((type(self), self.creator))
+
 
 class GTIN(XmlModel):
     isbn: Optional[str] = Field(alias="ISBN", default=None)
     upc: Optional[str] = Field(alias="UPC", default=None)
+
+    def __lt__(self, other):
+        if not isinstance(other, GTIN):
+            raise NotImplementedError()
+        if (self.isbn or "") != (other.isbn or ""):
+            return (self.isbn or "") < (other.isbn or "")
+        return (self.upc or "") < (other.upc or "")
+
+    def __eq__(self, other):
+        if not isinstance(other, GTIN):
+            raise NotImplementedError()
+        return ((self.isbn or ""), (self.upc or "")) == ((other.isbn or ""), (other.upc or ""))
+
+    def __hash__(self):
+        return hash((type(self), self.isbn, self.upc))
 
 
 class Arc(XmlModel):
     id: Optional[int] = Field(alias="@id", gt=0, default=None)
     name: str
     number: Optional[int] = Field(default=None, gt=0)
+
+    def __lt__(self, other):
+        if not isinstance(other, Arc):
+            raise NotImplementedError()
+        if (self.id or -1) != (other.id or -1):
+            return (self.id or -1) < (other.id or -1)
+        return self.name < other.name
+
+    def __eq__(self, other):
+        if not isinstance(other, Arc):
+            raise NotImplementedError()
+        return ((self.id or -1), self.name) == ((other.id or -1), other.name)
+
+    def __hash__(self):
+        return hash((type(self), self.id, self.name))
 
 
 class GenreResource(XmlModel):
@@ -91,10 +154,36 @@ class GenreResource(XmlModel):
             return Genre.load(v)
         return v
 
+    def __lt__(self, other):
+        if not isinstance(other, GenreResource):
+            raise NotImplementedError()
+        return self.value < other.value
+
+    def __eq__(self, other):
+        if not isinstance(other, GenreResource):
+            raise NotImplementedError()
+        return self.value == other.value
+
+    def __hash__(self):
+        return hash((type(self), self.value))
+
 
 class Price(XmlModel):
     country: str = Field(alias="@country")
     value: float = Field(alias="#text")
+
+    def __lt__(self, other):
+        if not isinstance(other, Price):
+            raise NotImplementedError()
+        return self.country < other.country
+
+    def __eq__(self, other):
+        if not isinstance(other, Price):
+            raise NotImplementedError()
+        return self.country == other.country
+
+    def __hash__(self):
+        return hash((type(self), self.country))
 
 
 class Series(XmlModel):
@@ -103,13 +192,37 @@ class Series(XmlModel):
     name: str
     sort_name: Optional[str] = None
     volume: int = 1
-    format: Optional[Format] = None
+    format: Format = Format.SERIES
 
     @validator("format", pre=True)
     def format_to_enum(cls, v) -> Format:
         if isinstance(v, str):
             return Format.load(v)
         return v
+
+    def __lt__(self, other):
+        if not isinstance(other, Resource):
+            raise NotImplementedError()
+        if (self.id or -1) != (other.id or -1):
+            return (self.id or -1) < (other.id or -1)
+        if self.name != other.name:
+            return self.name < other.name
+        if self.volume != other.volume:
+            return self.volume < other.volume
+        return self.format < other.format
+
+    def __eq__(self, other):
+        if not isinstance(other, Series):
+            raise NotImplementedError()
+        return ((self.id or -1), self.name, self.volume, self.format) == (
+            (other.id or -1),
+            other.name,
+            other.volume,
+            other.format,
+        )
+
+    def __hash__(self):
+        return hash((type(self), self.id, self.name, self.volume, self.format))
 
 
 class Source(XmlModel):
@@ -121,6 +234,21 @@ class Source(XmlModel):
         if isinstance(v, str):
             return InformationSource.load(v)
         return v
+
+    def __lt__(self, other):
+        if not isinstance(other, Source):
+            raise NotImplementedError()
+        if self.source != other.source:
+            return self.source < other.source
+        return self.value < other.value
+
+    def __eq__(self, other):
+        if not isinstance(other, Source):
+            raise NotImplementedError()
+        return (self.source, self.value) == (other.source, other.value)
+
+    def __hash__(self):
+        return hash((type(self), self.source, self.value))
 
 
 class MetronInfo(XmlModel):
@@ -176,21 +304,6 @@ class MetronInfo(XmlModel):
         return v
 
     def to_metadata(self) -> Metadata:
-        creators = []
-        for credit in self.credits:
-            roles = set()
-            for role in credit.roles:
-                try:
-                    roles.add(MetadataRole.load(str(role.value)))
-                except ValueError as err:
-                    LOGGER.warning(err)
-                    roles.add(MetadataRole.OTHER)
-            creators.append(Creator(name=credit.creator.value, roles=sorted(roles)))
-        try:
-            format = MetadataFormat.load(str(self.series.format))
-        except ValueError as err:
-            LOGGER.warning(err)
-            format = MetadataFormat.COMIC
         return Metadata(
             publisher=Publisher(
                 # TODO: Imprint
@@ -232,13 +345,21 @@ class MetronInfo(XmlModel):
                 volume=self.series.volume,
             ),
             issue=Issue(
-                characters=sorted(x.value for x in self.characters),
+                characters=sorted({x.value for x in self.characters}),
                 cover_date=self.cover_date,
-                creators=sorted(creators),
-                format=format,
-                genres=sorted(x.value for x in self.genres),
+                creators=sorted(
+                    {
+                        Creator(
+                            name=x.creator.value,
+                            roles=sorted({MetadataRole.load(str(r.value)) for r in x.roles}),
+                        )
+                        for x in self.credits
+                    }
+                ),
+                format=MetadataFormat.load(str(self.series.format)),
+                genres=sorted({x.value for x in self.genres}),
                 language=self.series.lang,
-                locations=sorted(x.value for x in self.locations),
+                locations=sorted({x.value for x in self.locations}),
                 number=self.number,
                 page_count=self.page_count,
                 sources=Sources(
@@ -255,23 +376,27 @@ class MetronInfo(XmlModel):
                     metron=self.id.value if self.id.source == InformationSource.METRON else None,
                 ),
                 store_date=self.store_date,
-                story_arcs=sorted(StoryArc(title=x.name, number=x.number) for x in self.story_arcs),
+                story_arcs=sorted(
+                    {StoryArc(title=x.name, number=x.number) for x in self.story_arcs}
+                ),
                 summary=self.summary,
-                teams=sorted(x.value for x in self.teams),
+                teams=sorted({x.value for x in self.teams}),
                 title=self.collection_title,
             ),
             pages=sorted(
-                Page(
-                    image=x.image,
-                    page_type=x.page_type,
-                    double_page=x.double_page,
-                    image_size=x.image_size,
-                    key=x.key,
-                    bookmark=x.bookmark,
-                    image_width=x.image_width,
-                    image_height=x.image_height,
-                )
-                for x in self.pages
+                {
+                    Page(
+                        image=x.image,
+                        page_type=x.page_type,
+                        double_page=x.double_page,
+                        image_size=x.image_size,
+                        key=x.key,
+                        bookmark=x.bookmark,
+                        image_width=x.image_width,
+                        image_height=x.image_height,
+                    )
+                    for x in self.pages
+                }
             ),
             notes=self.notes,
         )

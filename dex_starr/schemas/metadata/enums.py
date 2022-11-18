@@ -1,6 +1,9 @@
 __all__ = ["Role", "Format", "Genre"]
 
+import logging
 from enum import Enum
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Role(Enum):
@@ -37,7 +40,8 @@ class Role(Enum):
             return Role.COVER_ARTIST
         if value.lower() == "penciler":
             return Role.PENCILLER
-        raise ValueError(f"Unable to find Role: '{value}'")
+        LOGGER.warning(f"Unable to find Role: '{value}'")
+        return Role.OTHER
 
     def __str__(self):
         return self.value
@@ -64,7 +68,8 @@ class Format(Enum):
         for entry in Format:
             if entry.value.lower() == value.lower():
                 return entry
-        raise ValueError(f"Unable to find Format: '{value}'")
+        LOGGER.warning(f"Unable to find Format: '{value}'")
+        return Format.COMIC
 
     def __str__(self):
         return self.value
@@ -94,13 +99,15 @@ class Genre(Enum):
     SUPER_HERO = "Super-Hero"
     WAR = "War"
     WESTERN = "Western"
+    OTHER = "Other"
 
     @staticmethod
     def load(value: str) -> "Genre":
         for entry in Genre:
             if entry.value.lower() == value.lower():
                 return entry
-        raise ValueError(f"Unable to find Genre: '{value}'")
+        LOGGER.warning(f"Unable to find Genre: '{value}'")
+        return Genre.OTHER
 
     def __str__(self):
         return self.value

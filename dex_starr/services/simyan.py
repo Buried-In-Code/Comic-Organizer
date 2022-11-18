@@ -39,11 +39,7 @@ class SimyanTalker:
                     Creator(
                         name=x.name,
                         roles=sorted(
-                            {
-                                Role.load(r.strip().title())
-                                for role in x.role_list
-                                for r in role.split(",")
-                            }
+                            {Role.load(r.strip()) for role in x.role_list for r in role.split(",")}
                         ),
                     )
                     for x in result.creators

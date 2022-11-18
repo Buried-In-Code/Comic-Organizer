@@ -62,7 +62,7 @@ def read_info_file(archive: Archive) -> Metadata:
 def write_info_file(archive: Archive, settings: Settings, metadata: Metadata):
     if settings.general.generate_metadata_file:
         metadata.to_file(archive.extracted_folder / "Metadata.json")
-    if settings.metron.generate_info_file:
+    if settings.metron.generate_metroninfo_file:
         metron_info = to_metron_info(metadata, settings.general.resolution_order)
         metron_info.to_file(archive.extracted_folder / "MetronInfo.xml")
     if settings.general.generate_comicinfo_file:
@@ -114,9 +114,9 @@ def main():
         services["Metron"] = MokkariTalker(
             username=settings.metron.username, password=settings.metron.password
         )
-    if settings.league_of_comic_geeks.api_key and settings.league_of_comic_geeks.client_id:
+    if settings.league_of_comic_geeks.client_id and settings.league_of_comic_geeks.access_token:
         services["League of Comic Geeks"] = HimonTalker(
-            api_key=settings.league_of_comic_geeks.api_key,
+            api_key=settings.league_of_comic_geeks.access_token,
             client_id=settings.league_of_comic_geeks.client_id,
         )
     if settings.marvel.public_key and settings.marvel.private_key:

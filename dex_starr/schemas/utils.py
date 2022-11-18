@@ -83,22 +83,26 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
         else None,
         # TODO: Series Group
         pages=sorted(
-            Page(
-                image=x.image,
-                page_type=x.page_type,
-                double_page=x.double_page,
-                image_size=x.image_size,
-                key=x.key,
-                bookmark=x.bookmark,
-                image_width=x.image_width,
-                image_height=x.image_height,
-            )
-            for x in metadata.pages
+            {
+                Page(
+                    image=x.image,
+                    page_type=x.page_type,
+                    double_page=x.double_page,
+                    image_size=x.image_size,
+                    key=x.key,
+                    bookmark=x.bookmark,
+                    image_width=x.image_width,
+                    image_height=x.image_height,
+                )
+                for x in metadata.pages
+            }
         ),
     )
 
 
-def priority_source(sources: Sources, resolution_order: List[str]) -> Optional[InformationSource]:
+def select_primary_source(
+    sources: Sources, resolution_order: List[str]
+) -> Optional[InformationSource]:
     source_list = [key for key, value in sources.__dict__.items() if value]
     for entry in resolution_order:
         if entry.lower().replace(" ", "_") in source_list:
@@ -121,17 +125,7 @@ def get_source(sources: Sources, information_source: InformationSource) -> Optio
 
 
 def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInfo:
-    credits = []
-    for creator in metadata.issue.creators:
-        roles = set()
-        for role in creator.roles:
-            try:
-                roles.add(RoleResource(value=Role.load(str(role))))
-            except ValueError as err:
-                LOGGER.warning(err)
-                roles.add(RoleResource(value=Role.OTHER))
-        credits.append(Credit(creator=Resource(value=creator.name), roles=sorted(roles)))
-    information_source = priority_source(metadata.issue.sources, resolution_order)
+    information_source = select_primary_source(metadata.issue.sources, resolution_order)
     return MetronInfo(
         id=MetronSource(
             source=information_source, value=get_source(metadata.issue.sources, information_source)
@@ -163,26 +157,36 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
         store_date=metadata.issue.store_date,
         page_count=metadata.issue.page_count,
         notes=metadata.notes,
-        genres=[GenreResource(value=x) for x in metadata.issue.genres],
+        genres=sorted({GenreResource(value=x) for x in metadata.issue.genres}),
         # TODO: Add tags
-        story_arcs=[Arc(name=x.title, number=x.number) for x in metadata.issue.story_arcs],
-        characters=[Resource(value=x) for x in metadata.issue.characters],
-        teams=[Resource(value=x) for x in metadata.issue.teams],
-        locations=[Resource(value=x) for x in metadata.issue.locations],
+        story_arcs=sorted({Arc(name=x.title, number=x.number) for x in metadata.issue.story_arcs}),
+        characters=sorted({Resource(value=x) for x in metadata.issue.characters}),
+        teams=sorted({Resource(value=x) for x in metadata.issue.teams}),
+        locations=sorted({Resource(value=x) for x in metadata.issue.locations}),
         # TODO: Add reprints
         # TODO: Add GTIN - ISBN & UPC
-        credits=credits,
+        credits=sorted(
+            {
+                Credit(
+                    creator=Resource(value=x.name),
+                    roles=sorted({RoleResource(value=Role.load(str(r))) for r in x.roles}),
+                )
+                for x in metadata.issue.creators
+            }
+        ),
         pages=sorted(
-            Page(
-                image=x.image,
-                page_type=x.page_type,
-                double_page=x.double_page,
-                image_size=x.image_size,
-                key=x.key,
-                bookmark=x.bookmark,
-                image_width=x.image_width,
-                image_height=x.image_height,
-            )
-            for x in metadata.pages
+            {
+                Page(
+                    image=x.image,
+                    page_type=x.page_type,
+                    double_page=x.double_page,
+                    image_size=x.image_size,
+                    key=x.key,
+                    bookmark=x.bookmark,
+                    image_width=x.image_width,
+                    image_height=x.image_height,
+                )
+                for x in metadata.pages
+            }
         ),
     )

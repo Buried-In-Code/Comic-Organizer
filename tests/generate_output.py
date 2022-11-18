@@ -55,7 +55,7 @@ def generate_metron_info_from_metadata():
     metadata_file = FILES_FOLDER / "Metadata.json"
     metron_info = to_metron_info(
         Metadata.from_file(metadata_file),
-        ["Marvel", "League of Comic Geeks", "Grand Comics Database", "Metron", "Comicvine"],
+        ["Marvel", "League of Comic Geeks", "Metron", "Grand Comics Database", "Comicvine"],
     )
     metron_info.to_file(output_folder() / "MetronInfo-Metadata.xml")
 

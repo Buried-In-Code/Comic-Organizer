@@ -38,6 +38,14 @@ class Page(XmlModel):
             raise NotImplementedError()
         return self.image < other.image
 
+    def __eq__(self, other):
+        if not isinstance(other, Page):
+            raise NotImplementedError()
+        return self.image == other.image
+
+    def __hash__(self):
+        return hash((type(self), self.image))
+
 
 class ComicInfo(XmlModel):
     title: Optional[str] = None
@@ -127,25 +135,25 @@ class ComicInfo(XmlModel):
     def writer_list(self) -> List[str]:
         if not self.writer:
             return []
-        return sorted(x.strip() for x in self.writer.split(","))
+        return sorted({x.strip() for x in self.writer.split(",")})
 
     @property
     def penciller_list(self) -> List[str]:
         if not self.penciller:
             return []
-        return sorted(x.strip() for x in self.penciller.split(","))
+        return sorted({x.strip() for x in self.penciller.split(",")})
 
     @property
     def inker_list(self) -> List[str]:
         if not self.inker:
             return []
-        return sorted(x.strip() for x in self.inker.split(","))
+        return sorted({x.strip() for x in self.inker.split(",")})
 
     @property
     def colourist_list(self) -> List[str]:
         if not self.colorist:
             return []
-        return sorted(x.strip() for x in self.colorist.split(","))
+        return sorted({x.strip() for x in self.colorist.split(",")})
 
     @property
     def colorist_list(self) -> List[str]:
@@ -155,43 +163,43 @@ class ComicInfo(XmlModel):
     def letterer_list(self) -> List[str]:
         if not self.letterer:
             return []
-        return sorted(x.strip() for x in self.letterer.split(","))
+        return sorted({x.strip() for x in self.letterer.split(",")})
 
     @property
     def cover_artist_list(self) -> List[str]:
         if not self.cover_artist:
             return []
-        return sorted(x.strip() for x in self.cover_artist.split(","))
+        return sorted({x.strip() for x in self.cover_artist.split(",")})
 
     @property
     def editor_list(self) -> List[str]:
         if not self.editor:
             return []
-        return sorted(x.strip() for x in self.editor.split(","))
+        return sorted({x.strip() for x in self.editor.split(",")})
 
     @property
     def genre_list(self) -> List[str]:
         if not self.genre:
             return []
-        return sorted(x.strip() for x in self.genre.split(","))
+        return sorted({x.strip() for x in self.genre.split(",")})
 
     @property
     def character_list(self) -> List[str]:
         if not self.characters:
             return []
-        return sorted(x.strip() for x in self.characters.split(","))
+        return sorted({x.strip() for x in self.characters.split(",")})
 
     @property
     def team_list(self) -> List[str]:
         if not self.teams:
             return []
-        return sorted(x.strip() for x in self.teams.split(","))
+        return sorted({x.strip() for x in self.teams.split(",")})
 
     @property
     def location_list(self) -> List[str]:
         if not self.locations:
             return []
-        return sorted(x.strip() for x in self.locations.split(","))
+        return sorted({x.strip() for x in self.locations.split(",")})
 
     def to_metadata(self) -> Metadata:
         # region Parse Creators
@@ -211,11 +219,6 @@ class ComicInfo(XmlModel):
                     creators[creator] = []
                 creators[creator].append(key)
         # endregion
-        try:
-            format = Format.load(self.format)
-        except ValueError as err:
-            LOGGER.warning(err)
-            format = Format.COMIC
         return Metadata(
             publisher=Publisher(
                 imprint=self.imprint,
@@ -232,9 +235,9 @@ class ComicInfo(XmlModel):
                 characters=self.character_list,
                 cover_date=self.cover_date,
                 creators=sorted(
-                    Creator(name=name, roles=sorted(roles)) for name, roles in creators.items()
+                    {Creator(name=name, roles=sorted(roles)) for name, roles in creators.items()}
                 ),
-                format=format,
+                format=Format.load(self.format),
                 genres=sorted(Genre.load(x) for x in self.genre_list),
                 language=self.language_iso.lower() if self.language_iso else "en",
                 locations=self.location_list,
@@ -248,17 +251,19 @@ class ComicInfo(XmlModel):
                 title=self.title,
             ),
             pages=sorted(
-                Page(
-                    image=x.image,
-                    page_type=x.page_type,
-                    double_page=x.double_page,
-                    image_size=x.image_size,
-                    key=x.key,
-                    bookmark=x.bookmark,
-                    image_width=x.image_width,
-                    image_height=x.image_height,
-                )
-                for x in self.pages
+                {
+                    Page(
+                        image=x.image,
+                        page_type=x.page_type,
+                        double_page=x.double_page,
+                        image_size=x.image_size,
+                        key=x.key,
+                        bookmark=x.bookmark,
+                        image_width=x.image_width,
+                        image_height=x.image_height,
+                    )
+                    for x in self.pages
+                }
             ),
             notes=self.notes,
         )

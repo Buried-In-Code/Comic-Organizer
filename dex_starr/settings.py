@@ -30,7 +30,7 @@ class SettingsModel(BaseModel):
 
 
 class MetronSettings(SettingsModel):
-    generate_info_file: bool = True
+    generate_metroninfo_file: bool = True
     password: Optional[str] = None
     username: Optional[str] = None
 
@@ -41,8 +41,9 @@ class MarvelSettings(SettingsModel):
 
 
 class LeagueOfComicGeeks(SettingsModel):
-    api_key: Optional[str] = None
     client_id: Optional[str] = None
+    client_secret: Optional[str] = None
+    access_token: Optional[str] = None
 
 
 class ComicvineSettings(SettingsModel):
@@ -67,7 +68,13 @@ class GeneralSettings(SettingsModel):
 class Settings(SettingsModel):
     FILENAME: ClassVar = get_config_root() / "settings.toml"
     general: GeneralSettings = GeneralSettings(
-        resolution_order=["Marvel", "League of Comic Geeks", "Metron", "Marvel"]
+        resolution_order=[
+            "Marvel",
+            "League of Comic Geeks",
+            "Metron",
+            "Grand Comics Database",
+            "Comicvine",
+        ]
     )
     comicvine: ComicvineSettings = ComicvineSettings()
     league_of_comic_geeks: LeagueOfComicGeeks = LeagueOfComicGeeks()

@@ -1,6 +1,9 @@
 __all__ = ["YesNo", "Manga", "AgeRating", "ComicPageType"]
 
+import logging
 from enum import Enum
+
+LOGGER = logging.getLogger(__name__)
 
 
 class YesNo(Enum):
@@ -13,7 +16,8 @@ class YesNo(Enum):
         for entry in YesNo:
             if entry.value.lower() == value.lower():
                 return entry
-        raise ValueError(f"Unable to find YesNo: '{value}'")
+        LOGGER.warning(f"Unable to find YesNo: '{value}'")
+        return YesNo.UNKNOWN
 
     def __str__(self):
         return self.value
@@ -38,7 +42,8 @@ class Manga(Enum):
         for entry in Manga:
             if entry.value.lower() == value.lower():
                 return entry
-        raise ValueError(f"Unable to find Manga: '{value}'")
+        LOGGER.warning(f"Unable to find Manga: '{value}'")
+        return Manga.UNKNOWN
 
     def __str__(self):
         return self.value
@@ -74,7 +79,8 @@ class AgeRating(Enum):
         for entry in AgeRating:
             if entry.value.lower() == value.lower():
                 return entry
-        raise ValueError(f"Unable to find AgeRating: '{value}'")
+        LOGGER.warning(f"Unable to find AgeRating: '{value}'")
+        return AgeRating.UNKNOWN
 
     def __str__(self):
         return self.value
@@ -106,7 +112,8 @@ class ComicPageType(Enum):
         for entry in ComicPageType:
             if entry.value.lower() == value.lower():
                 return entry
-        raise ValueError(f"Unable to find ComicPageType: '{value}'")
+        LOGGER.warning(f"Unable to find ComicPageType: '{value}'")
+        return ComicPageType.STORY
 
     def __str__(self):
         return self.value

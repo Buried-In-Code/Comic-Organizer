@@ -4,6 +4,7 @@
   "additionalProperties": false,
   "definitions": {
     "format": {
+      "defaul": "Comic",
       "enum": [
         "Comic",
         "Digital Chapter",
@@ -15,6 +16,7 @@
       "type": "string"
     },
     "genre": {
+      "default": "Other",
       "enum": [
         "Adult",
         "Crime",
@@ -30,11 +32,13 @@
         "Sport",
         "Super-Hero",
         "War",
-        "Western"
+        "Western",
+        "Other"
       ],
       "type": "string"
     },
     "role": {
+      "default": "Other",
       "enum": [
         "Writer",
         "Story",
@@ -160,8 +164,7 @@
               "uniqueItems": true
             },
             "format": {
-              "$ref": "#/definitions/format",
-              "default": "Comic"
+              "$ref": "#/definitions/format"
             },
             "genres": {
               "items": {
