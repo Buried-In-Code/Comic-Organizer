@@ -92,6 +92,10 @@ class HimonTalker:
         publisher_name: Optional[str] = None,
         fuzzy: bool = False,
     ) -> Optional[Comic]:
+        CONSOLE.print(
+            f"Searching for: {title=}, {format=}, {number=}, {publisher_name=}, {fuzzy=}",
+            style="logging.level.debug",
+        )
         output = None
         if number:
             search_terms = generate_search_terms(title, format, number)

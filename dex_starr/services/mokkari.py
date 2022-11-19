@@ -56,6 +56,7 @@ class MokkariTalker:
             issue.title = result.collection_title
 
     def _search_issue(self, series_id: int, number: str) -> Optional[MokkariIssue]:
+        CONSOLE.print(f"Searching for: {series_id=}, {number=}", style="logging.level.debug")
         output = None
         try:
             issue_list = self.session.issues_list({"series_id": series_id, "number": number})
@@ -119,6 +120,10 @@ class MokkariTalker:
         volume: Optional[int] = None,
         start_year: Optional[int] = None,
     ) -> Optional[MokkariSeries]:
+        CONSOLE.print(
+            f"Searching for: {publisher_id=}, {title=}, {volume=}, {start_year=}",
+            style="logging.level.debug",
+        )
         output = None
         params = {"publisher_id": publisher_id, "name": title}
         if volume:
@@ -183,6 +188,7 @@ class MokkariTalker:
             publisher.title = result.name
 
     def _search_publisher(self, title: str) -> Optional[MokkariPublisher]:
+        CONSOLE.print(f"Searching for: {title=}", style="logging.level.debug")
         output = None
         try:
             publisher_list = self.session.publishers_list({"name": title})

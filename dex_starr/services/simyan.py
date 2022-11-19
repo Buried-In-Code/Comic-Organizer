@@ -79,6 +79,7 @@ class SimyanTalker:
             issue.title = result.name
 
     def _search_issue(self, series_id: int, number: str) -> Optional[SimyanIssue]:
+        CONSOLE.print(f"Searching for: {series_id=}, {number=}", style="logging.level.debug")
         output = None
         try:
             issue_list = self.session.issue_list(
@@ -138,6 +139,9 @@ class SimyanTalker:
     def _search_volume(
         self, publisher_id: int, title: str, start_year: Optional[int] = None
     ) -> Optional[Volume]:
+        CONSOLE.print(
+            f"Searching for: {publisher_id=}, {title=}, {start_year=}", style="logging.level.debug"
+        )
         output = None
         try:
             volume_list = self.session.volume_list({"filter": f"name:{title}"})
@@ -199,6 +203,7 @@ class SimyanTalker:
             publisher.title = result.name or publisher.title
 
     def _search_publisher(self, title: str) -> Optional[SimyanPublisher]:
+        CONSOLE.print(f"Searching for: {title=}", style="logging.level.debug")
         output = None
         try:
             publisher_list = self.session.publisher_list({"filter": f"name:{title}"})

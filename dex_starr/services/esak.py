@@ -59,6 +59,9 @@ class EsakTalker:
     def _search_comic(
         self, series_id: int, number: str, format: Optional[str] = None
     ) -> Optional[Comic]:
+        CONSOLE.print(
+            f"Searching for: {series_id=}, {number=}, {format=}", style="logging.level.debug"
+        )
         output = None
         params = {"noVariants": True, "series": series_id, "issueNumber": number}
         if format in ["Trade Paperback", "Hardcover"]:
@@ -122,6 +125,7 @@ class EsakTalker:
             series.title = clean_title(result.title)
 
     def _search_series(self, title: str, start_year: Optional[int] = None) -> Optional[EsakSeries]:
+        CONSOLE.print(f"Searching for: {title=}, {start_year=}", style="logging.level.debug")
         output = None
         params = {"title": title}
         if start_year:
