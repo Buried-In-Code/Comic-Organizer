@@ -82,7 +82,7 @@ class EsakTalker:
                 except ApiError:
                     CONSOLE.print(
                         f"Unable to find comic: comic_id={comic_list[comic_index - 1].id}",
-                        style="logging.level.info",
+                        style="logging.level.warning",
                     )
                     output = None
         else:
@@ -102,7 +102,7 @@ class EsakTalker:
             except ApiError:
                 CONSOLE.print(
                     f"Unable to find comic: comic_id={issue.sources.marvel}",
-                    style="logging.level.info",
+                    style="logging.level.warning",
                 )
                 output = None
         if not output:
@@ -148,7 +148,7 @@ class EsakTalker:
         else:
             CONSOLE.print(
                 f"Unable to find series: {title=}, {start_year=}",
-                style="logging.level.warning",
+                style="logging.level.info",
             )
         if not output and start_year:
             return self._search_series(title)

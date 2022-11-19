@@ -79,7 +79,7 @@ class MokkariTalker:
         else:
             CONSOLE.print(
                 f"Unable to find issue: {series_id=}, {number=}",
-                style="logging.level.warning",
+                style="logging.level.info",
             )
         return output
 
@@ -147,7 +147,7 @@ class MokkariTalker:
         else:
             CONSOLE.print(
                 f"Unable to find series: {publisher_id=}, {title=}, {volume=}, {start_year=}",
-                style="logging.level.warning",
+                style="logging.level.info",
             )
         if not output and start_year:
             return self._search_series(publisher_id, title, volume=volume)
@@ -205,7 +205,7 @@ class MokkariTalker:
                     )
                     output = None
         else:
-            CONSOLE.print(f"Unable to find publisher: {title=}", style="logging.level.warning")
+            CONSOLE.print(f"Unable to find publisher: {title=}", style="logging.level.info")
         return output
 
     def lookup_publisher(self, publisher: Publisher) -> Optional[MokkariPublisher]:

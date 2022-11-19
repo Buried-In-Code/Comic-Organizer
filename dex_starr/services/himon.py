@@ -136,7 +136,7 @@ class HimonTalker:
             CONSOLE.print(
                 f"Unable to find comic: {title=}, {format=}, {number=}, {publisher_name=}, "
                 f"{fuzzy=}",
-                style="logging.level.warning",
+                style="logging.level.info",
             )
         if not output and not fuzzy:
             return self._search_comic(
