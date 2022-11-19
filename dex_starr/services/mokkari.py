@@ -61,20 +61,26 @@ class MokkariTalker:
             issue_list = self.session.issues_list({"series_id": series_id, "number": number})
         except ApiError:
             issue_list = []
-        if not issue_list:
+        if issue_list := sorted(issue_list, key=lambda i: i.issue_name):
+            issue_index = create_menu(
+                options=[f"{i.id} | {i.issue_name or i.collection_title}" for i in issue_list],
+                prompt="Select Issue",
+                default="None of the Above",
+            )
+            if issue_index != 0:
+                try:
+                    output = self.session.issue(issue_list[issue_index - 1].id)
+                except ApiError:
+                    CONSOLE.print(
+                        f"Unable to find issue: issue_id={issue_list[issue_index - 1].id}",
+                        style="logging.level.warning",
+                    )
+                    output = None
+        else:
             CONSOLE.print(
-                f"Unable to find a matching issue for: {series_id}, {number}",
+                f"Unable to find issue: {series_id=}, {number=}",
                 style="logging.level.warning",
             )
-            return None
-        issue_list = sorted(issue_list, key=lambda i: i.issue_name)
-        issue_index = create_menu(
-            options=[f"{i.id} | {i.issue_name or i.collection_title}" for i in issue_list],
-            prompt="Select Issue",
-            default="None of the Above",
-        )
-        if issue_index != 0:
-            output = self.session.issue(issue_list[issue_index - 1].id)
         return output
 
     def lookup_issue(self, issue: Issue, series_id: int) -> Optional[MokkariIssue]:
@@ -83,6 +89,10 @@ class MokkariTalker:
             try:
                 output = self.session.issue(issue.sources.metron)
             except ApiError:
+                CONSOLE.print(
+                    f"Unable to find issue: issue_id={issue.sources.metron}",
+                    style="logging.level.warning",
+                )
                 output = None
         if not output:
             output = self._search_issue(series_id, issue.number)
@@ -126,17 +136,23 @@ class MokkariTalker:
                 default="None of the Above",
             )
             if series_index != 0:
-                output = self.session.series(series_list[series_index - 1].id)
+                try:
+                    output = self.session.series(series_list[series_index - 1].id)
+                except ApiError:
+                    CONSOLE.print(
+                        f"Unable to find series: series_id={series_list[series_index - 1].id}",
+                        style="logging.level.warning",
+                    )
+                    output = None
+        else:
+            CONSOLE.print(
+                f"Unable to find series: {publisher_id=}, {title=}, {volume=}, {start_year=}",
+                style="logging.level.warning",
+            )
         if not output and start_year:
             return self._search_series(publisher_id, title, volume=volume)
         if not output and volume:
             return self._search_series(publisher_id, title, start_year=start_year)
-        if not output:
-            CONSOLE.print(
-                "Unable to find a matching series for:"
-                f" {publisher_id}, {title}, {volume}, {start_year}",
-                style="logging.level.warning",
-            )
         return output
 
     def lookup_series(self, series: Series, publisher_id: int) -> Optional[MokkariSeries]:
@@ -145,6 +161,10 @@ class MokkariTalker:
             try:
                 output = self.session.series(series.sources.metron)
             except ApiError:
+                CONSOLE.print(
+                    f"Unable to find series: series_id={series.sources.metron}",
+                    style="logging.level.warning",
+                )
                 output = None
         if not output:
             output = self._search_series(
@@ -168,19 +188,24 @@ class MokkariTalker:
             publisher_list = self.session.publishers_list({"name": title})
         except ApiError:
             publisher_list = []
-        if not publisher_list:
-            CONSOLE.print(
-                f"Unable to find a matching publisher for: {title}", style="logging.level.warning"
+        if publisher_list := sorted(publisher_list, key=lambda p: p.name):
+            publisher_index = create_menu(
+                options=[f"{p.id} | {p.name}" for p in publisher_list],
+                prompt="Select Publisher",
+                default="None of the Above",
             )
-            return None
-        publisher_list = sorted(publisher_list, key=lambda p: p.name)
-        publisher_index = create_menu(
-            options=[f"{p.id} | {p.name}" for p in publisher_list],
-            prompt="Select Publisher",
-            default="None of the Above",
-        )
-        if publisher_index != 0:
-            output = self.session.publisher(publisher_list[publisher_index - 1].id)
+            if publisher_index != 0:
+                try:
+                    output = self.session.publisher(publisher_list[publisher_index - 1].id)
+                except ApiError:
+                    CONSOLE.print(
+                        "Unable to find publisher: "
+                        f"publisher_id={publisher_list[publisher_index - 1].id}",
+                        style="logging.level.warning",
+                    )
+                    output = None
+        else:
+            CONSOLE.print(f"Unable to find publisher: {title=}", style="logging.level.warning")
         return output
 
     def lookup_publisher(self, publisher: Publisher) -> Optional[MokkariPublisher]:
@@ -189,6 +214,10 @@ class MokkariTalker:
             try:
                 output = self.session.publisher(publisher.sources.metron)
             except ApiError:
+                CONSOLE.print(
+                    f"Unable to find publisher: publisher_id={publisher.sources.metron}",
+                    style="logging.level.warning",
+                )
                 output = None
         if not output:
             output = self._search_publisher(publisher.title)

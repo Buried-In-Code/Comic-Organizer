@@ -77,14 +77,21 @@ class EsakTalker:
                 default="None of the Above",
             )
             if comic_index != 0:
-                output = self.session.comic(comic_list[comic_index - 1].id)
-        if not output and format:
-            return self._search_comic(series_id, number)
-        if not output:
+                try:
+                    output = self.session.comic(comic_list[comic_index - 1].id)
+                except ApiError:
+                    CONSOLE.print(
+                        f"Unable to find comic: comic_id={comic_list[comic_index - 1].id}",
+                        style="logging.level.info",
+                    )
+                    output = None
+        else:
             CONSOLE.print(
-                f"Unable to find a matching comic for: {series_id}, {number}, {format}",
+                f"Unable to find comic: {series_id=}, {number=}, {format=}",
                 style="logging.level.info",
             )
+        if not output and format:
+            return self._search_comic(series_id, number)
         return output
 
     def lookup_comic(self, issue: Issue, series_id: int) -> Optional[Comic]:
@@ -93,6 +100,10 @@ class EsakTalker:
             try:
                 output = self.session.comic(issue.sources.marvel)
             except ApiError:
+                CONSOLE.print(
+                    f"Unable to find comic: comic_id={issue.sources.marvel}",
+                    style="logging.level.info",
+                )
                 output = None
         if not output:
             output = self._search_comic(series_id, issue.number, str(issue.format))
@@ -126,14 +137,21 @@ class EsakTalker:
                 default="None of the Above",
             )
             if series_index != 0:
-                output = self.session.series(series_list[series_index - 1].id)
-        if not output and start_year:
-            return self._search_series(title)
-        if not output:
+                try:
+                    output = self.session.series(series_list[series_index - 1].id)
+                except ApiError:
+                    CONSOLE.print(
+                        f"Unable to find series: series_id={series_list[series_index - 1].id}",
+                        style="logging.level.warning",
+                    )
+                    output = None
+        else:
             CONSOLE.print(
-                f"Unable to find a matching series for: {title}, {start_year}",
+                f"Unable to find series: {title=}, {start_year=}",
                 style="logging.level.warning",
             )
+        if not output and start_year:
+            return self._search_series(title)
         return output
 
     def lookup_series(self, series: Series) -> Optional[EsakSeries]:
@@ -142,6 +160,10 @@ class EsakTalker:
             try:
                 output = self.session.series(series.sources.marvel)
             except ApiError:
+                CONSOLE.print(
+                    f"Unable to find series: series_id={series.sources.marvel}",
+                    style="logging.level.warning",
+                )
                 output = None
         if not output:
             output = self._search_series(series.title, series.start_year)

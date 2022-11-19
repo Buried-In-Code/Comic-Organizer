@@ -90,7 +90,7 @@ class HimonTalker:
         format: str = "Comic",
         number: Optional[str] = None,
         publisher_name: Optional[str] = None,
-        series_name: Optional[str] = None,
+        fuzzy: bool = False,
     ) -> Optional[Comic]:
         output = None
         if number:
@@ -108,8 +108,8 @@ class HimonTalker:
         comic_list = list({x.comic_id: x for x in results_1 + results_2}.values())
         if publisher_name is not None:
             comic_list = [x for x in comic_list if x.publisher_name == publisher_name]
-        if series_name is not None:
-            comic_list = [x for x in comic_list if x.series_name == series_name]
+        if not fuzzy:
+            comic_list = [x for x in comic_list if x.series_name == title]
         if comic_list := sorted(
             comic_list,
             key=lambda x: (x.publisher_name, x.series_name, x.series_volume or 1, x.title),
@@ -124,19 +124,30 @@ class HimonTalker:
                 default="None of the Above",
             )
             if comic_index != 0:
-                return self.session.comic(comic_list[comic_index - 1].comic_id)
-        if not output and series_name:
+                try:
+                    output = self.session.comic(comic_list[comic_index - 1].comic_id)
+                except ServiceError:
+                    CONSOLE.print(
+                        f"Unable to find comic: comic_id={comic_list[comic_index - 1].comic_id}",
+                        style="logging.level.warning",
+                    )
+                    output = None
+        else:
+            CONSOLE.print(
+                f"Unable to find comic: {title=}, {format=}, {number=}, {publisher_name=}, "
+                f"{fuzzy=}",
+                style="logging.level.warning",
+            )
+        if not output and not fuzzy:
             return self._search_comic(
-                title=title, format=format, number=number, publisher_name=publisher_name
+                title=title,
+                format=format,
+                number=number,
+                publisher_name=publisher_name,
+                fuzzy=True,
             )
         if not output and publisher_name:
             return self._search_comic(title=title, format=format, number=number)
-        if not output:
-            CONSOLE.print(
-                "Unable to find a matching comic for:"
-                f" {title}, {format}, {number}, {publisher_name}, {series_name}",
-                style="logging.level.warning",
-            )
         return output
 
     def lookup_comic(self, metadata: Metadata) -> Optional[Comic]:
@@ -145,6 +156,11 @@ class HimonTalker:
             try:
                 output = self.session.comic(metadata.issue.sources.league_of_comic_geeks)
             except ServiceError:
+                CONSOLE.print(
+                    "Unable to find comic: "
+                    f"comic_id={metadata.issue.sources.league_of_comic_geeks}",
+                    style="logging.level.warning",
+                )
                 output = None
         if not output:
             output = self._search_comic(
@@ -152,7 +168,6 @@ class HimonTalker:
                 str(metadata.issue.format),
                 metadata.issue.number,
                 publisher_name=metadata.publisher.title,
-                series_name=metadata.series.title,
             )
         while not output:
             search = Prompt.ask("Search Term", default="Exit", console=CONSOLE)

@@ -86,23 +86,26 @@ class SimyanTalker:
             )
         except ServiceError:
             issue_list = []
-        if not issue_list:
+        if issue_list := sorted(issue_list, key=lambda i: i.number):
+            issue_index = create_menu(
+                options=[f"{i.issue_id} | {i.volume.name} #{i.number}" for i in issue_list],
+                prompt="Select Issue",
+                default="None of the Above",
+            )
+            if issue_index != 0:
+                try:
+                    output = self.session.issue(issue_list[issue_index - 1].issue_id)
+                except ServiceError:
+                    CONSOLE.print(
+                        f"Unable to find issue: issue_id={issue_list[issue_index - 1].issue_id}",
+                        style="logging.level.warning",
+                    )
+                    output = None
+        else:
             CONSOLE.print(
-                f"Unable to find a matching issue for: {series_id}, {number}",
+                f"Unable to find issue: {series_id=}, {number=}",
                 style="logging.level.warning",
             )
-            return None
-        issue_list = sorted(issue_list, key=lambda i: i.number)
-        issue_index = create_menu(
-            options=[f"{i.issue_id} | {i.volume.name} #{i.number}" for i in issue_list],
-            prompt="Select Issue",
-            default="None of the Above",
-        )
-        if issue_index != 0:
-            try:
-                output = self.session.issue(issue_list[issue_index - 1].issue_id)
-            except ServiceError:
-                output = None
         return output
 
     def lookup_issue(self, issue: Issue, series_id: int) -> Optional[SimyanIssue]:
@@ -111,6 +114,10 @@ class SimyanTalker:
             try:
                 output = self.session.issue(issue.sources.comicvine)
             except ServiceError:
+                CONSOLE.print(
+                    f"Unable to find issue: issue_id={issue.sources.comicvine}",
+                    style="logging.level.warning",
+                )
                 output = None
         if not output:
             output = self._search_issue(series_id, issue.number)
@@ -136,27 +143,32 @@ class SimyanTalker:
             volume_list = self.session.volume_list({"filter": f"name:{title}"})
         except ServiceError:
             volume_list = []
-        volume_list = filter(lambda v: v.publisher is not None, volume_list)
-        volume_list = filter(lambda v: v.publisher.id_ == publisher_id, volume_list)
+        volume_list = filter(
+            lambda v: v.publisher is not None and v.publisher.id_ == publisher_id, volume_list
+        )
         if start_year:
             volume_list = filter(lambda v: v.start_year == start_year, volume_list)
-        if not volume_list:
+        if volume_list := sorted(volume_list, key=lambda v: (v.name, v.start_year or 0)):
+            volume_index = create_menu(
+                options=[f"{v.volume_id} | {v.name} ({v.start_year})" for v in volume_list],
+                prompt="Select Volume",
+                default="None of the Above",
+            )
+            if volume_index != 0:
+                try:
+                    output = self.session.volume(volume_list[volume_index - 1].volume_id)
+                except ServiceError:
+                    CONSOLE.print(
+                        "Unable to find volume: "
+                        f"volume_id={volume_list[volume_index - 1].volume_id}",
+                        style="logging.level.warning",
+                    )
+                    output = None
+        else:
             CONSOLE.print(
-                f"Unable to find a matching volume for: {publisher_id}, {title}, {start_year}",
+                f"Unable to find volume: {publisher_id=}, {title=}, {start_year=}",
                 style="logging.level.warning",
             )
-            return None
-        volume_list = sorted(volume_list, key=lambda v: (v.name, v.start_year or 0))
-        volume_index = create_menu(
-            options=[f"{v.volume_id} | {v.name} ({v.start_year})" for v in volume_list],
-            prompt="Select Volume",
-            default="None of the Above",
-        )
-        if volume_index != 0:
-            try:
-                output = self.session.volume(volume_list[volume_index - 1].volume_id)
-            except ServiceError:
-                output = None
         if not output and start_year:
             return self._search_volume(publisher_id, title)
         return output
@@ -167,6 +179,10 @@ class SimyanTalker:
             try:
                 output = self.session.volume(series.sources.comicvine)
             except ServiceError:
+                CONSOLE.print(
+                    f"Unable to find volume: volume_id={series.sources.comicvine}",
+                    style="logging.level.warning",
+                )
                 output = None
         if not output:
             output = self._search_volume(publisher_id, series.title, series.start_year)
@@ -188,22 +204,26 @@ class SimyanTalker:
             publisher_list = self.session.publisher_list({"filter": f"name:{title}"})
         except ServiceError:
             publisher_list = []
-        if not publisher_list:
-            CONSOLE.print(
-                f"Unable to find a matching publisher for: {title}", style="logging.level.warning"
+        if publisher_list := sorted(publisher_list, key=lambda p: p.name):
+            publisher_index = create_menu(
+                options=[f"{p.publisher_id} | {p.name}" for p in publisher_list],
+                prompt="Select Publisher",
+                default="None of the Above",
             )
-            return None
-        publisher_list = sorted(publisher_list, key=lambda p: p.name)
-        publisher_index = create_menu(
-            options=[f"{p.publisher_id} | {p.name}" for p in publisher_list],
-            prompt="Select Publisher",
-            default="None of the Above",
-        )
-        if publisher_index != 0:
-            try:
-                output = self.session.publisher(publisher_list[publisher_index - 1].publisher_id)
-            except ServiceError:
-                output = None
+            if publisher_index != 0:
+                try:
+                    output = self.session.publisher(
+                        publisher_list[publisher_index - 1].publisher_id
+                    )
+                except ServiceError:
+                    CONSOLE.print(
+                        "Unable to find publisher: "
+                        f"publisher_id={publisher_list[publisher_index - 1].publisher_id}",
+                        style="logging.level.warning",
+                    )
+                    output = None
+        else:
+            CONSOLE.print(f"Unable to find publisher: {title=}", style="logging.level.warning")
         return output
 
     def lookup_publisher(self, publisher: Publisher) -> Optional[SimyanPublisher]:
@@ -212,6 +232,10 @@ class SimyanTalker:
             try:
                 output = self.session.publisher(publisher.sources.comicvine)
             except ServiceError:
+                CONSOLE.print(
+                    f"Unable to find publisher: publisher_id={publisher.sources.comicvine}",
+                    style="logging.level.warning",
+                )
                 output = None
         if not output:
             output = self._search_publisher(publisher.title)

@@ -442,6 +442,8 @@ class MetronInfo(XmlModel):
                                 content["Credits"]["Credit"][index]["Roles"]["Role"][role_index] = {
                                     "#text": role
                                 }
+            if content["Publisher"] and "#text" not in content["Publisher"]:
+                content["Publisher"] = {"#text": content["Publisher"]}
             return MetronInfo(**content)
 
     def to_file(self, info_file: Path):
