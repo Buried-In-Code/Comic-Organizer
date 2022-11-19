@@ -36,8 +36,8 @@ class MokkariTalker:
                 }
             )
         if result.series.series_type:
-            issue.format = Format.load(result.series.series_type)
-        if result.genres:
+            issue.format = Format.load(result.series.series_type.name)
+        if result.series.genres:
             issue.genres = sorted({Genre.load(x.name) for x in result.series.genres})
         # TODO: Add Language
         # TODO: Locations

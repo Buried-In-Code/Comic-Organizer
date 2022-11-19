@@ -33,12 +33,14 @@ class Role(Enum):
         for entry in Role:
             if entry.value.lower() == value.lower():
                 return entry
-        if value.lower() == "colorist":
-            return Role.COLOURIST
-        if value.lower() == "cover":
-            return Role.COVER_ARTIST
-        if value.lower() == "penciler":
-            return Role.PENCILLER
+        mappings = {
+            "colorist": Role.COLOURIST,
+            "cover": Role.COVER_ARTIST,
+            "penciler": Role.PENCILLER,
+            "editor-in-chief": Role.EDITOR_IN_CHIEF
+        }
+        if value.lower() in mappings:
+            return mappings[value.lower()]
         CONSOLE.print(f"Unable to find Role: '{value}'", style="logging.level.warning")
         return Role.OTHER
 
@@ -67,6 +69,11 @@ class Format(Enum):
         for entry in Format:
             if entry.value.lower() == value.lower():
                 return entry
+        mappings = {
+            "hard cover": Format.HARDCOVER
+        }
+        if value.lower() in mappings:
+            return mappings[value.lower()]
         CONSOLE.print(f"Unable to find Format: '{value}'", style="logging.level.warning")
         return Format.COMIC
 

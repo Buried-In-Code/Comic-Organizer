@@ -20,8 +20,11 @@ class Format(Enum):
         for entry in Format:
             if entry.value.lower() == value.lower():
                 return entry
-        if value.lower() == "comic":
-            return Format.SERIES
+        mappings = {
+            "comic": Format.SERIES
+        }
+        if value.lower() in mappings:
+            return mappings[value.lower()]
         CONSOLE.print(f"Unable to find Format: '{value}'", style="logging.level.warning")
         return Format.SERIES
 
@@ -49,8 +52,11 @@ class InformationSource(Enum):
         for entry in InformationSource:
             if entry.value.lower() == value.lower():
                 return entry
-        if value.lower() == "comicvine":
-            return InformationSource.COMIC_VINE
+        mappings = {
+            "comicvine": InformationSource.COMIC_VINE
+        }
+        if value.lower() in mappings:
+            return mappings[value.lower()]
         raise ValueError(f"Unable to find InformationSource: '{value}'")
 
     def __str__(self):
@@ -114,16 +120,16 @@ class Role(Enum):
         for entry in Role:
             if entry.value.lower() == value.lower():
                 return entry
-        if value.lower() == "cover artist":
-            return Role.COVER
-        if value.lower() == "colourist":
-            return Role.COLORIST
-        if value.lower() == "colour separations":
-            return Role.COLOR_SEPARATIONS
-        if value.lower() == "colour assists":
-            return Role.COLOR_ASSISTS
-        if value.lower() == "colour flats":
-            return Role.COLOR_FLATS
+        mappings = {
+            "cover artist": Role.COVER,
+            "colourist": Role.COLORIST,
+            "colour separations": Role.COLOR_SEPARATIONS,
+            "colour assists": Role.COLOR_ASSISTS,
+            "colour flats": Role.COLOR_FLATS,
+            "penciler": Role.PENCILLER
+        }
+        if value.lower() in mappings:
+            return mappings[value.lower()]
         CONSOLE.print(f"Unable to find Role: '{value}'", style="logging.level.warning")
         return Role.OTHER
 

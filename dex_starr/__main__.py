@@ -80,7 +80,7 @@ def pull_info(
             continue
         if service == "Marvel" and not metadata.publisher.title.startswith("Marvel"):
             continue
-        CONSOLE.print(f"Pulling from {service}", style="logging.level.info")
+        CONSOLE.print(f"Pulling from {service}", style="bold blue")
         services[service].update_metadata(metadata)
 
 
