@@ -169,7 +169,7 @@ def main():
                 )
             del_folder(archive.extracted_folder)
     except KeyboardInterrupt:
-        CONSOLE.print("Shutting down Dex-Starr", style="logging.style.info")
+        CONSOLE.print("Shutting down Dex-Starr", style="logging.level.info")
 
 
 if __name__ == "__main__":
