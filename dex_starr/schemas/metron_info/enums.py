@@ -20,9 +20,7 @@ class Format(Enum):
         for entry in Format:
             if entry.value.lower() == value.lower():
                 return entry
-        mappings = {
-            "comic": Format.SERIES
-        }
+        mappings = {"comic": Format.SERIES}
         if value.lower() in mappings:
             return mappings[value.lower()]
         CONSOLE.print(f"Unable to find Format: '{value}'", style="logging.level.warning")
@@ -52,9 +50,7 @@ class InformationSource(Enum):
         for entry in InformationSource:
             if entry.value.lower() == value.lower():
                 return entry
-        mappings = {
-            "comicvine": InformationSource.COMIC_VINE
-        }
+        mappings = {"comicvine": InformationSource.COMIC_VINE}
         if value.lower() in mappings:
             return mappings[value.lower()]
         raise ValueError(f"Unable to find InformationSource: '{value}'")
@@ -126,7 +122,7 @@ class Role(Enum):
             "colour separations": Role.COLOR_SEPARATIONS,
             "colour assists": Role.COLOR_ASSISTS,
             "colour flats": Role.COLOR_FLATS,
-            "penciler": Role.PENCILLER
+            "penciler": Role.PENCILLER,
         }
         if value.lower() in mappings:
             return mappings[value.lower()]
