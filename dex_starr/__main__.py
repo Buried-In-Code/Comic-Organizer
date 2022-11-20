@@ -19,14 +19,14 @@ from dex_starr import (
 )
 from dex_starr.archive import Archive
 from dex_starr.console import CONSOLE, RichLogger
-from dex_starr.schemas.comic_info.schema import ComicInfo
-from dex_starr.schemas.metadata.schema import Metadata
-from dex_starr.schemas.metron_info.schema import MetronInfo
-from dex_starr.schemas.utils import create_metadata, to_comic_info, to_metron_info
-from dex_starr.services.esak import EsakTalker
-from dex_starr.services.himon import HimonTalker
-from dex_starr.services.mokkari import MokkariTalker
-from dex_starr.services.simyan import SimyanTalker
+from dex_starr.models.comic_info.schema import ComicInfo
+from dex_starr.models.metadata.schema import Metadata
+from dex_starr.models.metron_info.schema import MetronInfo
+from dex_starr.models.utils import create_metadata, to_comic_info, to_metron_info
+from dex_starr.services.comicvine import SimyanTalker
+from dex_starr.services.league_of_comic_geeks import HimonTalker
+from dex_starr.services.marvel import EsakTalker
+from dex_starr.services.metron import MokkariTalker
 from dex_starr.settings import Settings
 
 LOGGER = RichLogger(logging.getLogger("Dex-Starr"))

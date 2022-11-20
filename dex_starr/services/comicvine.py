@@ -13,8 +13,8 @@ from simyan.schemas.publisher import Publisher as SimyanPublisher
 from simyan.schemas.volume import Volume
 
 from dex_starr.console import CONSOLE, RichLogger, create_menu
-from dex_starr.schemas.metadata.enums import Role
-from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
+from dex_starr.models.metadata.enums import Role
+from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
 from dex_starr.services.sqlite_cache import SQLiteCache
 
 LOGGER = RichLogger(logging.getLogger(__name__))

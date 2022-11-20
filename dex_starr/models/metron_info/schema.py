@@ -21,14 +21,14 @@ from natsort import humansorted as sorted
 from natsort import ns
 from pydantic import Field, validator
 
-from dex_starr.schemas import XmlModel
-from dex_starr.schemas.comic_info.schema import Page
-from dex_starr.schemas.metadata.enums import Format as MetadataFormat
-from dex_starr.schemas.metadata.enums import Role as MetadataRole
-from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher
-from dex_starr.schemas.metadata.schema import Series as MetadataSeries
-from dex_starr.schemas.metadata.schema import Sources, StoryArc
-from dex_starr.schemas.metron_info.enums import AgeRating, Format, Genre, InformationSource, Role
+from dex_starr.models import XmlModel
+from dex_starr.models.comic_info.schema import Page
+from dex_starr.models.metadata.enums import Format as MetadataFormat
+from dex_starr.models.metadata.enums import Role as MetadataRole
+from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Publisher
+from dex_starr.models.metadata.schema import Series as MetadataSeries
+from dex_starr.models.metadata.schema import Sources, StoryArc
+from dex_starr.models.metron_info.enums import AgeRating, Format, Genre, InformationSource, Role
 
 
 class Resource(XmlModel):

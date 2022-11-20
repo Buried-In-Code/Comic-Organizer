@@ -13,8 +13,8 @@ from natsort import ns
 from rich.prompt import Prompt
 
 from dex_starr.console import CONSOLE, RichLogger, create_menu
-from dex_starr.schemas.metadata.enums import Format, Role
-from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher, Series
+from dex_starr.models.metadata.enums import Format, Role
+from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Publisher, Series
 from dex_starr.services.sqlite_cache import SQLiteCache
 
 LOGGER = RichLogger(logging.getLogger(__name__))

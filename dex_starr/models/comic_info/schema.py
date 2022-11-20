@@ -10,10 +10,10 @@ from natsort import humansorted as sorted
 from natsort import ns
 from pydantic import Field, validator
 
-from dex_starr.schemas import XmlModel
-from dex_starr.schemas.comic_info.enums import AgeRating, ComicPageType, Manga, YesNo
-from dex_starr.schemas.metadata.enums import Format, Genre, Role
-from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
+from dex_starr.models import XmlModel
+from dex_starr.models.comic_info.enums import AgeRating, ComicPageType, Manga, YesNo
+from dex_starr.models.metadata.enums import Format, Genre, Role
+from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
 
 
 class Page(XmlModel):

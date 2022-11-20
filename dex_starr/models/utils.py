@@ -7,12 +7,12 @@ from natsort import ns
 from rich.prompt import IntPrompt, Prompt
 
 from dex_starr.console import CONSOLE, create_menu
-from dex_starr.schemas.comic_info.schema import ComicInfo, Page
-from dex_starr.schemas.metadata.enums import Format
-from dex_starr.schemas.metadata.schema import Issue, Metadata, Publisher, Series, Sources
-from dex_starr.schemas.metron_info.enums import Format as MetronFormat
-from dex_starr.schemas.metron_info.enums import InformationSource, Role
-from dex_starr.schemas.metron_info.schema import (
+from dex_starr.models.comic_info.schema import ComicInfo, Page
+from dex_starr.models.metadata.enums import Format
+from dex_starr.models.metadata.schema import Issue, Metadata, Publisher, Series, Sources
+from dex_starr.models.metron_info.enums import Format as MetronFormat
+from dex_starr.models.metron_info.enums import InformationSource, Role
+from dex_starr.models.metron_info.schema import (
     Arc,
     Credit,
     GenreResource,
@@ -20,8 +20,8 @@ from dex_starr.schemas.metron_info.schema import (
     Resource,
     RoleResource,
 )
-from dex_starr.schemas.metron_info.schema import Series as MetronSeries
-from dex_starr.schemas.metron_info.schema import Source as MetronSource
+from dex_starr.models.metron_info.schema import Series as MetronSeries
+from dex_starr.models.metron_info.schema import Source as MetronSource
 
 
 def create_metadata() -> Metadata:

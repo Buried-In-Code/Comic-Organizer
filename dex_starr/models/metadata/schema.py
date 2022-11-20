@@ -10,9 +10,9 @@ from typing import Any, Dict, List, Optional
 from pydantic import Field, validator
 
 from dex_starr import __version__
-from dex_starr.schemas import JsonModel
-from dex_starr.schemas.comic_info.enums import ComicPageType
-from dex_starr.schemas.metadata.enums import Format, Genre, Role
+from dex_starr.models import JsonModel
+from dex_starr.models.comic_info.enums import ComicPageType
+from dex_starr.models.metadata.enums import Format, Genre, Role
 
 
 def sanitize(dirty: str) -> str:

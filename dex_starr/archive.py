@@ -17,7 +17,7 @@ from dex_starr import (
     list_files,
 )
 from dex_starr.console import RichLogger
-from dex_starr.schemas.metadata.schema import Metadata
+from dex_starr.models.metadata.schema import Metadata
 from dex_starr.settings import GeneralSettings
 
 LOGGER = RichLogger(logging.getLogger(__name__))
