@@ -1,5 +1,6 @@
 __all__ = ["EsakTalker"]
 
+import logging
 import re
 from typing import Optional
 
@@ -9,10 +10,12 @@ from esak.series import Series as EsakSeries
 from esak.session import Session as Esak
 from rich.prompt import Prompt
 
-from dex_starr.console import CONSOLE, create_menu
+from dex_starr.console import CONSOLE, RichLogger, create_menu
 from dex_starr.schemas.metadata.enums import Format, Role
 from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Series, StoryArc
 from dex_starr.services.sqlite_cache import SQLiteCache
+
+LOGGER = RichLogger(logging.getLogger(__name__))
 
 
 def clean_title(title: str) -> str:
@@ -59,9 +62,7 @@ class EsakTalker:
     def _search_comic(
         self, series_id: int, number: str, format: Optional[str] = None
     ) -> Optional[Comic]:
-        CONSOLE.print(
-            f"Searching for: {series_id=}, {number=}, {format=}", style="logging.level.debug"
-        )
+        LOGGER.debug(f"Searching for: {series_id=}, {number=}, {format=}")
         output = None
         params = {"noVariants": True, "series": series_id, "issueNumber": number}
         if format in ["Trade Paperback", "Hardcover"]:
@@ -83,16 +84,12 @@ class EsakTalker:
                 try:
                     output = self.session.comic(comic_list[comic_index - 1].id)
                 except ApiError:
-                    CONSOLE.print(
-                        f"Unable to find comic: comic_id={comic_list[comic_index - 1].id}",
-                        style="logging.level.warning",
+                    LOGGER.warning(
+                        f"Unable to find comic: comic_id={comic_list[comic_index - 1].id}"
                     )
                     output = None
         else:
-            CONSOLE.print(
-                f"Unable to find comic: {series_id=}, {number=}, {format=}",
-                style="logging.level.info",
-            )
+            LOGGER.info(f"Unable to find comic: {series_id=}, {number=}, {format=}")
         if not output and format:
             return self._search_comic(series_id, number)
         return output
@@ -103,10 +100,7 @@ class EsakTalker:
             try:
                 output = self.session.comic(issue.sources.marvel)
             except ApiError:
-                CONSOLE.print(
-                    f"Unable to find comic: comic_id={issue.sources.marvel}",
-                    style="logging.level.warning",
-                )
+                LOGGER.warning(f"Unable to find comic: comic_id={issue.sources.marvel}")
                 output = None
         if not output:
             output = self._search_comic(series_id, issue.number, str(issue.format))
@@ -125,7 +119,7 @@ class EsakTalker:
             series.title = clean_title(result.title)
 
     def _search_series(self, title: str, start_year: Optional[int] = None) -> Optional[EsakSeries]:
-        CONSOLE.print(f"Searching for: {title=}, {start_year=}", style="logging.level.debug")
+        LOGGER.debug(f"Searching for: {title=}, {start_year=}")
         output = None
         params = {"title": title}
         if start_year:
@@ -144,16 +138,12 @@ class EsakTalker:
                 try:
                     output = self.session.series(series_list[series_index - 1].id)
                 except ApiError:
-                    CONSOLE.print(
-                        f"Unable to find series: series_id={series_list[series_index - 1].id}",
-                        style="logging.level.warning",
+                    LOGGER.warning(
+                        f"Unable to find series: series_id={series_list[series_index - 1].id}"
                     )
                     output = None
         else:
-            CONSOLE.print(
-                f"Unable to find series: {title=}, {start_year=}",
-                style="logging.level.info",
-            )
+            LOGGER.info(f"Unable to find series: {title=}, {start_year=}")
         if not output and start_year:
             return self._search_series(title)
         return output
@@ -164,10 +154,7 @@ class EsakTalker:
             try:
                 output = self.session.series(series.sources.marvel)
             except ApiError:
-                CONSOLE.print(
-                    f"Unable to find series: series_id={series.sources.marvel}",
-                    style="logging.level.warning",
-                )
+                LOGGER.warning(f"Unable to find series: series_id={series.sources.marvel}")
                 output = None
         if not output:
             output = self._search_series(series.title, series.start_year)

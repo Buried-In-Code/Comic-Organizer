@@ -1,5 +1,6 @@
 __all__ = ["SimyanTalker"]
 
+import logging
 from typing import Optional
 
 from rich.prompt import Prompt
@@ -9,10 +10,12 @@ from simyan.schemas.issue import Issue as SimyanIssue
 from simyan.schemas.publisher import Publisher as SimyanPublisher
 from simyan.schemas.volume import Volume
 
-from dex_starr.console import CONSOLE, create_menu
+from dex_starr.console import CONSOLE, RichLogger, create_menu
 from dex_starr.schemas.metadata.enums import Role
 from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
 from dex_starr.services.sqlite_cache import SQLiteCache
+
+LOGGER = RichLogger(logging.getLogger(__name__))
 
 
 class SimyanTalker:
@@ -79,7 +82,7 @@ class SimyanTalker:
             issue.title = result.name
 
     def _search_issue(self, series_id: int, number: str) -> Optional[SimyanIssue]:
-        CONSOLE.print(f"Searching for: {series_id=}, {number=}", style="logging.level.debug")
+        LOGGER.debug(f"Searching for: {series_id=}, {number=}")
         output = None
         try:
             issue_list = self.session.issue_list(
@@ -97,16 +100,12 @@ class SimyanTalker:
                 try:
                     output = self.session.issue(issue_list[issue_index - 1].issue_id)
                 except ServiceError:
-                    CONSOLE.print(
-                        f"Unable to find issue: issue_id={issue_list[issue_index - 1].issue_id}",
-                        style="logging.level.warning",
+                    LOGGER.warning(
+                        f"Unable to find issue: issue_id={issue_list[issue_index - 1].issue_id}"
                     )
                     output = None
         else:
-            CONSOLE.print(
-                f"Unable to find issue: {series_id=}, {number=}",
-                style="logging.level.info",
-            )
+            LOGGER.info(f"Unable to find issue: {series_id=}, {number=}")
         return output
 
     def lookup_issue(self, issue: Issue, series_id: int) -> Optional[SimyanIssue]:
@@ -115,10 +114,7 @@ class SimyanTalker:
             try:
                 output = self.session.issue(issue.sources.comicvine)
             except ServiceError:
-                CONSOLE.print(
-                    f"Unable to find issue: issue_id={issue.sources.comicvine}",
-                    style="logging.level.warning",
-                )
+                LOGGER.warning(f"Unable to find issue: issue_id={issue.sources.comicvine}")
                 output = None
         if not output:
             output = self._search_issue(series_id, issue.number)
@@ -139,9 +135,7 @@ class SimyanTalker:
     def _search_volume(
         self, publisher_id: int, title: str, start_year: Optional[int] = None
     ) -> Optional[Volume]:
-        CONSOLE.print(
-            f"Searching for: {publisher_id=}, {title=}, {start_year=}", style="logging.level.debug"
-        )
+        LOGGER.debug(f"Searching for: {publisher_id=}, {title=}, {start_year=}")
         output = None
         try:
             volume_list = self.session.volume_list({"filter": f"name:{title}"})
@@ -162,17 +156,13 @@ class SimyanTalker:
                 try:
                     output = self.session.volume(volume_list[volume_index - 1].volume_id)
                 except ServiceError:
-                    CONSOLE.print(
+                    LOGGER.warning(
                         "Unable to find volume: "
-                        f"volume_id={volume_list[volume_index - 1].volume_id}",
-                        style="logging.level.warning",
+                        f"volume_id={volume_list[volume_index - 1].volume_id}"
                     )
                     output = None
         else:
-            CONSOLE.print(
-                f"Unable to find volume: {publisher_id=}, {title=}, {start_year=}",
-                style="logging.level.info",
-            )
+            LOGGER.info(f"Unable to find volume: {publisher_id=}, {title=}, {start_year=}")
         if not output and start_year:
             return self._search_volume(publisher_id, title)
         return output
@@ -183,10 +173,7 @@ class SimyanTalker:
             try:
                 output = self.session.volume(series.sources.comicvine)
             except ServiceError:
-                CONSOLE.print(
-                    f"Unable to find volume: volume_id={series.sources.comicvine}",
-                    style="logging.level.warning",
-                )
+                LOGGER.warning(f"Unable to find volume: volume_id={series.sources.comicvine}")
                 output = None
         if not output:
             output = self._search_volume(publisher_id, series.title, series.start_year)
@@ -203,7 +190,7 @@ class SimyanTalker:
             publisher.title = result.name or publisher.title
 
     def _search_publisher(self, title: str) -> Optional[SimyanPublisher]:
-        CONSOLE.print(f"Searching for: {title=}", style="logging.level.debug")
+        LOGGER.debug(f"Searching for: {title=}")
         output = None
         try:
             publisher_list = self.session.publisher_list({"filter": f"name:{title}"})
@@ -221,14 +208,13 @@ class SimyanTalker:
                         publisher_list[publisher_index - 1].publisher_id
                     )
                 except ServiceError:
-                    CONSOLE.print(
+                    LOGGER.warning(
                         "Unable to find publisher: "
-                        f"publisher_id={publisher_list[publisher_index - 1].publisher_id}",
-                        style="logging.level.warning",
+                        f"publisher_id={publisher_list[publisher_index - 1].publisher_id}"
                     )
                     output = None
         else:
-            CONSOLE.print(f"Unable to find publisher: {title=}", style="logging.level.info")
+            LOGGER.info(f"Unable to find publisher: {title=}")
         return output
 
     def lookup_publisher(self, publisher: Publisher) -> Optional[SimyanPublisher]:
@@ -237,9 +223,8 @@ class SimyanTalker:
             try:
                 output = self.session.publisher(publisher.sources.comicvine)
             except ServiceError:
-                CONSOLE.print(
-                    f"Unable to find publisher: publisher_id={publisher.sources.comicvine}",
-                    style="logging.level.warning",
+                LOGGER.warning(
+                    f"Unable to find publisher: publisher_id={publisher.sources.comicvine}"
                 )
                 output = None
         if not output:

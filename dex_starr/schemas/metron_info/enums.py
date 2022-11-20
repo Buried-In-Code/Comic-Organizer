@@ -1,10 +1,13 @@
 __all__ = ["Format", "InformationSource", "Role", "Genre", "AgeRating", "ComicPageType"]
 
+import logging
 from enum import Enum
 
-from dex_starr.console import CONSOLE
+from dex_starr.console import RichLogger
 from dex_starr.schemas.comic_info.enums import ComicPageType
 from dex_starr.schemas.metadata.enums import Genre
+
+LOGGER = RichLogger(logging.getLogger(__name__))
 
 
 class Format(Enum):
@@ -23,7 +26,7 @@ class Format(Enum):
         mappings = {"comic": Format.SERIES}
         if value.lower() in mappings:
             return mappings[value.lower()]
-        CONSOLE.print(f"Unable to find Format: '{value}'", style="logging.level.warning")
+        LOGGER.warning(f"Unable to find Format: '{value}'")
         return Format.SERIES
 
     def __str__(self):
@@ -126,7 +129,7 @@ class Role(Enum):
         }
         if value.lower() in mappings:
             return mappings[value.lower()]
-        CONSOLE.print(f"Unable to find Role: '{value}'", style="logging.level.warning")
+        LOGGER.warning(f"Unable to find Role: '{value}'")
         return Role.OTHER
 
     def __str__(self):
@@ -153,7 +156,7 @@ class AgeRating(Enum):
         for entry in AgeRating:
             if entry.value.lower() == value.lower():
                 return entry
-        CONSOLE.print(f"Unable to find AgeRating: '{value}'", style="logging.level.warning")
+        LOGGER.warning(f"Unable to find AgeRating: '{value}'")
         return AgeRating.UNKNOWN
 
     def __str__(self):

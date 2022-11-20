@@ -1,6 +1,7 @@
 __all__ = ["MokkariTalker"]
 
 import html
+import logging
 from typing import Optional
 
 from mokkari.exceptions import ApiError
@@ -10,10 +11,12 @@ from mokkari.series import Series as MokkariSeries
 from mokkari.session import Session as Mokkari
 from rich.prompt import Prompt
 
-from dex_starr.console import CONSOLE, create_menu
+from dex_starr.console import CONSOLE, RichLogger, create_menu
 from dex_starr.schemas.metadata.enums import Format, Genre, Role
 from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
 from dex_starr.services.sqlite_cache import SQLiteCache
+
+LOGGER = RichLogger(logging.getLogger(__name__))
 
 
 class MokkariTalker:
@@ -56,7 +59,7 @@ class MokkariTalker:
             issue.title = result.collection_title
 
     def _search_issue(self, series_id: int, number: str) -> Optional[MokkariIssue]:
-        CONSOLE.print(f"Searching for: {series_id=}, {number=}", style="logging.level.debug")
+        LOGGER.debug(f"Searching for: {series_id=}, {number=}")
         output = None
         try:
             issue_list = self.session.issues_list({"series_id": series_id, "number": number})
@@ -72,16 +75,12 @@ class MokkariTalker:
                 try:
                     output = self.session.issue(issue_list[issue_index - 1].id)
                 except ApiError:
-                    CONSOLE.print(
-                        f"Unable to find issue: issue_id={issue_list[issue_index - 1].id}",
-                        style="logging.level.warning",
+                    LOGGER.warning(
+                        f"Unable to find issue: issue_id={issue_list[issue_index - 1].id}"
                     )
                     output = None
         else:
-            CONSOLE.print(
-                f"Unable to find issue: {series_id=}, {number=}",
-                style="logging.level.info",
-            )
+            LOGGER.info(f"Unable to find issue: {series_id=}, {number=}")
         return output
 
     def lookup_issue(self, issue: Issue, series_id: int) -> Optional[MokkariIssue]:
@@ -90,10 +89,7 @@ class MokkariTalker:
             try:
                 output = self.session.issue(issue.sources.metron)
             except ApiError:
-                CONSOLE.print(
-                    f"Unable to find issue: issue_id={issue.sources.metron}",
-                    style="logging.level.warning",
-                )
+                LOGGER.warning(f"Unable to find issue: issue_id={issue.sources.metron}")
                 output = None
         if not output:
             output = self._search_issue(series_id, issue.number)
@@ -120,10 +116,7 @@ class MokkariTalker:
         volume: Optional[int] = None,
         start_year: Optional[int] = None,
     ) -> Optional[MokkariSeries]:
-        CONSOLE.print(
-            f"Searching for: {publisher_id=}, {title=}, {volume=}, {start_year=}",
-            style="logging.level.debug",
-        )
+        LOGGER.debug(f"Searching for: {publisher_id=}, {title=}, {volume=}, {start_year=}")
         output = None
         params = {"publisher_id": publisher_id, "name": title}
         if volume:
@@ -144,15 +137,13 @@ class MokkariTalker:
                 try:
                     output = self.session.series(series_list[series_index - 1].id)
                 except ApiError:
-                    CONSOLE.print(
-                        f"Unable to find series: series_id={series_list[series_index - 1].id}",
-                        style="logging.level.warning",
+                    LOGGER.warning(
+                        f"Unable to find series: series_id={series_list[series_index - 1].id}"
                     )
                     output = None
         else:
-            CONSOLE.print(
-                f"Unable to find series: {publisher_id=}, {title=}, {volume=}, {start_year=}",
-                style="logging.level.info",
+            LOGGER.info(
+                f"Unable to find series: {publisher_id=}, {title=}, {volume=}, {start_year=}"
             )
         if not output and start_year:
             return self._search_series(publisher_id, title, volume=volume)
@@ -166,10 +157,7 @@ class MokkariTalker:
             try:
                 output = self.session.series(series.sources.metron)
             except ApiError:
-                CONSOLE.print(
-                    f"Unable to find series: series_id={series.sources.metron}",
-                    style="logging.level.warning",
-                )
+                LOGGER.warning(f"Unable to find series: series_id={series.sources.metron}")
                 output = None
         if not output:
             output = self._search_series(
@@ -188,7 +176,7 @@ class MokkariTalker:
             publisher.title = result.name
 
     def _search_publisher(self, title: str) -> Optional[MokkariPublisher]:
-        CONSOLE.print(f"Searching for: {title=}", style="logging.level.debug")
+        LOGGER.debug(f"Searching for: {title=}")
         output = None
         try:
             publisher_list = self.session.publishers_list({"name": title})
@@ -204,14 +192,13 @@ class MokkariTalker:
                 try:
                     output = self.session.publisher(publisher_list[publisher_index - 1].id)
                 except ApiError:
-                    CONSOLE.print(
+                    LOGGER.warning(
                         "Unable to find publisher: "
-                        f"publisher_id={publisher_list[publisher_index - 1].id}",
-                        style="logging.level.warning",
+                        f"publisher_id={publisher_list[publisher_index - 1].id}"
                     )
                     output = None
         else:
-            CONSOLE.print(f"Unable to find publisher: {title=}", style="logging.level.info")
+            LOGGER.info(f"Unable to find publisher: {title=}")
         return output
 
     def lookup_publisher(self, publisher: Publisher) -> Optional[MokkariPublisher]:
@@ -220,10 +207,7 @@ class MokkariTalker:
             try:
                 output = self.session.publisher(publisher.sources.metron)
             except ApiError:
-                CONSOLE.print(
-                    f"Unable to find publisher: publisher_id={publisher.sources.metron}",
-                    style="logging.level.warning",
-                )
+                LOGGER.warning(f"Unable to find publisher: publisher_id={publisher.sources.metron}")
                 output = None
         if not output:
             output = self._search_publisher(publisher.title)

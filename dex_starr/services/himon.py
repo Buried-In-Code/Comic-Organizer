@@ -1,6 +1,7 @@
 __all__ = ["HimonTalker"]
 
 import html
+import logging
 from typing import Optional
 
 from himon.exceptions import ServiceError
@@ -9,10 +10,12 @@ from himon.schemas.comic import Comic
 from himon.schemas.series import Series as HimonSeries
 from rich.prompt import Prompt
 
-from dex_starr.console import CONSOLE, create_menu
+from dex_starr.console import CONSOLE, RichLogger, create_menu
 from dex_starr.schemas.metadata.enums import Format, Role
 from dex_starr.schemas.metadata.schema import Creator, Issue, Metadata, Publisher, Series
 from dex_starr.services.sqlite_cache import SQLiteCache
+
+LOGGER = RichLogger(logging.getLogger(__name__))
 
 
 def generate_search_terms(series_title: str, format: str, number: Optional[str] = None):
@@ -92,10 +95,7 @@ class HimonTalker:
         publisher_name: Optional[str] = None,
         fuzzy: bool = False,
     ) -> Optional[Comic]:
-        CONSOLE.print(
-            f"Searching for: {title=}, {format=}, {number=}, {publisher_name=}, {fuzzy=}",
-            style="logging.level.debug",
-        )
+        LOGGER.debug(f"Searching for: {title=}, {format=}, {number=}, {publisher_name=}, {fuzzy=}")
         output = None
         if number:
             search_terms = generate_search_terms(title, format, number)
@@ -131,16 +131,13 @@ class HimonTalker:
                 try:
                     output = self.session.comic(comic_list[comic_index - 1].comic_id)
                 except ServiceError:
-                    CONSOLE.print(
-                        f"Unable to find comic: comic_id={comic_list[comic_index - 1].comic_id}",
-                        style="logging.level.warning",
+                    LOGGER.warning(
+                        f"Unable to find comic: comic_id={comic_list[comic_index - 1].comic_id}"
                     )
                     output = None
         else:
-            CONSOLE.print(
-                f"Unable to find comic: {title=}, {format=}, {number=}, {publisher_name=}, "
-                f"{fuzzy=}",
-                style="logging.level.info",
+            LOGGER.info(
+                f"Unable to find comic: {title=}, {format=}, {number=}, {publisher_name=}, {fuzzy=}"
             )
         if not output and not fuzzy:
             return self._search_comic(
@@ -160,10 +157,8 @@ class HimonTalker:
             try:
                 output = self.session.comic(metadata.issue.sources.league_of_comic_geeks)
             except ServiceError:
-                CONSOLE.print(
-                    "Unable to find comic: "
-                    f"comic_id={metadata.issue.sources.league_of_comic_geeks}",
-                    style="logging.level.warning",
+                LOGGER.warning(
+                    f"Unable to find comic: comic_id={metadata.issue.sources.league_of_comic_geeks}"
                 )
                 output = None
         if not output:

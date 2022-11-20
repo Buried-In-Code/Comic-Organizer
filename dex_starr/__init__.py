@@ -90,8 +90,9 @@ def setup_logging(debug: bool = False):
             RichHandler(
                 rich_tracebacks=True,
                 tracebacks_show_locals=True,
-                log_time_format="[%Y-%m-%d %H:%M:%S]",
                 omit_repeated_times=False,
+                show_path=False,
+                show_time=False,
                 console=CONSOLE,
             )
         ],
