@@ -8,6 +8,8 @@ from himon.exceptions import ServiceError
 from himon.league_of_comic_geeks import LeagueofComicGeeks
 from himon.schemas.comic import Comic
 from himon.schemas.series import Series as HimonSeries
+from natsort import humansorted as sorted
+from natsort import ns
 from rich.prompt import Prompt
 
 from dex_starr.console import CONSOLE, RichLogger, create_menu
@@ -43,7 +45,7 @@ class HimonTalker:
 
     def update_issue(self, result: Comic, issue: Issue):
         if result.characters:
-            issue.characters = sorted({x.name for x in result.characters})
+            issue.characters = sorted({x.name for x in result.characters}, alg=ns.NA | ns.G)
         if result.release_date:
             issue.cover_date = result.release_date
         if result.creators:
@@ -54,7 +56,8 @@ class HimonTalker:
                         roles=sorted({Role.load(r) for r in x.roles.values()}),
                     )
                     for x in result.creators
-                }
+                },
+                alg=ns.NA | ns.G,
             )
         if result.format:
             issue.format = Format.load(result.format)
@@ -117,6 +120,7 @@ class HimonTalker:
         if comic_list := sorted(
             comic_list,
             key=lambda x: (x.publisher_name, x.series_name, x.series_volume or 1, x.title),
+            alg=ns.NA | ns.G,
         ):
             comic_index = create_menu(
                 options=[

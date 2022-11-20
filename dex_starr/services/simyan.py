@@ -3,6 +3,8 @@ __all__ = ["SimyanTalker"]
 import logging
 from typing import Optional
 
+from natsort import humansorted as sorted
+from natsort import ns
 from rich.prompt import Prompt
 from simyan.comicvine import Comicvine
 from simyan.exceptions import ServiceError
@@ -29,7 +31,8 @@ class SimyanTalker:
                     *{x.name for x in result.characters},
                     *{x.name for x in result.first_appearance_characters},
                     *{x.name for x in result.deaths},
-                }
+                },
+                alg=ns.NA | ns.G,
             )
         if result.cover_date:
             issue.cover_date = result.cover_date
@@ -39,11 +42,13 @@ class SimyanTalker:
                     Creator(
                         name=x.name,
                         roles=sorted(
-                            {Role.load(r.strip()) for role in x.role_list for r in role.split(",")}
+                            {Role.load(r.strip()) for role in x.role_list for r in role.split(",")},
+                            alg=ns.NA | ns.G,
                         ),
                     )
                     for x in result.creators
-                }
+                },
+                alg=ns.NA | ns.G,
             )
         # TODO: Format
         # TODO: Genres
@@ -53,7 +58,8 @@ class SimyanTalker:
                 {
                     *{x.name for x in result.locations},
                     *{x.name for x in result.first_appearance_locations},
-                }
+                },
+                alg=ns.NA | ns.G,
             )
         if result.number:
             issue.number = result.number
@@ -66,7 +72,8 @@ class SimyanTalker:
                 {
                     *{StoryArc(title=x.name) for x in result.story_arcs},
                     *{StoryArc(title=x.name) for x in result.first_appearance_story_arcs},
-                }
+                },
+                alg=ns.NA | ns.G,
             )
         if result.summary:
             issue.summary = result.summary
@@ -76,7 +83,8 @@ class SimyanTalker:
                     *{x.name for x in result.teams},
                     *{x.name for x in result.first_appearance_teams},
                     *{x.name for x in result.teams_disbanded},
-                }
+                },
+                alg=ns.NA | ns.G,
             )
         if result.name:
             issue.title = result.name
@@ -90,7 +98,7 @@ class SimyanTalker:
             )
         except ServiceError:
             issue_list = []
-        if issue_list := sorted(issue_list, key=lambda i: i.number):
+        if issue_list := sorted(issue_list, key=lambda i: i.number, alg=ns.NA | ns.G):
             issue_index = create_menu(
                 options=[f"{i.issue_id} | {i.volume.name} #{i.number}" for i in issue_list],
                 prompt="Select Issue",
@@ -146,7 +154,9 @@ class SimyanTalker:
         )
         if start_year:
             volume_list = filter(lambda v: v.start_year == start_year, volume_list)
-        if volume_list := sorted(volume_list, key=lambda v: (v.name, v.start_year or 0)):
+        if volume_list := sorted(
+            volume_list, key=lambda v: (v.name, v.start_year or 0), alg=ns.NA | ns.G
+        ):
             volume_index = create_menu(
                 options=[f"{v.volume_id} | {v.name} ({v.start_year})" for v in volume_list],
                 prompt="Select Volume",
@@ -196,7 +206,7 @@ class SimyanTalker:
             publisher_list = self.session.publisher_list({"filter": f"name:{title}"})
         except ServiceError:
             publisher_list = []
-        if publisher_list := sorted(publisher_list, key=lambda p: p.name):
+        if publisher_list := sorted(publisher_list, key=lambda p: p.name, alg=ns.NA | ns.G):
             publisher_index = create_menu(
                 options=[f"{p.publisher_id} | {p.name}" for p in publisher_list],
                 prompt="Select Publisher",

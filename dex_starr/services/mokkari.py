@@ -9,6 +9,8 @@ from mokkari.issue import Issue as MokkariIssue
 from mokkari.publisher import Publisher as MokkariPublisher
 from mokkari.series import Series as MokkariSeries
 from mokkari.session import Session as Mokkari
+from natsort import humansorted as sorted
+from natsort import ns
 from rich.prompt import Prompt
 
 from dex_starr.console import CONSOLE, RichLogger, create_menu
@@ -25,7 +27,7 @@ class MokkariTalker:
 
     def update_issue(self, result: MokkariIssue, issue: Issue):
         if result.characters:
-            issue.characters = sorted({x.name for x in result.characters})
+            issue.characters = sorted({x.name for x in result.characters}, alg=ns.NA | ns.G)
         if result.cover_date:
             issue.cover_date = result.cover_date
         if result.credits:
@@ -33,15 +35,18 @@ class MokkariTalker:
                 {
                     Creator(
                         name=html.unescape(x.creator),
-                        roles=sorted({Role.load(r.name) for r in x.role}),
+                        roles=sorted({Role.load(r.name) for r in x.role}, alg=ns.NA | ns.G),
                     )
                     for x in result.credits
-                }
+                },
+                alg=ns.NA | ns.G,
             )
         if result.series.series_type:
             issue.format = Format.load(result.series.series_type.name)
         if result.series.genres:
-            issue.genres = sorted({Genre.load(x.name) for x in result.series.genres})
+            issue.genres = sorted(
+                {Genre.load(x.name) for x in result.series.genres}, alg=ns.NA | ns.G
+            )
         # TODO: Add Language
         # TODO: Locations
         if result.number:
@@ -50,11 +55,13 @@ class MokkariTalker:
         if result.store_date:
             issue.store_date = result.store_date
         if result.arcs:
-            issue.story_arcs = sorted({StoryArc(title=x.name) for x in result.arcs})
+            issue.story_arcs = sorted(
+                {StoryArc(title=x.name) for x in result.arcs}, alg=ns.NA | ns.G
+            )
         if result.desc:
             issue.summary = result.desc
         if result.teams:
-            issue.teams = sorted({x.name for x in result.teams})
+            issue.teams = sorted({x.name for x in result.teams}, alg=ns.NA | ns.G)
         if result.collection_title:
             issue.title = result.collection_title
 
@@ -65,7 +72,7 @@ class MokkariTalker:
             issue_list = self.session.issues_list({"series_id": series_id, "number": number})
         except ApiError:
             issue_list = []
-        if issue_list := sorted(issue_list, key=lambda i: i.issue_name):
+        if issue_list := sorted(issue_list, key=lambda i: i.issue_name, alg=ns.NA | ns.G):
             issue_index = create_menu(
                 options=[f"{i.id} | {i.issue_name or i.collection_title}" for i in issue_list],
                 prompt="Select Issue",
@@ -127,7 +134,7 @@ class MokkariTalker:
             series_list = self.session.series_list(params)
         except ApiError:
             series_list = []
-        if series_list := sorted(series_list, key=lambda s: s.display_name):
+        if series_list := sorted(series_list, key=lambda s: s.display_name, alg=ns.NA | ns.G):
             series_index = create_menu(
                 options=[f"{s.id} | {s.display_name}" for s in series_list],
                 prompt="Select Series",
@@ -182,7 +189,7 @@ class MokkariTalker:
             publisher_list = self.session.publishers_list({"name": title})
         except ApiError:
             publisher_list = []
-        if publisher_list := sorted(publisher_list, key=lambda p: p.name):
+        if publisher_list := sorted(publisher_list, key=lambda p: p.name, alg=ns.NA | ns.G):
             publisher_index = create_menu(
                 options=[f"{p.id} | {p.name}" for p in publisher_list],
                 prompt="Select Publisher",

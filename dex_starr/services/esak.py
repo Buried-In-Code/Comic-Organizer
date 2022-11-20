@@ -8,6 +8,8 @@ from esak.comic import Comic
 from esak.exceptions import ApiError
 from esak.series import Series as EsakSeries
 from esak.session import Session as Esak
+from natsort import humansorted as sorted
+from natsort import ns
 from rich.prompt import Prompt
 
 from dex_starr.console import CONSOLE, RichLogger, create_menu
@@ -30,14 +32,15 @@ class EsakTalker:
 
     def update_issue(self, result: Comic, issue: Issue):
         if result.characters:
-            issue.characters = sorted({x.name for x in result.characters})
+            issue.characters = sorted({x.name for x in result.characters}, alg=ns.NA | ns.G)
         # TODO: Cover date
         if result.creators:
             issue.creators = sorted(
                 {
                     Creator(name=x.name, roles=[Role.load(clean_title(x.role.title()))])
                     for x in result.creators
-                }
+                },
+                alg=ns.NA | ns.G,
             )
         if result.format:
             issue.format = Format.load(result.format)
@@ -52,7 +55,9 @@ class EsakTalker:
         if result.dates.on_sale:
             issue.store_date = result.dates.on_sale
         if result.events:
-            issue.story_arcs = sorted({StoryArc(title=x.name) for x in result.events})
+            issue.story_arcs = sorted(
+                {StoryArc(title=x.name) for x in result.events}, alg=ns.NA | ns.G
+            )
         if result.description:
             issue.summary = result.description
         # TODO: Teams
@@ -71,7 +76,7 @@ class EsakTalker:
             comic_list = self.session.comics_list(params=params)
         except ApiError:
             comic_list = []
-        if comic_list := sorted(comic_list, key=lambda c: c.issue_number):
+        if comic_list := sorted(comic_list, key=lambda c: c.issue_number, alg=ns.NA | ns.G):
             comic_index = create_menu(
                 options=[
                     f"{c.id} | {clean_title(c.series.name)} #{c.issue_number} - {c.format}"
@@ -128,7 +133,9 @@ class EsakTalker:
             series_list = self.session.series_list(params)
         except ApiError:
             series_list = []
-        if series_list := sorted(series_list, key=lambda s: (s.title, s.start_year)):
+        if series_list := sorted(
+            series_list, key=lambda s: (s.title, s.start_year), alg=ns.NA | ns.G
+        ):
             series_index = create_menu(
                 options=[f"{s.id} | {clean_title(s.title)} ({s.start_year})" for s in series_list],
                 prompt="Select Series",

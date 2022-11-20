@@ -17,6 +17,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import xmltodict
+from natsort import humansorted as sorted
+from natsort import ns
 from pydantic import Field, validator
 
 from dex_starr.schemas import XmlModel
@@ -342,21 +344,24 @@ class MetronInfo(XmlModel):
                 volume=self.series.volume,
             ),
             issue=Issue(
-                characters=sorted({x.value for x in self.characters}),
+                characters=sorted({x.value for x in self.characters}, alg=ns.NA | ns.G),
                 cover_date=self.cover_date,
                 creators=sorted(
                     {
                         Creator(
                             name=x.creator.value,
-                            roles=sorted({MetadataRole.load(str(r.value)) for r in x.roles}),
+                            roles=sorted(
+                                {MetadataRole.load(str(r.value)) for r in x.roles}, alg=ns.NA | ns.G
+                            ),
                         )
                         for x in self.credits
-                    }
+                    },
+                    alg=ns.NA | ns.G,
                 ),
                 format=MetadataFormat.load(str(self.series.format)),
-                genres=sorted({x.value for x in self.genres}),
+                genres=sorted({x.value for x in self.genres}, alg=ns.NA | ns.G),
                 language=self.series.lang,
-                locations=sorted({x.value for x in self.locations}),
+                locations=sorted({x.value for x in self.locations}, alg=ns.NA | ns.G),
                 number=self.number,
                 page_count=self.page_count,
                 sources=Sources(
@@ -374,10 +379,11 @@ class MetronInfo(XmlModel):
                 ),
                 store_date=self.store_date,
                 story_arcs=sorted(
-                    {StoryArc(title=x.name, number=x.number) for x in self.story_arcs}
+                    {StoryArc(title=x.name, number=x.number) for x in self.story_arcs},
+                    alg=ns.NA | ns.G,
                 ),
                 summary=self.summary,
-                teams=sorted({x.value for x in self.teams}),
+                teams=sorted({x.value for x in self.teams}, alg=ns.NA | ns.G),
                 title=self.collection_title,
             ),
             pages=sorted(
@@ -393,7 +399,8 @@ class MetronInfo(XmlModel):
                         image_height=x.image_height,
                     )
                     for x in self.pages
-                }
+                },
+                alg=ns.NA | ns.G,
             ),
             notes=self.notes,
         )
@@ -476,7 +483,7 @@ class MetronInfo(XmlModel):
                         credit["Roles"] = {"Role": credit["Roles"]}
 
             xmltodict.unparse(
-                {"MetronInfo": {k: content[k] for k in sorted(content)}},
+                {"MetronInfo": {k: content[k] for k in sorted(content, alg=ns.NA | ns.G)}},
                 output=stream,
                 short_empty_elements=True,
                 pretty=True,

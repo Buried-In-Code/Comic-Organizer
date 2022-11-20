@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import xmltodict
+from natsort import humansorted as sorted
+from natsort import ns
 from pydantic import Field, validator
 
 from dex_starr.schemas import XmlModel
@@ -114,13 +116,16 @@ class ComicInfo(XmlModel):
         if not self.alternate_series and not self.story_arc:
             return []
         if not self.alternate_series:
-            return sorted(x.strip() for x in self.story_arc.split(","))
+            return sorted({x.strip() for x in self.story_arc.split(",")}, alg=ns.NA | ns.G)
         if not self.story_arc:
-            return sorted(x.strip() for x in self.alternate_series.split(","))
-        return [
-            *sorted(x.strip() for x in self.alternate_series.split(",")),
-            *sorted(x.strip() for x in self.story_arc.split(",")),
-        ]
+            return sorted({x.strip() for x in self.alternate_series.split(",")}, alg=ns.NA | ns.G)
+        return sorted(
+            {
+                *[x.strip() for x in self.alternate_series.split(",")],
+                *[x.strip() for x in self.story_arc.split(",")],
+            },
+            alg=ns.NA | ns.G,
+        )
 
     @property
     def cover_date(self) -> Optional[date]:
@@ -132,25 +137,25 @@ class ComicInfo(XmlModel):
     def writer_list(self) -> List[str]:
         if not self.writer:
             return []
-        return sorted({x.strip() for x in self.writer.split(",")})
+        return sorted({x.strip() for x in self.writer.split(",")}, alg=ns.NA | ns.G)
 
     @property
     def penciller_list(self) -> List[str]:
         if not self.penciller:
             return []
-        return sorted({x.strip() for x in self.penciller.split(",")})
+        return sorted({x.strip() for x in self.penciller.split(",")}, alg=ns.NA | ns.G)
 
     @property
     def inker_list(self) -> List[str]:
         if not self.inker:
             return []
-        return sorted({x.strip() for x in self.inker.split(",")})
+        return sorted({x.strip() for x in self.inker.split(",")}, alg=ns.NA | ns.G)
 
     @property
     def colourist_list(self) -> List[str]:
         if not self.colorist:
             return []
-        return sorted({x.strip() for x in self.colorist.split(",")})
+        return sorted({x.strip() for x in self.colorist.split(",")}, alg=ns.NA | ns.G)
 
     @property
     def colorist_list(self) -> List[str]:
@@ -160,43 +165,43 @@ class ComicInfo(XmlModel):
     def letterer_list(self) -> List[str]:
         if not self.letterer:
             return []
-        return sorted({x.strip() for x in self.letterer.split(",")})
+        return sorted({x.strip() for x in self.letterer.split(",")}, alg=ns.NA | ns.G)
 
     @property
     def cover_artist_list(self) -> List[str]:
         if not self.cover_artist:
             return []
-        return sorted({x.strip() for x in self.cover_artist.split(",")})
+        return sorted({x.strip() for x in self.cover_artist.split(",")}, alg=ns.NA | ns.G)
 
     @property
     def editor_list(self) -> List[str]:
         if not self.editor:
             return []
-        return sorted({x.strip() for x in self.editor.split(",")})
+        return sorted({x.strip() for x in self.editor.split(",")}, alg=ns.NA | ns.G)
 
     @property
     def genre_list(self) -> List[str]:
         if not self.genre:
             return []
-        return sorted({x.strip() for x in self.genre.split(",")})
+        return sorted({x.strip() for x in self.genre.split(",")}, alg=ns.NA | ns.G)
 
     @property
     def character_list(self) -> List[str]:
         if not self.characters:
             return []
-        return sorted({x.strip() for x in self.characters.split(",")})
+        return sorted({x.strip() for x in self.characters.split(",")}, alg=ns.NA | ns.G)
 
     @property
     def team_list(self) -> List[str]:
         if not self.teams:
             return []
-        return sorted({x.strip() for x in self.teams.split(",")})
+        return sorted({x.strip() for x in self.teams.split(",")}, alg=ns.NA | ns.G)
 
     @property
     def location_list(self) -> List[str]:
         if not self.locations:
             return []
-        return sorted({x.strip() for x in self.locations.split(",")})
+        return sorted({x.strip() for x in self.locations.split(",")}, alg=ns.NA | ns.G)
 
     def to_metadata(self) -> Metadata:
         # region Parse Creators
@@ -232,17 +237,23 @@ class ComicInfo(XmlModel):
                 characters=self.character_list,
                 cover_date=self.cover_date,
                 creators=sorted(
-                    {Creator(name=name, roles=sorted(roles)) for name, roles in creators.items()}
+                    {
+                        Creator(name=name, roles=sorted(roles, alg=ns.NA | ns.G))
+                        for name, roles in creators.items()
+                    },
+                    alg=ns.NA | ns.G,
                 ),
                 format=Format.load(self.format),
-                genres=sorted(Genre.load(x) for x in self.genre_list),
+                genres=sorted({Genre.load(x) for x in self.genre_list}, alg=ns.NA | ns.G),
                 language=self.language_iso.lower() if self.language_iso else "en",
                 locations=self.location_list,
                 number=self.number,
                 page_count=self.page_count,
                 # TODO: Sources
                 # TODO: Store date
-                story_arcs=sorted(StoryArc(title=x) for x in self.story_arc_list),
+                story_arcs=sorted(
+                    {StoryArc(title=x) for x in self.story_arc_list}, alg=ns.NA | ns.G
+                ),
                 summary=self.summary,
                 teams=self.team_list,
                 title=self.title,
@@ -260,7 +271,8 @@ class ComicInfo(XmlModel):
                         image_height=x.image_height,
                     )
                     for x in self.pages
-                }
+                },
+                alg=ns.NA | ns.G,
             ),
             notes=self.notes,
         )
@@ -287,7 +299,7 @@ class ComicInfo(XmlModel):
                     content[key] = {value: content[key]}
 
             xmltodict.unparse(
-                {"ComicInfo": {k: content[k] for k in sorted(content)}},
+                {"ComicInfo": {k: content[k] for k in sorted(content, alg=ns.NA | ns.G)}},
                 output=stream,
                 short_empty_elements=True,
                 pretty=True,

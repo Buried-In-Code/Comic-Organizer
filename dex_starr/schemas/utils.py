@@ -2,6 +2,8 @@ __all__ = ["create_metadata", "to_comic_info", "to_metron_info"]
 
 from typing import List, Optional
 
+from natsort import humansorted as sorted
+from natsort import ns
 from rich.prompt import IntPrompt, Prompt
 
 from dex_starr.console import CONSOLE, create_menu
@@ -41,9 +43,14 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
     roles = ["Writer", "Penciller", "Inker", "Colorist", "Letterer", "Cover Artist", "Editor"]
     creators = {}
     for role in roles:
-        creators[role] = [
-            x.name for x in metadata.issue.creators if role in [str(r) for r in x.roles]
-        ]
+        creators[role] = sorted(
+            [
+                x.name
+                for x in metadata.issue.creators
+                if role in sorted([str(r) for r in x.roles], alg=ns.NA | ns.G)
+            ],
+            alg=ns.NA | ns.G,
+        )
     return ComicInfo(
         title=metadata.issue.title,
         series=metadata.series.title,
@@ -92,7 +99,8 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
                     image_height=x.image_height,
                 )
                 for x in metadata.pages
-            }
+            },
+            alg=ns.NA | ns.G,
         ),
     )
 
@@ -154,22 +162,28 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
         store_date=metadata.issue.store_date,
         page_count=metadata.issue.page_count,
         notes=metadata.notes,
-        genres=sorted({GenreResource(value=x) for x in metadata.issue.genres}),
+        genres=sorted({GenreResource(value=x) for x in metadata.issue.genres}, alg=ns.NA | ns.G),
         # TODO: Add tags
-        story_arcs=sorted({Arc(name=x.title, number=x.number) for x in metadata.issue.story_arcs}),
-        characters=sorted({Resource(value=x) for x in metadata.issue.characters}),
-        teams=sorted({Resource(value=x) for x in metadata.issue.teams}),
-        locations=sorted({Resource(value=x) for x in metadata.issue.locations}),
+        story_arcs=sorted(
+            {Arc(name=x.title, number=x.number) for x in metadata.issue.story_arcs},
+            alg=ns.NA | ns.G,
+        ),
+        characters=sorted({Resource(value=x) for x in metadata.issue.characters}, alg=ns.NA | ns.G),
+        teams=sorted({Resource(value=x) for x in metadata.issue.teams}, alg=ns.NA | ns.G),
+        locations=sorted({Resource(value=x) for x in metadata.issue.locations}, alg=ns.NA | ns.G),
         # TODO: Add reprints
         # TODO: Add GTIN - ISBN & UPC
         credits=sorted(
             {
                 Credit(
                     creator=Resource(value=x.name),
-                    roles=sorted({RoleResource(value=Role.load(str(r))) for r in x.roles}),
+                    roles=sorted(
+                        {RoleResource(value=Role.load(str(r))) for r in x.roles}, alg=ns.NA | ns.G
+                    ),
                 )
                 for x in metadata.issue.creators
-            }
+            },
+            alg=ns.NA | ns.G,
         ),
         pages=sorted(
             {
@@ -184,6 +198,7 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
                     image_height=x.image_height,
                 )
                 for x in metadata.pages
-            }
+            },
+            alg=ns.NA | ns.G,
         ),
     )

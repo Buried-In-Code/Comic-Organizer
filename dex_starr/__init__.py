@@ -18,6 +18,8 @@ import logging
 from pathlib import Path
 from typing import Any, List
 
+from natsort import humansorted as sorted
+from natsort import ns
 from rich.logging import RichHandler
 
 from dex_starr.console import CONSOLE
@@ -45,7 +47,7 @@ def filter_files(folder: Path, filter_: List[str] = None) -> List[Path]:
             files.extend(filter_files(folder=file, filter_=filter_))
         elif file.suffix in filter_:
             files.append(file)
-    return sorted(files)
+    return sorted(files, alg=ns.NA | ns.G | ns.P)
 
 
 def get_project_root() -> Path:
@@ -71,7 +73,7 @@ def list_files(folder: Path) -> List[Path]:
             files.extend(list_files(folder=file))
         else:
             files.append(file)
-    return sorted(files)
+    return sorted(files, alg=ns.NA | ns.G | ns.P)
 
 
 def safe_list_get(list_: List[Any], index: int = 0, default: Any = None) -> Any:
