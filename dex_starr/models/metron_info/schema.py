@@ -14,14 +14,15 @@ __all__ = [
 from datetime import date
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, ClassVar
 
 import xmltodict
 from natsort import humansorted as sorted
 from natsort import ns
 from pydantic import Field, validator
+from rich import print
 
-from dex_starr.models import XmlModel
+from dex_starr.models import PascalModel, clean_contents, from_xml_list, to_xml_list, text_fields
 from dex_starr.models.comic_info.schema import Page
 from dex_starr.models.metadata.enums import Format as MetadataFormat
 from dex_starr.models.metadata.enums import Role as MetadataRole
@@ -31,7 +32,7 @@ from dex_starr.models.metadata.schema import Sources, StoryArc
 from dex_starr.models.metron_info.enums import AgeRating, Format, Genre, InformationSource, Role
 
 
-class Resource(XmlModel):
+class Resource(PascalModel):
     id: Optional[int] = Field(alias="@id", gt=0, default=None)
     value: str = Field(alias="#text")
 
@@ -51,7 +52,7 @@ class Resource(XmlModel):
         return hash((type(self), self.id, self.value))
 
 
-class RoleResource(XmlModel):
+class RoleResource(PascalModel):
     id: Optional[int] = Field(alias="@id", gt=0, default=None)
     value: Role = Field(alias="#text")
 
@@ -75,17 +76,16 @@ class RoleResource(XmlModel):
         return hash((type(self), self.value))
 
 
-class Credit(XmlModel):
+class Credit(PascalModel):
     creator: Resource
     roles: List[RoleResource] = Field(default_factory=list)
 
+    listable_fields: ClassVar[Dict[str, str]] = {"Roles": "Role"}
+    resource_fields: ClassVar[List[str]] = ["Creator", "Roles"]
+
     def __init__(self, **data):
-        mappings = {
-            "Roles": "Role",
-        }
-        for key, value in mappings.items():
-            if key in data:
-                data[key] = data[key][value]
+        from_xml_list(mappings=Credit.listable_fields, content=data)
+        text_fields(mappings=Credit.resource_fields, content=data)
         super().__init__(**data)
 
     def __lt__(self, other):
@@ -102,7 +102,7 @@ class Credit(XmlModel):
         return hash((type(self), self.creator))
 
 
-class GTIN(XmlModel):
+class GTIN(PascalModel):
     isbn: Optional[str] = Field(alias="ISBN", default=None)
     upc: Optional[str] = Field(alias="UPC", default=None)
 
@@ -122,7 +122,7 @@ class GTIN(XmlModel):
         return hash((type(self), self.isbn, self.upc))
 
 
-class Arc(XmlModel):
+class Arc(PascalModel):
     id: Optional[int] = Field(alias="@id", gt=0, default=None)
     name: str
     number: Optional[int] = Field(default=None, gt=0)
@@ -143,7 +143,7 @@ class Arc(XmlModel):
         return hash((type(self), self.id, self.name))
 
 
-class GenreResource(XmlModel):
+class GenreResource(PascalModel):
     id: Optional[int] = Field(alias="@id", gt=0, default=None)
     value: Genre = Field(alias="#text")
 
@@ -167,7 +167,7 @@ class GenreResource(XmlModel):
         return hash((type(self), self.value))
 
 
-class Price(XmlModel):
+class Price(PascalModel):
     country: str = Field(alias="@country")
     value: float = Field(alias="#text")
 
@@ -185,7 +185,7 @@ class Price(XmlModel):
         return hash((type(self), self.country))
 
 
-class Series(XmlModel):
+class Series(PascalModel):
     lang: str = Field(alias="@lang", default="en")
     id: Optional[int] = Field(alias="@id", gt=0, default=None)
     name: str
@@ -224,7 +224,7 @@ class Series(XmlModel):
         return hash((type(self), self.id, self.name, self.volume, self.format))
 
 
-class Source(XmlModel):
+class Source(PascalModel):
     source: InformationSource = Field(alias="@source")
     value: int = Field(alias="#text", gt=0)
 
@@ -250,7 +250,7 @@ class Source(XmlModel):
         return hash((type(self), self.source, self.value))
 
 
-class MetronInfo(XmlModel):
+class MetronInfo(PascalModel):
     id: Optional[Source] = Field(alias="ID", default=None)
     publisher: Resource
     series: Series
@@ -277,23 +277,33 @@ class MetronInfo(XmlModel):
     credits: List[Credit] = Field(default_factory=list)
     pages: List[Page] = Field(default_factory=list)
 
+    listable_fields: ClassVar[Dict[str, str]] = {
+        **Credit.listable_fields,
+        "Stories": "Story",
+        "Prices": "Price",
+        "Genres": "Genre",
+        "Tags": "Tag",
+        "Arcs": "Arc",
+        "Characters": "Character",
+        "Teams": "Team",
+        "Locations": "Location",
+        "Reprints": "Reprint",
+        "Credits": "Credit",
+        "Pages": "Page",
+    }
+    text_fields: ClassVar[List[str]] = [
+        "Stories",
+        "Genres",
+        "Tags",
+        "Characters",
+        "Teams",
+        "Locations",
+        "Reprints"
+    ]
+
     def __init__(self, **data):
-        mappings = {
-            "Stories": "Story",
-            "Prices": "Price",
-            "Genres": "Genre",
-            "Tags": "Tag",
-            "Arcs": "Arc",
-            "Characters": "Character",
-            "Teams": "Team",
-            "Locations": "Location",
-            "Reprints": "Reprint",
-            "Credits": "Credit",
-            "Pages": "Page",
-        }
-        for key, value in mappings.items():
-            if key in data:
-                data[key] = data[key][value]
+        from_xml_list(mappings=MetronInfo.listable_fields, content=data)
+        text_fields(mappings=MetronInfo.text_fields, content=data)
         super().__init__(**data)
 
     @validator("age_rating", pre=True)
@@ -408,108 +418,18 @@ class MetronInfo(XmlModel):
     @staticmethod
     def from_file(info_file: Path) -> "MetronInfo":
         with info_file.open("rb") as stream:
-            content = xmltodict.parse(
-                stream,
-                force_list=[
-                    "Story",
-                    "Genre",
-                    "Tag",
-                    "Arc",
-                    "Character",
-                    "Team",
-                    "Location",
-                    "Reprint",
-                    "Credit",
-                    "Role",
-                    "Page",
-                    "Price",
-                ],
-            )["MetronInfo"]
-            mappings = {
-                "Stories": "Story",
-                "Genres": "Genre",
-                "Tags": "Tag",
-                "Characters": "Character",
-                "Teams": "Team",
-                "Locations": "Location",
-                "Reprints": "Reprint",
-            }
-            for key, value in mappings.items():
-                if key in content and value in content[key]:
-                    for index, entry in enumerate(content[key][value].copy()):
-                        if isinstance(entry, str):
-                            content[key][value][index] = {"#text": entry}
-            if "Credits" in content and "Credit" in content["Credits"]:
-                for index, entry in enumerate(content["Credits"]["Credit"].copy()):
-                    if isinstance(entry["Creator"], str):
-                        content["Credits"]["Credit"][index]["Creator"] = {"#text": entry["Creator"]}
-                    if "Roles" in entry and "Role" in entry["Roles"]:
-                        for role_index, role in enumerate(entry["Roles"]["Role"]):
-                            if isinstance(role, str):
-                                content["Credits"]["Credit"][index]["Roles"]["Role"][role_index] = {
-                                    "#text": role
-                                }
-            if content["Publisher"] and "#text" not in content["Publisher"]:
-                content["Publisher"] = {"#text": content["Publisher"]}
+            content = xmltodict.parse(stream, force_list=list(MetronInfo.listable_fields.values()))["MetronInfo"]
             return MetronInfo(**content)
 
     def to_file(self, info_file: Path):
         content = self.dict(by_alias=True, exclude_none=True)
+        to_xml_list(mappings=MetronInfo.listable_fields, content=content)
         content = clean_contents(content)
 
-        content["@xmlns:noNamespaceSchemaLocation"] = "MetronInfo.xsd"
-        content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
-
         with info_file.open("w", encoding="UTF-8") as stream:
-            mappings = {
-                "Stories": "Story",
-                "Genres": "Genre",
-                "Tags": "Tag",
-                "Arcs": "Arc",
-                "Characters": "Character",
-                "Teams": "Team",
-                "Locations": "Location",
-                "Reprints": "Reprint",
-                "Credits": "Credit",
-                "Pages": "Page",
-                "Prices": "Price",
-            }
-            for key, value in mappings.items():
-                if key in content and content[key]:
-                    content[key] = {value: content[key]}
-            if "Credits" in content and "Credit" in content["Credits"]:
-                for credit in content["Credits"]["Credit"]:
-                    if "Roles" in credit and credit["Roles"]:
-                        credit["Roles"] = {"Role": credit["Roles"]}
-
             xmltodict.unparse(
                 {"MetronInfo": {k: content[k] for k in sorted(content, alg=ns.NA | ns.G)}},
                 output=stream,
                 short_empty_elements=True,
                 pretty=True,
             )
-
-
-def clean_contents(content: Dict[str, Any]) -> Dict[str, Any]:
-    for key, value in content.copy().items():
-        if isinstance(key, Enum):
-            content[str(key)] = value
-            del content[key]
-        if isinstance(value, bool):
-            content[key] = "true" if value else "false"
-        elif isinstance(value, Enum) or isinstance(value, int) or isinstance(value, float):
-            content[key] = str(value)
-        elif isinstance(value, dict):
-            if value:
-                content[key] = clean_contents(value)
-            else:
-                del content[key]
-        elif isinstance(value, list):
-            for index, entry in enumerate(value):
-                if isinstance(entry, bool):
-                    content[key][index] = "true" if entry else "false"
-                elif isinstance(entry, Enum) or isinstance(entry, int) or isinstance(value, float):
-                    content[key][index] = str(entry)
-                elif isinstance(entry, dict):
-                    content[key][index] = clean_contents(entry)
-    return content

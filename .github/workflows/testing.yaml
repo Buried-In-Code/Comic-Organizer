@@ -85,6 +85,6 @@ jobs:
       - name: Install xmllint
         run: sudo apt-get install -y libxml2-utils
       - name: Validate ComicInfo.xml
-        run: xmllint --noout --schema schemas/ComicInfo.xsd output/ComicInfo.xml output/ComicInfo-Metadata.xml
+        run: xmllint --noout --schema schemas/ComicInfo.xsd output/ComicInfo*
       - name: Validate MetronInfo.xml
-        run: xmllint --noout --schema schemas/MetronInfo.xsd output/MetronInfo.xml output/MetronInfo-Metadata.xml
+        run: xmllint --noout --schema schemas/MetronInfo.xsd output/MetronInfo*

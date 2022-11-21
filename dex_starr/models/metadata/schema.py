@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import Field, validator
 
 from dex_starr import __version__
-from dex_starr.models import JsonModel
+from dex_starr.models import CamelModel
 from dex_starr.models.comic_info.enums import ComicPageType
 from dex_starr.models.metadata.enums import Format, Genre, Role
 
@@ -21,7 +21,7 @@ def sanitize(dirty: str) -> str:
     return dirty.replace(" ", "-")
 
 
-class Sources(JsonModel):
+class Sources(CamelModel):
     comicvine: Optional[int] = None
     grand_comics_database: Optional[int] = None
     league_of_comic_geeks: Optional[int] = None
@@ -58,7 +58,7 @@ class Sources(JsonModel):
         )
 
 
-class Publisher(JsonModel):
+class Publisher(CamelModel):
     imprint: Optional[str] = None
     sources: Sources = Sources()
     title: str
@@ -81,7 +81,7 @@ class Publisher(JsonModel):
         return hash((type(self), self.title))
 
 
-class Series(JsonModel):
+class Series(CamelModel):
     sources: Sources = Sources()
     start_year: Optional[int] = Field(default=None, gt=1900)
     title: str
@@ -115,7 +115,7 @@ class Series(JsonModel):
         return hash((type(self), self.title, self.volume, self.start_year))
 
 
-class Creator(JsonModel):
+class Creator(CamelModel):
     name: str
     roles: List[Role] = Field(default_factory=list)
 
@@ -139,7 +139,7 @@ class Creator(JsonModel):
         return hash((type(self), self.name))
 
 
-class StoryArc(JsonModel):
+class StoryArc(CamelModel):
     title: str
     number: Optional[int] = None
 
@@ -159,7 +159,7 @@ class StoryArc(JsonModel):
         return hash((type(self), self.title, self.number))
 
 
-class Issue(JsonModel):
+class Issue(CamelModel):
     characters: List[str] = Field(default_factory=list)
     cover_date: Optional[date] = None
     creators: List[Creator] = Field(default_factory=list)
@@ -236,7 +236,7 @@ class Issue(JsonModel):
         return hash((type(self), self.format, self.number, self.cover_date))
 
 
-class Page(JsonModel):
+class Page(CamelModel):
     image: int
     page_type: ComicPageType = ComicPageType.STORY
     double_page: bool = False
@@ -266,7 +266,7 @@ class Page(JsonModel):
         return hash((type(self), self.image))
 
 
-class Metadata(JsonModel):
+class Metadata(CamelModel):
     publisher: Publisher
     series: Series
     issue: Issue
