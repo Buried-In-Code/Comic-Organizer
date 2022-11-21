@@ -3,7 +3,7 @@ __all__ = ["ComicInfo", "Page"]
 from datetime import date
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, ClassVar
+from typing import Any, ClassVar, Dict, List, Optional
 
 import xmltodict
 from natsort import humansorted as sorted
@@ -279,7 +279,9 @@ class ComicInfo(PascalModel):
     @staticmethod
     def from_file(info_file: Path) -> "ComicInfo":
         with info_file.open("rb") as stream:
-            content = xmltodict.parse(stream, force_list=list(ComicInfo.listable_fields.values()))["ComicInfo"]
+            content = xmltodict.parse(stream, force_list=list(ComicInfo.listable_fields.values()))[
+                "ComicInfo"
+            ]
             return ComicInfo(**content)
 
     def to_file(self, info_file: Path):

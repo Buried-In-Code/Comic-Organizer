@@ -32,6 +32,7 @@ class CamelModel(BaseModel):
         validate_assignment = True
         extra = Extra.ignore
 
+
 def clean_contents(content: Dict[str, Any]) -> Dict[str, Any]:
     for key, value in content.copy().items():
         if isinstance(key, Enum):
@@ -56,6 +57,7 @@ def clean_contents(content: Dict[str, Any]) -> Dict[str, Any]:
                     content[key][index] = clean_contents(entry)
     return content
 
+
 def to_xml_list(mappings: Dict[str, str], content: Dict[str, Any]) -> Dict[str, Any]:
     for key, value in content.copy().items():
         if isinstance(value, dict):
@@ -74,6 +76,7 @@ def from_xml_list(mappings: Dict[str, str], content: Dict[str, Any]) -> Dict[str
         if key in content and isinstance(content[key], dict) and value in content[key]:
             content[key] = content[key][value]
     return content
+
 
 def text_fields(mappings: List[str], content: Dict[str, Any]) -> Dict[str, str]:
     for field in mappings:

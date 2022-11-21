@@ -14,7 +14,7 @@ __all__ = [
 from datetime import date
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, ClassVar
+from typing import Any, ClassVar, Dict, List, Optional
 
 import xmltodict
 from natsort import humansorted as sorted
@@ -22,7 +22,7 @@ from natsort import ns
 from pydantic import Field, validator
 from rich import print
 
-from dex_starr.models import PascalModel, clean_contents, from_xml_list, to_xml_list, text_fields
+from dex_starr.models import PascalModel, clean_contents, from_xml_list, text_fields, to_xml_list
 from dex_starr.models.comic_info.schema import Page
 from dex_starr.models.metadata.enums import Format as MetadataFormat
 from dex_starr.models.metadata.enums import Role as MetadataRole
@@ -298,7 +298,7 @@ class MetronInfo(PascalModel):
         "Characters",
         "Teams",
         "Locations",
-        "Reprints"
+        "Reprints",
     ]
 
     def __init__(self, **data):
@@ -418,7 +418,9 @@ class MetronInfo(PascalModel):
     @staticmethod
     def from_file(info_file: Path) -> "MetronInfo":
         with info_file.open("rb") as stream:
-            content = xmltodict.parse(stream, force_list=list(MetronInfo.listable_fields.values()))["MetronInfo"]
+            content = xmltodict.parse(stream, force_list=list(MetronInfo.listable_fields.values()))[
+                "MetronInfo"
+            ]
             return MetronInfo(**content)
 
     def to_file(self, info_file: Path):
