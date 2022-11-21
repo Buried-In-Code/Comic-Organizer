@@ -1,4 +1,4 @@
-__all__ = ["Role", "Format", "Genre"]
+__all__ = ["Role", "Format", "Genre", "ComicPageType"]
 
 import logging
 from enum import Enum
@@ -6,6 +6,68 @@ from enum import Enum
 from dex_starr.console import RichLogger
 
 LOGGER = RichLogger(logging.getLogger(__name__))
+
+
+class Source(Enum):
+    COMICVINE = "Comicvine"
+    GRAND_COMICS_DATABASE = "Grand Comics Database"
+    LEAGUE_OF_COMIC_GEEKS = "League of Comic Geeks"
+    MARVEL = "Marvel"
+    METRON = "Metron"
+
+    @staticmethod
+    def load(value: str) -> "Source":
+        for entry in Source:
+            if entry.value.lower() == value.lower():
+                return entry
+        mappings = {"comic vine": Source.COMICVINE}
+        if value.lower() in mappings:
+            return mappings[value.lower()]
+        raise ValueError(f"Unable to find Source: '{value}'")
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return self.value
+
+    def __lt__(self, other):
+        if not isinstance(other, Source):
+            raise NotImplementedError()
+        return self.value < other.value
+
+
+class ComicPageType(Enum):
+    FRONT_COVER = "FrontCover"
+    INNER_COVER = "InnerCover"
+    ROUNDUP = "Roundup"
+    STORY = "Story"
+    ADVERTISEMENT = "Advertisement"
+    EDITORIAL = "Editorial"
+    LETTERS = "Letters"
+    PREVIEW = "Preview"
+    BACK_COVER = "BackCover"
+    OTHER = "Other"
+    DELETED = "Deleted"
+
+    @staticmethod
+    def load(value: str) -> "ComicPageType":
+        for entry in ComicPageType:
+            if entry.value.lower() == value.lower():
+                return entry
+        LOGGER.warning(f"Unable to find ComicPageType: '{value}'")
+        return ComicPageType.STORY
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return self.value
+
+    def __lt__(self, other):
+        if not isinstance(other, ComicPageType):
+            raise NotImplementedError()
+        return self.value < other.value
 
 
 class Role(Enum):

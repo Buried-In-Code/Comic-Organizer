@@ -12,26 +12,25 @@ __all__ = [
 ]
 
 from datetime import date
-from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 import xmltodict
 from natsort import humansorted as sorted
 from natsort import ns
 from pydantic import Field, validator
 
-from dex_starr.models import XmlModel
+from dex_starr.models import PascalModel, clean_contents
 from dex_starr.models.comic_info.schema import Page
 from dex_starr.models.metadata.enums import Format as MetadataFormat
 from dex_starr.models.metadata.enums import Role as MetadataRole
 from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Publisher
 from dex_starr.models.metadata.schema import Series as MetadataSeries
-from dex_starr.models.metadata.schema import Sources, StoryArc
+from dex_starr.models.metadata.schema import StoryArc
 from dex_starr.models.metron_info.enums import AgeRating, Format, Genre, InformationSource, Role
 
 
-class Resource(XmlModel):
+class Resource(PascalModel):
     id: Optional[int] = Field(alias="@id", gt=0, default=None)
     value: str = Field(alias="#text")
 
@@ -51,7 +50,7 @@ class Resource(XmlModel):
         return hash((type(self), self.id, self.value))
 
 
-class RoleResource(XmlModel):
+class RoleResource(PascalModel):
     id: Optional[int] = Field(alias="@id", gt=0, default=None)
     value: Role = Field(alias="#text")
 
@@ -75,7 +74,7 @@ class RoleResource(XmlModel):
         return hash((type(self), self.value))
 
 
-class Credit(XmlModel):
+class Credit(PascalModel):
     creator: Resource
     roles: List[RoleResource] = Field(default_factory=list)
 
@@ -102,7 +101,7 @@ class Credit(XmlModel):
         return hash((type(self), self.creator))
 
 
-class GTIN(XmlModel):
+class GTIN(PascalModel):
     isbn: Optional[str] = Field(alias="ISBN", default=None)
     upc: Optional[str] = Field(alias="UPC", default=None)
 
@@ -122,7 +121,7 @@ class GTIN(XmlModel):
         return hash((type(self), self.isbn, self.upc))
 
 
-class Arc(XmlModel):
+class Arc(PascalModel):
     id: Optional[int] = Field(alias="@id", gt=0, default=None)
     name: str
     number: Optional[int] = Field(default=None, gt=0)
@@ -143,7 +142,7 @@ class Arc(XmlModel):
         return hash((type(self), self.id, self.name))
 
 
-class GenreResource(XmlModel):
+class GenreResource(PascalModel):
     id: Optional[int] = Field(alias="@id", gt=0, default=None)
     value: Genre = Field(alias="#text")
 
@@ -167,7 +166,7 @@ class GenreResource(XmlModel):
         return hash((type(self), self.value))
 
 
-class Price(XmlModel):
+class Price(PascalModel):
     country: str = Field(alias="@country")
     value: float = Field(alias="#text")
 
@@ -185,7 +184,7 @@ class Price(XmlModel):
         return hash((type(self), self.country))
 
 
-class Series(XmlModel):
+class Series(PascalModel):
     lang: str = Field(alias="@lang", default="en")
     id: Optional[int] = Field(alias="@id", gt=0, default=None)
     name: str
@@ -224,7 +223,7 @@ class Series(XmlModel):
         return hash((type(self), self.id, self.name, self.volume, self.format))
 
 
-class Source(XmlModel):
+class Source(PascalModel):
     source: InformationSource = Field(alias="@source")
     value: int = Field(alias="#text", gt=0)
 
@@ -250,7 +249,7 @@ class Source(XmlModel):
         return hash((type(self), self.source, self.value))
 
 
-class MetronInfo(XmlModel):
+class MetronInfo(PascalModel):
     id: Optional[Source] = Field(alias="ID", default=None)
     publisher: Resource
     series: Series
@@ -306,39 +305,11 @@ class MetronInfo(XmlModel):
         return Metadata(
             publisher=Publisher(
                 # TODO: Imprint
-                sources=Sources(
-                    comicvine=self.publisher.id
-                    if self.id.source == InformationSource.COMIC_VINE
-                    else None,
-                    grand_comics_database=self.publisher.id
-                    if self.id.source == InformationSource.GRAND_COMICS_DATABASE
-                    else None,
-                    league_of_comic_geeks=self.publisher.id
-                    if self.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
-                    else None,
-                    marvel=self.publisher.id
-                    if self.id.source == InformationSource.MARVEL
-                    else None,
-                    metron=self.publisher.id
-                    if self.id.source == InformationSource.METRON
-                    else None,
-                ),
+                sources=[],  # TODO: Convert Sources
                 title=self.publisher.value,
             ),
             series=MetadataSeries(
-                sources=Sources(
-                    comicvine=self.series.id
-                    if self.id.source == InformationSource.COMIC_VINE
-                    else None,
-                    grand_comics_database=self.series.id
-                    if self.id.source == InformationSource.GRAND_COMICS_DATABASE
-                    else None,
-                    league_of_comic_geeks=self.series.id
-                    if self.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
-                    else None,
-                    marvel=self.series.id if self.id.source == InformationSource.MARVEL else None,
-                    metron=self.series.id if self.id.source == InformationSource.METRON else None,
-                ),
+                sources=[],  # TODO: Convert Sources
                 # TODO: Start Year
                 title=self.series.name,
                 volume=self.series.volume,
@@ -364,19 +335,7 @@ class MetronInfo(XmlModel):
                 locations=sorted({x.value for x in self.locations}, alg=ns.NA | ns.G),
                 number=self.number,
                 page_count=self.page_count,
-                sources=Sources(
-                    comicvine=self.id.value
-                    if self.id.source == InformationSource.COMIC_VINE
-                    else None,
-                    grand_comics_database=self.id.value
-                    if self.id.source == InformationSource.GRAND_COMICS_DATABASE
-                    else None,
-                    league_of_comic_geeks=self.id.value
-                    if self.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
-                    else None,
-                    marvel=self.id.value if self.id.source == InformationSource.MARVEL else None,
-                    metron=self.id.value if self.id.source == InformationSource.METRON else None,
-                ),
+                sources=[],  # TODO: Convert Sources
                 store_date=self.store_date,
                 story_arcs=sorted(
                     {StoryArc(title=x.name, number=x.number) for x in self.story_arcs},
@@ -488,28 +447,3 @@ class MetronInfo(XmlModel):
                 short_empty_elements=True,
                 pretty=True,
             )
-
-
-def clean_contents(content: Dict[str, Any]) -> Dict[str, Any]:
-    for key, value in content.copy().items():
-        if isinstance(key, Enum):
-            content[str(key)] = value
-            del content[key]
-        if isinstance(value, bool):
-            content[key] = "true" if value else "false"
-        elif isinstance(value, Enum) or isinstance(value, int) or isinstance(value, float):
-            content[key] = str(value)
-        elif isinstance(value, dict):
-            if value:
-                content[key] = clean_contents(value)
-            else:
-                del content[key]
-        elif isinstance(value, list):
-            for index, entry in enumerate(value):
-                if isinstance(entry, bool):
-                    content[key][index] = "true" if entry else "false"
-                elif isinstance(entry, Enum) or isinstance(entry, int) or isinstance(value, float):
-                    content[key][index] = str(entry)
-                elif isinstance(entry, dict):
-                    content[key][index] = clean_contents(entry)
-    return content

@@ -16,21 +16,21 @@ def output_folder() -> Path:
 
 
 def generate_metadata():
-    metadata_file = FILES_FOLDER / "Metadata.json"
+    metadata_file = FILES_FOLDER / "Metadata.xml"
     metadata = Metadata.from_file(metadata_file)
-    metadata.to_file(output_folder() / "Metadata.json")
+    metadata.to_file(output_folder() / "Metadata.xml")
 
 
 def generate_metadata_from_comic_info():
     comic_info_file = FILES_FOLDER / "ComicInfo.xml"
     metadata = ComicInfo.from_file(comic_info_file).to_metadata()
-    metadata.to_file(output_folder() / "Metadata-ComicInfo.json")
+    metadata.to_file(output_folder() / "Metadata-ComicInfo.xml")
 
 
 def generate_metadata_from_metron_info():
     metron_info_file = FILES_FOLDER / "MetronInfo.xml"
     metadata = MetronInfo.from_file(metron_info_file).to_metadata()
-    metadata.to_file(output_folder() / "Metadata-MetronInfo.json")
+    metadata.to_file(output_folder() / "Metadata-MetronInfo.xml")
 
 
 def generate_comic_info():
@@ -40,7 +40,7 @@ def generate_comic_info():
 
 
 def generate_comic_info_from_metadata():
-    metadata_file = FILES_FOLDER / "Metadata.json"
+    metadata_file = FILES_FOLDER / "Metadata.xml"
     comic_info = to_comic_info(Metadata.from_file(metadata_file))
     comic_info.to_file(output_folder() / "ComicInfo-Metadata.xml")
 
@@ -52,7 +52,7 @@ def generate_metron_info():
 
 
 def generate_metron_info_from_metadata():
-    metadata_file = FILES_FOLDER / "Metadata.json"
+    metadata_file = FILES_FOLDER / "Metadata.xml"
     metron_info = to_metron_info(
         Metadata.from_file(metadata_file),
         ["Marvel", "League of Comic Geeks", "Metron", "Grand Comics Database", "Comicvine"],

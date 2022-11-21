@@ -4,8 +4,7 @@ import logging
 from enum import Enum
 
 from dex_starr.console import RichLogger
-from dex_starr.models.comic_info.enums import ComicPageType
-from dex_starr.models.metadata.enums import Genre
+from dex_starr.models.metadata.enums import ComicPageType, Genre
 
 LOGGER = RichLogger(logging.getLogger(__name__))
 

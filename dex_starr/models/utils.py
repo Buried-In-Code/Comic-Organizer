@@ -9,7 +9,7 @@ from rich.prompt import IntPrompt, Prompt
 from dex_starr.console import CONSOLE, create_menu
 from dex_starr.models.comic_info.schema import ComicInfo, Page
 from dex_starr.models.metadata.enums import Format
-from dex_starr.models.metadata.schema import Issue, Metadata, Publisher, Series, Sources
+from dex_starr.models.metadata.schema import Issue, Metadata, Publisher, Series
 from dex_starr.models.metron_info.enums import Format as MetronFormat
 from dex_starr.models.metron_info.enums import InformationSource, Role
 from dex_starr.models.metron_info.schema import (
@@ -105,17 +105,15 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
     )
 
 
-def select_primary_source(
-    sources: Sources, resolution_order: List[str]
-) -> Optional[InformationSource]:
+def select_primary_source(sources, resolution_order: List[str]) -> Optional[InformationSource]:
     source_list = [key for key, value in sources.__dict__.items() if value]
     for entry in resolution_order:
         if entry.lower().replace(" ", "_") in source_list:
-            return InformationSource(entry)
+            return InformationSource.load(entry)
     return None
 
 
-def get_source(sources: Sources, information_source: InformationSource) -> Optional[int]:
+def get_source(sources, information_source: InformationSource) -> Optional[int]:
     if information_source == InformationSource.COMIC_VINE:
         return sources.comicvine
     if information_source == InformationSource.GRAND_COMICS_DATABASE:

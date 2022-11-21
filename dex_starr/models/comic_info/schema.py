@@ -1,22 +1,23 @@
 __all__ = ["ComicInfo", "Page"]
 
 from datetime import date
-from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import ClassVar, Dict, List, Optional
 
 import xmltodict
 from natsort import humansorted as sorted
 from natsort import ns
 from pydantic import Field, validator
 
-from dex_starr.models import XmlModel
+from dex_starr.models import PascalModel, clean_contents, from_xml_list, to_xml_list
 from dex_starr.models.comic_info.enums import AgeRating, ComicPageType, Manga, YesNo
 from dex_starr.models.metadata.enums import Format, Genre, Role
-from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
+from dex_starr.models.metadata.schema import Creator, Issue, Metadata
+from dex_starr.models.metadata.schema import Page as MetadataPage
+from dex_starr.models.metadata.schema import Publisher, Series, StoryArc
 
 
-class Page(XmlModel):
+class Page(PascalModel):
     image: int = Field(alias="@Image")
     page_type: ComicPageType = Field(alias="@Type", default=ComicPageType.STORY)
     double_page: bool = Field(alias="@DoublePage", default=False)
@@ -46,7 +47,7 @@ class Page(XmlModel):
         return hash((type(self), self.image))
 
 
-class ComicInfo(XmlModel):
+class ComicInfo(PascalModel):
     title: Optional[str] = None
     series: Optional[str] = None
     number: Optional[str] = None
@@ -86,11 +87,10 @@ class ComicInfo(XmlModel):
     pages: List[Page] = Field(default_factory=list)
     community_rating: Optional[float] = Field(default=None, ge=0, le=5)
 
+    listable_fields: ClassVar[Dict[str, str]] = {"Pages": "Page"}
+
     def __init__(self, **data):
-        mappings = {"Pages": "Page"}
-        for key, value in mappings.items():
-            if key in data:
-                data[key] = data[key][value]
+        from_xml_list(mappings=ComicInfo.listable_fields, content=data)
         super().__init__(**data)
 
     @validator("black_and_white", pre=True)
@@ -260,7 +260,7 @@ class ComicInfo(XmlModel):
             ),
             pages=sorted(
                 {
-                    Page(
+                    MetadataPage(
                         image=x.image,
                         page_type=x.page_type,
                         double_page=x.double_page,
@@ -280,52 +280,20 @@ class ComicInfo(XmlModel):
     @staticmethod
     def from_file(info_file: Path) -> "ComicInfo":
         with info_file.open("rb") as stream:
-            content = xmltodict.parse(stream, force_list=["Page"])["ComicInfo"]
+            content = xmltodict.parse(stream, force_list=list(ComicInfo.listable_fields))[
+                "ComicInfo"
+            ]
             return ComicInfo(**content)
 
     def to_file(self, info_file: Path):
         content = self.dict(by_alias=True, exclude_none=True)
+        to_xml_list(mappings=ComicInfo.listable_fields, content=content)
         content = clean_contents(content)
 
-        content["@xmlns:xsd"] = "https://www.w3.org/2001/XMLSchema"
-        content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
-
         with info_file.open("w", encoding="UTF-8") as stream:
-            mappings = {
-                "Pages": "Page",
-            }
-            for key, value in mappings.items():
-                if key in content and content[key]:
-                    content[key] = {value: content[key]}
-
             xmltodict.unparse(
                 {"ComicInfo": {k: content[k] for k in sorted(content, alg=ns.NA | ns.G)}},
                 output=stream,
                 short_empty_elements=True,
                 pretty=True,
             )
-
-
-def clean_contents(content: Dict[str, Any]) -> Dict[str, Any]:
-    for key, value in content.copy().items():
-        if isinstance(key, Enum):
-            content[str(key)] = value
-            del content[key]
-        if isinstance(value, bool):
-            content[key] = "true" if value else "false"
-        elif isinstance(value, Enum) or isinstance(value, int) or isinstance(value, float):
-            content[key] = str(value)
-        elif isinstance(value, dict):
-            if value:
-                content[key] = clean_contents(value)
-            else:
-                del content[key]
-        elif isinstance(value, list):
-            for index, entry in enumerate(value):
-                if isinstance(entry, bool):
-                    content[key][index] = "true" if entry else "false"
-                elif isinstance(entry, Enum) or isinstance(entry, int) or isinstance(value, float):
-                    content[key][index] = str(entry)
-                elif isinstance(entry, dict):
-                    content[key][index] = clean_contents(entry)
-    return content

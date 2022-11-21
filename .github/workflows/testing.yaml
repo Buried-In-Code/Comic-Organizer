@@ -71,19 +71,12 @@ jobs:
           name: Schemas
           path: ./schemas
       #----------------------------------------------
-      - name: Validate Metadata.json
-        uses: ScratchAddons/validate-json-action@master
-        with:
-          schema: schemas/Metadata.schema.json
-          jsons: |
-            output/Metadata.json
-            output/Metadata-ComicInfo.json
-            output/Metadata-MetronInfo.json
-      #----------------------------------------------
       - name: apt-get update
         run: sudo apt-get update -y
       - name: Install xmllint
         run: sudo apt-get install -y libxml2-utils
+      - name: Validate Metadata.xml
+        run: xmllint --noout --schema schemas/Metadata.xsd output/Metadata.xml output/Metadata-ComicInfo.xml output/Metadata-MetronInfo.xml
       - name: Validate ComicInfo.xml
         run: xmllint --noout --schema schemas/ComicInfo.xsd output/ComicInfo.xml output/ComicInfo-Metadata.xml
       - name: Validate MetronInfo.xml

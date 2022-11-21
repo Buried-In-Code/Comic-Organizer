@@ -1,0 +1,139 @@
+<metadata>
+	<content>
+		<publisher>
+			<title>DC Comics</title>
+			<sources>
+				<source location="Comicvine">10</source>
+				<source location="League of Comic Geeks">1</source>
+			</sources>
+		</publisher>
+		<series>
+			<startYear>2005</startYear>
+			<title>Green Lantern</title>
+			<volume>4</volume>
+			<sources>
+				<source location="Comicvine">18216</source>
+				<source location="League of Comic Geeks">110787</source>
+			</sources>
+		</series>
+		<issue language="en">
+			<characters>
+				<character>Green Lantern - Hal Jordan</character>
+				<character>Green Lantern - John Stewart</character>
+				<character>Green Lantern - Abin Sur</character>
+				<character>James Jordan</character>
+				<character>Jillian Pearlman</character>
+				<character>Shane Sellers</character>
+				<character>Shark - Karshon</character>
+			</characters>
+			<coverDate>2005-07-01</coverDate>
+			<creators>
+				<creator>
+					<name>Geoff Johns</name>
+					<roles>
+						<role>Writer</role>
+					</roles>
+				</creator>
+				<creator>
+					<name>Ethan Van Sciver</name>
+					<roles>
+						<role>Artist</role>
+					</roles>
+				</creator>
+				<creator>
+					<name>Carlos Pacheco</name>
+					<roles>
+						<role>Cover Artist</role>
+						<role>Penciller</role>
+					</roles>
+				</creator>
+				<creator>
+					<name>Jesús Merino</name>
+					<roles>
+						<role>Cover Artist</role>
+						<role>Inker</role>
+					</roles>
+				</creator>
+				<creator>
+					<name>Moose Baumann</name>
+					<roles>
+						<role>Colourist</role>
+					</roles>
+				</creator>
+				<creator>
+					<name>Rob Leigh</name>
+					<roles>
+						<role>Letterer</role>
+					</roles>
+				</creator>
+				<creator>
+					<name>Peter Steigerwald</name>
+					<roles>
+						<role>Cover Artist</role>
+					</roles>
+				</creator>
+				<creator>
+					<name>Alex Ross</name>
+					<roles>
+						<role>Variant Cover Artist</role>
+					</roles>
+				</creator>
+				<creator>
+					<name>Harvey Richards</name>
+					<roles>
+						<role>Assistant Editor</role>
+					</roles>
+				</creator>
+				<creator>
+					<name>Peter J. Tomasi</name>
+					<roles>
+						<role>Editor</role>
+					</roles>
+				</creator>
+				<creator>
+					<name>Dan DiDio</name>
+					<roles>
+						<role>Executive Editor</role>
+					</roles>
+				</creator>
+			</creators>
+			<format>Comic</format>
+			<genres>
+				<genre>Super-Hero</genre>
+			</genres>
+			<locations>
+				<location>3600 Sectors of Space</location>
+				<location>California</location>
+				<location>Coast City</location>
+				<location>Edwards Air Force Base</location>
+			</locations>
+			<number>1</number>
+			<pageCount>40</pageCount>
+			<storeDate>2005-05-18</storeDate>
+			<storyArcs>
+				<storyArc number="1">Green Lantern: Rebirth</storyArc>
+				<storyArc>Green Lantern</storyArc>
+			</storyArcs>
+			<summary>Strap in and hang on as one of DC's greatest icons, Hal Jordan returns to the forefront of the DCU in a new monthly series. Green Lantern challenges your imagination and leaves you breathless as you witness the adventures of one of the greatest heroes in the DCU. From the runways at Edwards Air Force Base to the darkest corner of Space Sector 2814, the Green Lantern will proudly shine his light! This special 40-page debut issue kicks off the 3-part tale \\\"No Fear.\\\" Spinning out of the pages of Green Lantern: Rebirth, Hal Jordan returns to the DCU as the Emerald Warrior, ready to reclaim his life and the light of the Green Lantern. But the forces of darkness have already begun to rise, looking to claim the power of the Green Lantern for themselves.</summary>
+			<teams>
+				<team>Green Lantern Corps</team>
+				<team>The Manhunters</team>
+			</teams>
+			<title>Airbourne</title>
+			<sources>
+				<source location="Comicvine">111265</source>
+				<source location="League of Comic Geeks">4579722</source>
+			</sources>
+		</issue>
+		<pages>
+			<page image="0" pageType="FrontCover" doublePage="false" imageSize="1733120" imageWidth="1920" imageHeight="2951"/>
+			<page image="1" pageType="Story" doublePage="false" imageSize="130938" imageWidth="1920" imageHeight="2951"/>
+			<page image="2" pageType="Story" doublePage="false" imageSize="1298224" imageWidth="1920" imageHeight="2951"/>
+		</pages>
+		<notes>Nothing to note here</notes>
+	</content>
+	<meta>
+		<date>2022-11-17</date>
+		<tool version="0.2.0">Dex-Starr</tool>
+	</meta>
+</metadata>
