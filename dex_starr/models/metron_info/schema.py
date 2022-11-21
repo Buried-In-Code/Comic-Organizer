@@ -12,15 +12,13 @@ __all__ = [
 ]
 
 from datetime import date
-from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar, Dict, List, Optional
+from typing import ClassVar, Dict, List, Optional
 
 import xmltodict
 from natsort import humansorted as sorted
 from natsort import ns
 from pydantic import Field, validator
-from rich import print
 
 from dex_starr.models import PascalModel, clean_contents, from_xml_list, text_fields, to_xml_list
 from dex_starr.models.comic_info.schema import Page

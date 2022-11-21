@@ -1,9 +1,8 @@
 __all__ = ["ComicInfo", "Page"]
 
 from datetime import date
-from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar, Dict, List, Optional
+from typing import ClassVar, Dict, List, Optional
 
 import xmltodict
 from natsort import humansorted as sorted
