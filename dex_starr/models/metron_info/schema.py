@@ -13,14 +13,14 @@ __all__ = [
 
 from datetime import date
 from pathlib import Path
-from typing import List, Optional
+from typing import ClassVar, Dict, List, Optional
 
 import xmltodict
 from natsort import humansorted as sorted
 from natsort import ns
 from pydantic import Field, validator
 
-from dex_starr.models import PascalModel, clean_contents
+from dex_starr.models import PascalModel, clean_contents, from_xml_list, to_xml_list, to_xml_text
 from dex_starr.models.comic_info.schema import Page
 from dex_starr.models.metadata.enums import Format as MetadataFormat
 from dex_starr.models.metadata.enums import Role as MetadataRole
@@ -78,13 +78,12 @@ class Credit(PascalModel):
     creator: Resource
     roles: List[RoleResource] = Field(default_factory=list)
 
+    list_fields: ClassVar[Dict[str, str]] = {"Roles": "Role"}
+    text_fields: ClassVar[List[str]] = ["Creator", "Roles"]
+
     def __init__(self, **data):
-        mappings = {
-            "Roles": "Role",
-        }
-        for key, value in mappings.items():
-            if key in data:
-                data[key] = data[key][value]
+        from_xml_list(mappings=Credit.list_fields, content=data)
+        to_xml_text(mappings=Credit.text_fields, content=data)
         super().__init__(**data)
 
     def __lt__(self, other):
@@ -276,23 +275,34 @@ class MetronInfo(PascalModel):
     credits: List[Credit] = Field(default_factory=list)
     pages: List[Page] = Field(default_factory=list)
 
+    list_fields: ClassVar[Dict[str, str]] = {
+        **Credit.list_fields,
+        "Stories": "Story",
+        "Prices": "Price",
+        "Genres": "Genre",
+        "Tags": "Tag",
+        "Arcs": "Arc",
+        "Characters": "Character",
+        "Teams": "Team",
+        "Locations": "Location",
+        "Reprints": "Reprint",
+        "Credits": "Credit",
+        "Pages": "Page",
+    }
+    text_fields: ClassVar[List[str]] = [
+        *Credit.text_fields,
+        "Stories",
+        "Genres",
+        "Tags",
+        "Characters",
+        "Teams",
+        "Locations",
+        "Reprints",
+    ]
+
     def __init__(self, **data):
-        mappings = {
-            "Stories": "Story",
-            "Prices": "Price",
-            "Genres": "Genre",
-            "Tags": "Tag",
-            "Arcs": "Arc",
-            "Characters": "Character",
-            "Teams": "Team",
-            "Locations": "Location",
-            "Reprints": "Reprint",
-            "Credits": "Credit",
-            "Pages": "Page",
-        }
-        for key, value in mappings.items():
-            if key in data:
-                data[key] = data[key][value]
+        from_xml_list(mappings=MetronInfo.list_fields, content=data)
+        to_xml_text(mappings=MetronInfo.text_fields, content=data)
         super().__init__(**data)
 
     @validator("age_rating", pre=True)
@@ -367,80 +377,21 @@ class MetronInfo(PascalModel):
     @staticmethod
     def from_file(info_file: Path) -> "MetronInfo":
         with info_file.open("rb") as stream:
-            content = xmltodict.parse(
-                stream,
-                force_list=[
-                    "Story",
-                    "Genre",
-                    "Tag",
-                    "Arc",
-                    "Character",
-                    "Team",
-                    "Location",
-                    "Reprint",
-                    "Credit",
-                    "Role",
-                    "Page",
-                    "Price",
-                ],
-            )["MetronInfo"]
-            mappings = {
-                "Stories": "Story",
-                "Genres": "Genre",
-                "Tags": "Tag",
-                "Characters": "Character",
-                "Teams": "Team",
-                "Locations": "Location",
-                "Reprints": "Reprint",
-            }
-            for key, value in mappings.items():
-                if key in content and value in content[key]:
-                    for index, entry in enumerate(content[key][value].copy()):
-                        if isinstance(entry, str):
-                            content[key][value][index] = {"#text": entry}
-            if "Credits" in content and "Credit" in content["Credits"]:
-                for index, entry in enumerate(content["Credits"]["Credit"].copy()):
-                    if isinstance(entry["Creator"], str):
-                        content["Credits"]["Credit"][index]["Creator"] = {"#text": entry["Creator"]}
-                    if "Roles" in entry and "Role" in entry["Roles"]:
-                        for role_index, role in enumerate(entry["Roles"]["Role"]):
-                            if isinstance(role, str):
-                                content["Credits"]["Credit"][index]["Roles"]["Role"][role_index] = {
-                                    "#text": role
-                                }
-            if content["Publisher"] and "#text" not in content["Publisher"]:
-                content["Publisher"] = {"#text": content["Publisher"]}
-            return MetronInfo(**content)
+            content = xmltodict.parse(stream, force_list=list(MetronInfo.list_fields.values()))
+            return MetronInfo(**content["MetronInfo"])
 
     def to_file(self, info_file: Path):
         content = self.dict(by_alias=True, exclude_none=True)
+        to_xml_list(mappings=MetronInfo.list_fields, content=content)
         content = clean_contents(content)
 
-        content["@xmlns:noNamespaceSchemaLocation"] = "MetronInfo.xsd"
         content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
+        content["@xsi:noNamespaceSchemaLocation"] = (
+            "https://raw.githubusercontent.com/Metron-Project/metroninfo/master/drafts/v1.0/"
+            "MetronInfo.xsd"
+        )
 
         with info_file.open("w", encoding="UTF-8") as stream:
-            mappings = {
-                "Stories": "Story",
-                "Genres": "Genre",
-                "Tags": "Tag",
-                "Arcs": "Arc",
-                "Characters": "Character",
-                "Teams": "Team",
-                "Locations": "Location",
-                "Reprints": "Reprint",
-                "Credits": "Credit",
-                "Pages": "Page",
-                "Prices": "Price",
-            }
-            for key, value in mappings.items():
-                if key in content and content[key]:
-                    content[key] = {value: content[key]}
-            if "Credits" in content and "Credit" in content["Credits"]:
-                for credit in content["Credits"]["Credit"]:
-                    if "Roles" in credit and credit["Roles"]:
-                        credit["Roles"] = {"Role": credit["Roles"]}
-
             xmltodict.unparse(
                 {"MetronInfo": {k: content[k] for k in sorted(content, alg=ns.NA | ns.G)}},
                 output=stream,

@@ -106,6 +106,7 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
 
 
 def select_primary_source(sources, resolution_order: List[str]) -> Optional[InformationSource]:
+    return None
     source_list = [key for key, value in sources.__dict__.items() if value]
     for entry in resolution_order:
         if entry.lower().replace(" ", "_") in source_list:

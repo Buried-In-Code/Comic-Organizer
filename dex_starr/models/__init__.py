@@ -1,7 +1,14 @@
-__all__ = ["PascalModel", "CamelModel", "clean_contents", "xml_lists"]
+__all__ = [
+    "PascalModel",
+    "CamelModel",
+    "clean_contents",
+    "from_xml_list",
+    "to_xml_list",
+    "to_xml_text",
+]
 
 from enum import Enum
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from pydantic import BaseModel, Extra
 
@@ -58,25 +65,33 @@ def clean_contents(content: Dict[str, Any]) -> Dict[str, Any]:
     return content
 
 
-def xml_lists(mappings: Dict[str, str], content: Dict[str, Any]) -> Dict[str, Any]:
-    return to_xml_list(mappings, content)
+def from_xml_list(mappings: Dict[str, str], content: Dict[str, Any]) -> Dict[str, Any]:
+    for key, value in mappings.items():
+        if key in content and isinstance(content[key], dict) and value in content[key]:
+            content[key] = content[key][value]
+    return content
 
 
 def to_xml_list(mappings: Dict[str, str], content: Dict[str, Any]) -> Dict[str, Any]:
     for key, value in content.copy().items():
         if isinstance(value, dict):
-            content[key] = xml_lists(mappings, value)
+            content[key] = to_xml_list(mappings, value)
         elif isinstance(value, list):
             for index, entry in enumerate(value):
                 if isinstance(entry, dict):
-                    content[key][index] = xml_lists(mappings, entry)
+                    content[key][index] = to_xml_list(mappings, entry)
             if key in mappings:
                 content[key] = {mappings[key]: content[key]}
     return content
 
 
-def from_xml_list(mappings: Dict[str, str], content: Dict[str, Any]) -> Dict[str, Any]:
-    for key, value in mappings.items():
-        if key in content and isinstance(content[key], dict) and value in content[key]:
-            content[key] = content[key][value]
+def to_xml_text(mappings: List[str], content: Dict[str, Any]) -> Dict[str, Any]:
+    for field in mappings:
+        if field in content:
+            if isinstance(content[field], str):
+                content[field] = {"#text": content[field]}
+            elif isinstance(content[field], list):
+                for index, entry in enumerate(content[field]):
+                    if isinstance(entry, str):
+                        content[field][index] = {"#text": entry}
     return content

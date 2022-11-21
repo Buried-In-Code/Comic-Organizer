@@ -87,10 +87,10 @@ class ComicInfo(PascalModel):
     pages: List[Page] = Field(default_factory=list)
     community_rating: Optional[float] = Field(default=None, ge=0, le=5)
 
-    listable_fields: ClassVar[Dict[str, str]] = {"Pages": "Page"}
+    list_fields: ClassVar[Dict[str, str]] = {"Pages": "Page"}
 
     def __init__(self, **data):
-        from_xml_list(mappings=ComicInfo.listable_fields, content=data)
+        from_xml_list(mappings=ComicInfo.list_fields, content=data)
         super().__init__(**data)
 
     @validator("black_and_white", pre=True)
@@ -280,15 +280,18 @@ class ComicInfo(PascalModel):
     @staticmethod
     def from_file(info_file: Path) -> "ComicInfo":
         with info_file.open("rb") as stream:
-            content = xmltodict.parse(stream, force_list=list(ComicInfo.listable_fields))[
-                "ComicInfo"
-            ]
-            return ComicInfo(**content)
+            content = xmltodict.parse(stream, force_list=list(ComicInfo.list_fields.values()))
+            return ComicInfo(**content["ComicInfo"])
 
     def to_file(self, info_file: Path):
         content = self.dict(by_alias=True, exclude_none=True)
-        to_xml_list(mappings=ComicInfo.listable_fields, content=content)
+        to_xml_list(mappings=ComicInfo.list_fields, content=content)
         content = clean_contents(content)
+
+        content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
+        content[
+            "@xsi:noNamespaceSchemaLocation"
+        ] = "https://raw.githubusercontent.com/Buried-In-Code/Dex-Starr/main/schemas/ComicInfo.xsd"
 
         with info_file.open("w", encoding="UTF-8") as stream:
             xmltodict.unparse(
