@@ -20,7 +20,7 @@ from natsort import ns
 from pydantic import Field, validator
 
 from dex_starr import __version__
-from dex_starr.models import CamelModel, clean_contents, from_xml_list, to_xml_list
+from dex_starr.models import CamelModel, clean_contents, from_xml_list, to_xml_list, to_xml_text
 from dex_starr.models.metadata.enums import ComicPageType, Format, Genre, Role, Source
 
 
@@ -53,10 +53,10 @@ class Publisher(CamelModel):
     sources: List[SourceResource] = Field(default_factory=list)
     title: str
 
-    listable_fields: ClassVar[Dict[str, str]] = {"sources": "source"}
+    list_fields: ClassVar[Dict[str, str]] = {"sources": "source"}
 
     def __init__(self, **data):
-        from_xml_list(mappings=Publisher.listable_fields, content=data)
+        from_xml_list(mappings=Publisher.list_fields, content=data)
         super().__init__(**data)
 
     @property
@@ -83,10 +83,10 @@ class Series(CamelModel):
     title: str
     volume: int = Field(default=1, gt=0)
 
-    listable_fields: ClassVar[Dict[str, str]] = {"sources": "source"}
+    list_fields: ClassVar[Dict[str, str]] = {"sources": "source"}
 
     def __init__(self, **data):
-        from_xml_list(mappings=Series.listable_fields, content=data)
+        from_xml_list(mappings=Series.list_fields, content=data)
         super().__init__(**data)
 
     @property
@@ -121,10 +121,10 @@ class Creator(CamelModel):
     name: str
     roles: List[Role] = Field(default_factory=list)
 
-    listable_fields: ClassVar[Dict[str, str]] = {"roles": "role"}
+    list_fields: ClassVar[Dict[str, str]] = {"roles": "role"}
 
     def __init__(self, **data):
-        from_xml_list(mappings=Creator.listable_fields, content=data)
+        from_xml_list(mappings=Creator.list_fields, content=data)
         super().__init__(**data)
 
     @validator("roles", pre=True, each_item=True)
@@ -184,8 +184,8 @@ class Issue(CamelModel):
     teams: List[str] = Field(default_factory=list)
     title: Optional[str] = None
 
-    listable_fields: ClassVar[Dict[str, str]] = {
-        **Creator.listable_fields,
+    list_fields: ClassVar[Dict[str, str]] = {
+        **Creator.list_fields,
         "characters": "character",
         "creators": "creator",
         "genres": "genre",
@@ -194,18 +194,11 @@ class Issue(CamelModel):
         "storyArcs": "storyArc",
         "teams": "team",
     }
+    text_fields: ClassVar[List[str]] = ["storyArcs"]
 
     def __init__(self, **data):
-        from_xml_list(mappings=Issue.listable_fields, content=data)
-        text_fields = ["storyArcs"]
-        for text_field in text_fields:
-            if text_field in data:
-                if isinstance(data[text_field], str):
-                    data[text_field] = {"#text": data[text_field]}
-                elif isinstance(data[text_field], list):
-                    for index, entry in enumerate(data[text_field]):
-                        if isinstance(entry, str):
-                            data[text_field][index] = {"#text": entry}
+        from_xml_list(mappings=Issue.list_fields, content=data)
+        to_xml_text(mappings=Issue.text_fields, content=data)
         super().__init__(**data)
 
     @validator("format", pre=True)
@@ -305,28 +298,26 @@ class Metadata(CamelModel):
     pages: List[Page] = Field(default_factory=list)
     notes: Optional[str] = None
 
-    listable_fields: ClassVar[Dict[str, str]] = {
-        **Publisher.listable_fields,
-        **Series.listable_fields,
-        **Issue.listable_fields,
+    list_fields: ClassVar[Dict[str, str]] = {
+        **Publisher.list_fields,
+        **Series.list_fields,
+        **Issue.list_fields,
         "pages": "page",
     }
 
     def __init__(self, **data):
-        from_xml_list(mappings=Metadata.listable_fields, content=data)
+        from_xml_list(mappings=Metadata.list_fields, content=data)
         super().__init__(**data)
 
     @staticmethod
     def from_file(metadata_file: Path) -> "Metadata":
         with metadata_file.open("rb") as stream:
-            content = xmltodict.parse(stream, force_list=list(Metadata.listable_fields.values()))[
-                "metadata"
-            ]
-            return Metadata(**content["content"])
+            content = xmltodict.parse(stream, force_list=list(Metadata.list_fields.values()))
+            return Metadata(**content["metadata"]["content"])
 
     def to_file(self, metadata_file: Path):
         content = self.dict(by_alias=True, exclude_none=True)
-        to_xml_list(mappings=Metadata.listable_fields, content=content)
+        to_xml_list(mappings=Metadata.list_fields, content=content)
         content = clean_contents(content)
 
         with metadata_file.open("w", encoding="UTF-8") as stream:
@@ -366,6 +357,6 @@ class Metadata(CamelModel):
 
 def generate_meta() -> Dict[str, str]:
     return {
-        "date": date.today().isoformat(),
+        "@date": date.today().isoformat(),
         "tool": {"#text": "Dex-Starr", "@version": __version__},
     }
