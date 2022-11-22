@@ -292,10 +292,12 @@ class ComicInfo(PascalModel):
         to_xml_list(mappings=ComicInfo.list_fields, content=content)
         content = clean_contents(content)
 
-        content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
-        content[
-            "@xsi:noNamespaceSchemaLocation"
-        ] = "https://raw.githubusercontent.com/Buried-In-Code/Dex-Starr/main/schemas/ComicInfo.xsd"
+        content["@xmlns:xsi"] = "http://www.w3.org/2001/XMLSchema-instance"
+        content["@xsi:noNamespaceSchemaLocation"] = (
+            "https://raw.githubusercontent.com/"
+            "Buried-In-Code/Dex-Starr/main/schemas/"
+            "ComicInfo.xsd"
+        )
 
         with info_file.open("w", encoding="UTF-8") as stream:
             xmltodict.unparse(

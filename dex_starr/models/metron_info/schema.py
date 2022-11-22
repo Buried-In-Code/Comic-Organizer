@@ -391,10 +391,11 @@ class MetronInfo(PascalModel):
         to_xml_list(mappings=MetronInfo.list_fields, content=content)
         content = clean_contents(content)
 
-        content["@xmlns:xsi"] = "https://www.w3.org/2001/XMLSchema-instance"
+        content["@xmlns:xsi"] = "http://www.w3.org/2001/XMLSchema-instance"
         content["@xsi:noNamespaceSchemaLocation"] = (
-            "https://raw.githubusercontent.com/Metron-Project/metroninfo/master/drafts/v1.0/"
-            "MetronInfo.xsd"
+            "https://raw.githubusercontent.com/"
+            "Metron-Project/metroninfo/master/drafts/"
+            "v1.0/MetronInfo.xsd"
         )
 
         with info_file.open("w", encoding="UTF-8") as stream:
