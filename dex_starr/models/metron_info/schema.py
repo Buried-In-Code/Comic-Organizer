@@ -309,14 +309,15 @@ class MetronInfo(PascalModel):
         return v
 
     def to_metadata(self) -> Metadata:
-        from dex_starr.models.metadata.enums import Format as MetadataFormat
-        from dex_starr.models.metadata.enums import PageType as MetadataPageType
-        from dex_starr.models.metadata.enums import Role as MetadataRole
-        from dex_starr.models.metadata.schema import Creator, Issue
-        from dex_starr.models.metadata.schema import Page as MetadataPage
-        from dex_starr.models.metadata.schema import Publisher
-        from dex_starr.models.metadata.schema import Series as MetadataSeries
-        from dex_starr.models.metadata.schema import StoryArc
+        from dex_starr.models.metadata.enums import Format, Genre, PageType, Role
+        from dex_starr.models.metadata.schema import (
+            Creator,
+            Issue,
+            Page,
+            Publisher,
+            Series,
+            StoryArc,
+        )
 
         return Metadata(
             publisher=Publisher(
@@ -324,7 +325,7 @@ class MetronInfo(PascalModel):
                 sources=[],  # TODO: Convert Sources
                 title=self.publisher.value,
             ),
-            series=MetadataSeries(
+            series=Series(
                 sources=[],  # TODO: Convert Sources
                 # TODO: Start Year
                 title=self.series.name,
@@ -363,9 +364,9 @@ class MetronInfo(PascalModel):
             ),
             pages=sorted(
                 {
-                    MetadataPage(
+                    Page(
                         image=x.image,
-                        page_type=MetadataPageType.load(str(x.page_type)),
+                        page_type=PageType.load(str(x.page_type)),
                         double_page=x.double_page,
                         image_size=x.image_size,
                         key=x.key,

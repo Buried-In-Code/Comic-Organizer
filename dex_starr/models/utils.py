@@ -98,12 +98,11 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
 
 
 def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInfo:
-    from dex_starr.models.metron_info.enums import Format, InformationSource, PageType, Role
+    from dex_starr.models.metron_info.enums import Format, Genre, InformationSource, PageType, Role
     from dex_starr.models.metron_info.schema import (
         Arc,
         Credit,
         GenreResource,
-        MetronInfo,
         Page,
         Resource,
         RoleResource,
