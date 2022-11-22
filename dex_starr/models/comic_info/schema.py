@@ -10,16 +10,13 @@ from natsort import ns
 from pydantic import Field, validator
 
 from dex_starr.models import PascalModel, clean_contents, from_xml_list, to_xml_list
-from dex_starr.models.comic_info.enums import AgeRating, ComicPageType, Manga, YesNo
-from dex_starr.models.metadata.enums import Format, Genre, Role
-from dex_starr.models.metadata.schema import Creator, Issue, Metadata
-from dex_starr.models.metadata.schema import Page as MetadataPage
-from dex_starr.models.metadata.schema import Publisher, Series, StoryArc
+from dex_starr.models.comic_info.enums import AgeRating, Manga, PageType, YesNo
+from dex_starr.models.metadata.schema import Metadata
 
 
 class Page(PascalModel):
     image: int = Field(alias="@Image")
-    page_type: ComicPageType = Field(alias="@Type", default=ComicPageType.STORY)
+    page_type: PageType = Field(alias="@Type", default=PageType.STORY)
     double_page: bool = Field(alias="@DoublePage", default=False)
     image_size: int = Field(alias="@ImageSize", default=0)
     key: Optional[str] = Field(alias="@Key", default=None)
@@ -28,9 +25,9 @@ class Page(PascalModel):
     image_height: Optional[int] = Field(alias="@ImageHeight", default=None)
 
     @validator("page_type", pre=True)
-    def page_type_to_enum(cls, v) -> ComicPageType:
+    def page_type_to_enum(cls, v) -> PageType:
         if isinstance(v, str):
-            return ComicPageType.load(v)
+            return PageType.load(v)
         return v
 
     def __lt__(self, other):
@@ -204,6 +201,13 @@ class ComicInfo(PascalModel):
         return sorted({x.strip() for x in self.locations.split(",")}, alg=ns.NA | ns.G)
 
     def to_metadata(self) -> Metadata:
+        from dex_starr.models.metadata.enums import Format, Genre
+        from dex_starr.models.metadata.enums import PageType as MetadataPageType
+        from dex_starr.models.metadata.enums import Role
+        from dex_starr.models.metadata.schema import Creator, Issue
+        from dex_starr.models.metadata.schema import Page as MetadataPage
+        from dex_starr.models.metadata.schema import Publisher, Series, StoryArc
+
         # region Parse Creators
         creators = {}
         creator_mappings = {
@@ -262,11 +266,11 @@ class ComicInfo(PascalModel):
                 {
                     MetadataPage(
                         image=x.image,
-                        page_type=x.page_type,
+                        page_type=MetadataPageType.load(str(x.page_type)),
                         double_page=x.double_page,
-                        image_size=x.image_size,
                         key=x.key,
                         bookmark=x.bookmark,
+                        image_size=x.image_size,
                         image_width=x.image_width,
                         image_height=x.image_height,
                     )

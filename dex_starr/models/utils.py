@@ -1,27 +1,16 @@
 __all__ = ["create_metadata", "to_comic_info", "to_metron_info"]
 
-from typing import List, Optional
+from typing import List
 
 from natsort import humansorted as sorted
 from natsort import ns
 from rich.prompt import IntPrompt, Prompt
 
 from dex_starr.console import CONSOLE, create_menu
-from dex_starr.models.comic_info.schema import ComicInfo, Page
+from dex_starr.models.comic_info.schema import ComicInfo
 from dex_starr.models.metadata.enums import Format
 from dex_starr.models.metadata.schema import Issue, Metadata, Publisher, Series
-from dex_starr.models.metron_info.enums import Format as MetronFormat
-from dex_starr.models.metron_info.enums import InformationSource, Role
-from dex_starr.models.metron_info.schema import (
-    Arc,
-    Credit,
-    GenreResource,
-    MetronInfo,
-    Resource,
-    RoleResource,
-)
-from dex_starr.models.metron_info.schema import Series as MetronSeries
-from dex_starr.models.metron_info.schema import Source as MetronSource
+from dex_starr.models.metron_info.schema import MetronInfo
 
 
 def create_metadata() -> Metadata:
@@ -40,6 +29,9 @@ def create_metadata() -> Metadata:
 
 
 def to_comic_info(metadata: Metadata) -> ComicInfo:
+    from dex_starr.models.comic_info.enums import PageType
+    from dex_starr.models.comic_info.schema import Page
+
     roles = ["Writer", "Penciller", "Inker", "Colorist", "Letterer", "Cover Artist", "Editor"]
     creators = {}
     for role in roles:
@@ -90,7 +82,7 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
             {
                 Page(
                     image=x.image,
-                    page_type=x.page_type,
+                    page_type=PageType.load(str(x.page_type)),
                     double_page=x.double_page,
                     image_size=x.image_size,
                     key=x.key,
@@ -105,52 +97,32 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
     )
 
 
-def select_primary_source(sources, resolution_order: List[str]) -> Optional[InformationSource]:
-    return None
-    source_list = [key for key, value in sources.__dict__.items() if value]
-    for entry in resolution_order:
-        if entry.lower().replace(" ", "_") in source_list:
-            return InformationSource.load(entry)
-    return None
-
-
-def get_source(sources, information_source: InformationSource) -> Optional[int]:
-    if information_source == InformationSource.COMIC_VINE:
-        return sources.comicvine
-    if information_source == InformationSource.GRAND_COMICS_DATABASE:
-        return sources.grand_comics_database
-    if information_source == InformationSource.LEAGUE_OF_COMIC_GEEKS:
-        return sources.league_of_comic_geeks
-    if information_source == InformationSource.MARVEL:
-        return sources.marvel
-    if information_source == InformationSource.METRON:
-        return sources.metron
-    return None
-
-
 def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInfo:
-    information_source = select_primary_source(metadata.issue.sources, resolution_order)
+    from dex_starr.models.metron_info.enums import Format, PageType, Role
+    from dex_starr.models.metron_info.schema import (
+        Arc,
+        Credit,
+        GenreResource,
+        MetronInfo,
+        Page,
+        Resource,
+        RoleResource,
+        Series,
+    )
+
     return MetronInfo(
-        id=MetronSource(
-            source=information_source, value=get_source(metadata.issue.sources, information_source)
-        )
-        if information_source
-        else None,
+        id=None,
         publisher=Resource(
-            id=get_source(metadata.publisher.sources, information_source)
-            if information_source
-            else None,
+            id=None,
             value=metadata.publisher.title,
         ),
-        series=MetronSeries(
+        series=Series(
             lang=metadata.issue.language,
-            id=get_source(metadata.series.sources, information_source)
-            if information_source
-            else None,
+            id=None,
             name=metadata.series.title,
             sort_name=metadata.series.title,
             volume=metadata.series.volume,
-            format=MetronFormat.load(str(metadata.issue.format)),
+            format=Format.load(str(metadata.issue.format)),
         ),
         collection_title=metadata.issue.title,
         number=metadata.issue.number,
@@ -188,11 +160,11 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
             {
                 Page(
                     image=x.image,
-                    page_type=x.page_type,
+                    page_type=PageType.load(str(x.page_type)),
                     double_page=x.double_page,
-                    image_size=x.image_size,
                     key=x.key,
                     bookmark=x.bookmark,
+                    image_size=x.image_size,
                     image_width=x.image_width,
                     image_height=x.image_height,
                 )

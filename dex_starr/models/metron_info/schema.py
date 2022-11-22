@@ -9,6 +9,7 @@ __all__ = [
     "Series",
     "Source",
     "MetronInfo",
+    "Page",
 ]
 
 from datetime import date
@@ -22,11 +23,7 @@ from pydantic import Field, validator
 
 from dex_starr.models import PascalModel, clean_contents, from_xml_list, to_xml_list, to_xml_text
 from dex_starr.models.comic_info.schema import Page
-from dex_starr.models.metadata.enums import Format as MetadataFormat
-from dex_starr.models.metadata.enums import Role as MetadataRole
-from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Publisher
-from dex_starr.models.metadata.schema import Series as MetadataSeries
-from dex_starr.models.metadata.schema import StoryArc
+from dex_starr.models.metadata.schema import Metadata
 from dex_starr.models.metron_info.enums import AgeRating, Format, Genre, InformationSource, Role
 
 
@@ -312,6 +309,15 @@ class MetronInfo(PascalModel):
         return v
 
     def to_metadata(self) -> Metadata:
+        from dex_starr.models.metadata.enums import Format as MetadataFormat
+        from dex_starr.models.metadata.enums import PageType as MetadataPageType
+        from dex_starr.models.metadata.enums import Role as MetadataRole
+        from dex_starr.models.metadata.schema import Creator, Issue
+        from dex_starr.models.metadata.schema import Page as MetadataPage
+        from dex_starr.models.metadata.schema import Publisher
+        from dex_starr.models.metadata.schema import Series as MetadataSeries
+        from dex_starr.models.metadata.schema import StoryArc
+
         return Metadata(
             publisher=Publisher(
                 # TODO: Imprint
@@ -357,9 +363,9 @@ class MetronInfo(PascalModel):
             ),
             pages=sorted(
                 {
-                    Page(
+                    MetadataPage(
                         image=x.image,
-                        page_type=x.page_type,
+                        page_type=MetadataPageType.load(str(x.page_type)),
                         double_page=x.double_page,
                         image_size=x.image_size,
                         key=x.key,

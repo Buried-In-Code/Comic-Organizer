@@ -1,4 +1,4 @@
-__all__ = ["Role", "Format", "Genre", "ComicPageType"]
+__all__ = ["Role", "Format", "Genre", "PageType", "Source"]
 
 import logging
 from enum import Enum
@@ -37,26 +37,25 @@ class Source(Enum):
         return self.value < other.value
 
 
-class ComicPageType(Enum):
-    FRONT_COVER = "FrontCover"
-    INNER_COVER = "InnerCover"
+class PageType(Enum):
+    FRONT_COVER = "Front Cover"
+    INNER_COVER = "Inner Cover"
     ROUNDUP = "Roundup"
     STORY = "Story"
     ADVERTISEMENT = "Advertisement"
     EDITORIAL = "Editorial"
     LETTERS = "Letters"
     PREVIEW = "Preview"
-    BACK_COVER = "BackCover"
+    BACK_COVER = "Back Cover"
     OTHER = "Other"
-    DELETED = "Deleted"
 
     @staticmethod
-    def load(value: str) -> "ComicPageType":
-        for entry in ComicPageType:
-            if entry.value.lower() == value.lower():
+    def load(value: str) -> "PageType":
+        for entry in PageType:
+            if entry.value.lower().replace(" ", "") == value.lower().replace(" ", ""):
                 return entry
-        LOGGER.warning(f"Unable to find ComicPageType: '{value}'")
-        return ComicPageType.STORY
+        LOGGER.warning(f"Unable to find PageType: '{value}'")
+        return PageType.STORY
 
     def __str__(self):
         return self.value
@@ -65,7 +64,7 @@ class ComicPageType(Enum):
         return self.value
 
     def __lt__(self, other):
-        if not isinstance(other, ComicPageType):
+        if not isinstance(other, PageType):
             raise NotImplementedError()
         return self.value < other.value
 

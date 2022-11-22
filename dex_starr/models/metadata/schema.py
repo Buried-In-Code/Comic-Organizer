@@ -21,7 +21,7 @@ from pydantic import Field, validator
 
 from dex_starr import __version__
 from dex_starr.models import CamelModel, clean_contents, from_xml_list, to_xml_list, to_xml_text
-from dex_starr.models.metadata.enums import ComicPageType, Format, Genre, Role, Source
+from dex_starr.models.metadata.enums import Format, Genre, PageType, Role, Source
 
 
 def sanitize(dirty: str) -> str:
@@ -263,18 +263,18 @@ class Issue(CamelModel):
 
 class Page(CamelModel):
     image: int = Field(alias="@image")
-    page_type: ComicPageType = Field(alias="@type", default=ComicPageType.STORY)
+    page_type: PageType = Field(alias="@pageType", default=PageType.STORY)
     double_page: bool = Field(alias="@doublePage", default=False)
-    image_size: int = Field(alias="@imageSize", default=0)
     key: Optional[str] = Field(alias="@key", default=None)
     bookmark: Optional[str] = Field(alias="@bookmark", default=None)
-    image_width: Optional[int] = Field(alias="@imageWidth", default=None)
-    image_height: Optional[int] = Field(alias="@imageHeight", default=None)
+    image_size: int = Field(alias="@imageSize", default=0, ge=0)
+    image_width: int = Field(alias="@imageWidth", default=0, ge=0)
+    image_height: int = Field(alias="@imageHeight", default=0, ge=0)
 
     @validator("page_type", pre=True)
-    def page_type_to_enum(cls, v) -> ComicPageType:
+    def page_type_to_enum(cls, v) -> PageType:
         if isinstance(v, str):
-            return ComicPageType.load(v)
+            return PageType.load(v)
         return v
 
     def __lt__(self, other):

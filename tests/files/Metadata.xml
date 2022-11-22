@@ -127,7 +127,7 @@
 			</sources>
 		</issue>
 		<pages>
-			<page image="0" pageType="FrontCover" doublePage="false" imageSize="1733120" imageWidth="1920" imageHeight="2951"/>
+			<page image="0" pageType="Front Cover" doublePage="false" imageSize="1733120" imageWidth="1920" imageHeight="2951"/>
 			<page image="1" pageType="Story" doublePage="false" imageSize="130938" imageWidth="1920" imageHeight="2951"/>
 			<page image="2" pageType="Story" doublePage="false" imageSize="1298224" imageWidth="1920" imageHeight="2951"/>
 		</pages>
