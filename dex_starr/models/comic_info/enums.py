@@ -33,7 +33,7 @@ class PageType(Enum):
         return self.value
 
     def __repr__(self):
-        return self.value
+        return f"{type(self).__name__}{{{self.value}}}"
 
     def __lt__(self, other):
         if not isinstance(other, PageType):
@@ -58,7 +58,7 @@ class YesNo(Enum):
         return self.value
 
     def __repr__(self):
-        return self.value
+        return f"{type(self).__name__}{{{self.value}}}"
 
     def __lt__(self, other):
         if not isinstance(other, YesNo):
@@ -84,7 +84,7 @@ class Manga(Enum):
         return self.value
 
     def __repr__(self):
-        return self.value
+        return f"{type(self).__name__}{{{self.value}}}"
 
     def __lt__(self, other):
         if not isinstance(other, Manga):
@@ -121,7 +121,7 @@ class AgeRating(Enum):
         return self.value
 
     def __repr__(self):
-        return self.value
+        return f"{type(self).__name__}{{{self.value}}}"
 
     def __lt__(self, other):
         if not isinstance(other, AgeRating):

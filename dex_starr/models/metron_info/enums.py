@@ -33,7 +33,7 @@ class Format(Enum):
         return self.value
 
     def __repr__(self):
-        return self.value
+        return f"{type(self).__name__}{{{self.value}}}"
 
     def __lt__(self, other):
         if not isinstance(other, Format):
@@ -62,7 +62,7 @@ class InformationSource(Enum):
         return self.value
 
     def __repr__(self):
-        return self.value
+        return f"{type(self).__name__}{{{self.value}}}"
 
     def __lt__(self, other):
         if not isinstance(other, InformationSource):
@@ -136,7 +136,7 @@ class Role(Enum):
         return self.value
 
     def __repr__(self):
-        return self.value
+        return f"{type(self).__name__}{{{self.value}}}"
 
     def __lt__(self, other):
         if not isinstance(other, Role):
@@ -163,7 +163,7 @@ class AgeRating(Enum):
         return self.value
 
     def __repr__(self):
-        return self.value
+        return f"{type(self).__name__}{{{self.value}}}"
 
     def __lt__(self, other):
         if not isinstance(other, AgeRating):

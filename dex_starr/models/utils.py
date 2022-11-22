@@ -1,6 +1,6 @@
 __all__ = ["create_metadata", "to_comic_info", "to_metron_info"]
 
-from typing import List
+from typing import List, Optional, Tuple
 
 from natsort import humansorted as sorted
 from natsort import ns
@@ -9,7 +9,7 @@ from rich.prompt import IntPrompt, Prompt
 from dex_starr.console import CONSOLE, create_menu
 from dex_starr.models.comic_info.schema import ComicInfo
 from dex_starr.models.metadata.enums import Format
-from dex_starr.models.metadata.schema import Issue, Metadata, Publisher, Series
+from dex_starr.models.metadata.schema import Issue, Metadata, Publisher, Series, SourceResource
 from dex_starr.models.metron_info.schema import MetronInfo
 
 
@@ -98,7 +98,7 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
 
 
 def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInfo:
-    from dex_starr.models.metron_info.enums import Format, PageType, Role
+    from dex_starr.models.metron_info.enums import Format, InformationSource, PageType, Role
     from dex_starr.models.metron_info.schema import (
         Arc,
         Credit,
@@ -108,17 +108,41 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
         Resource,
         RoleResource,
         Series,
+        Source,
     )
 
+    def get_information_source(
+        sources: List[str], resolution_order: List[str]
+    ) -> Tuple[Optional[InformationSource], Optional[str]]:
+        for entry in resolution_order:
+            if entry in sources:
+                return InformationSource.load(entry), entry
+        return None, None
+
+    def get_source_id(primary_source: str, source_list: List[SourceResource]) -> Optional[int]:
+        for entry in source_list:
+            if str(entry.source) == primary_source:
+                return entry.value
+        return None
+
+    information_source, primary_source = get_information_source(
+        sources=[str(x.source) for x in metadata.issue.sources], resolution_order=resolution_order
+    )
     return MetronInfo(
-        id=None,
+        id=Source(
+            source=information_source, value=get_source_id(primary_source, metadata.issue.sources)
+        )
+        if information_source
+        else None,
         publisher=Resource(
-            id=None,
+            id=get_source_id(primary_source, metadata.publisher.sources)
+            if primary_source
+            else None,
             value=metadata.publisher.title,
         ),
         series=Series(
             lang=metadata.issue.language,
-            id=None,
+            id=get_source_id(primary_source, metadata.series.sources) if primary_source else None,
             name=metadata.series.title,
             sort_name=metadata.series.title,
             volume=metadata.series.volume,
