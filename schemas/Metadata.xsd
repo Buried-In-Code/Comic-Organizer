@@ -26,19 +26,6 @@
 			<xs:element name="sources" type="sourceArray" minOccurs="0"/>
 		</xs:all>
 	</xs:complexType>
-	<xs:complexType name="sourceArray">
-		<xs:sequence>
-			<xs:element name="source" minOccurs="0" maxOccurs="unbounded">
-				<xs:complexType>
-					<xs:simpleContent>
-						<xs:extension base="xs:positiveInteger">
-							<xs:attribute name="location" type="sourceEnum" use="required"/>
-						</xs:extension>
-					</xs:simpleContent>
-				</xs:complexType>
-			</xs:element>
-		</xs:sequence>
-	</xs:complexType>
 	<xs:complexType name="seriesType">
 		<xs:all>
 			<xs:element name="startYear" type="xs:positiveInteger" minOccurs="0"/>
@@ -66,6 +53,35 @@
 		</xs:all>
 		<xs:attribute name="language" type="languageCode" default="en"/>
 	</xs:complexType>
+	<xs:complexType name="metaType">
+		<xs:all>
+			<xs:element name="tool">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:attribute name="version" type="versionType" use="required"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:all>
+		<xs:attribute name="date" type="xs:date" use="required"/>
+	</xs:complexType>
+
+	<!-- Arrays -->
+	<xs:complexType name="sourceArray">
+		<xs:sequence>
+			<xs:element name="source" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:positiveInteger">
+							<xs:attribute name="location" type="sourceEnum" use="required"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="characterArray">
 		<xs:sequence>
 			<xs:element name="character" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
@@ -73,21 +89,22 @@
 	</xs:complexType>
 	<xs:complexType name="creatorArray">
 		<xs:sequence>
-			<xs:element name="creator" type="creatorType" minOccurs="0" maxOccurs="unbounded"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="creatorType">
-		<xs:all>
-			<xs:element name="name" type="xs:string"/>
-			<xs:element name="roles">
+			<xs:element name="creator" minOccurs="0" maxOccurs="unbounded">
 				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="role" type="roleEnum" default="Other" minOccurs="0"
-						            maxOccurs="unbounded"/>
-					</xs:sequence>
+					<xs:all>
+						<xs:element name="name" type="xs:string"/>
+						<xs:element name="roles">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="role" type="roleEnum" default="Other"
+									            minOccurs="0" maxOccurs="unbounded"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:all>
 				</xs:complexType>
 			</xs:element>
-		</xs:all>
+		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="genreArray">
 		<xs:sequence>
@@ -133,19 +150,6 @@
 				</xs:complexType>
 			</xs:element>
 		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="metaType">
-		<xs:all>
-			<xs:element name="tool" type="toolType"/>
-		</xs:all>
-		<xs:attribute name="date" type="xs:date" use="required"/>
-	</xs:complexType>
-	<xs:complexType name="toolType">
-		<xs:simpleContent>
-			<xs:extension base="xs:string">
-				<xs:attribute name="version" type="versionType" use="required"/>
-			</xs:extension>
-		</xs:simpleContent>
 	</xs:complexType>
 
 	<!-- Simple Types -->
