@@ -10,14 +10,13 @@ from natsort import ns
 from pydantic import Field, validator
 
 from dex_starr.models import PascalModel, clean_contents, from_xml_list, to_xml_list
-from dex_starr.models.comic_info.enums import AgeRating, ComicPageType, Manga, YesNo
-from dex_starr.models.metadata.enums import Format, Genre, Role
-from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
+from dex_starr.models.comic_info.enums import AgeRating, Manga, PageType, YesNo
+from dex_starr.models.metadata.schema import Metadata
 
 
 class Page(PascalModel):
     image: int = Field(alias="@Image")
-    page_type: ComicPageType = Field(alias="@Type", default=ComicPageType.STORY)
+    page_type: PageType = Field(alias="@Type", default=PageType.STORY)
     double_page: bool = Field(alias="@DoublePage", default=False)
     image_size: int = Field(alias="@ImageSize", default=0)
     key: Optional[str] = Field(alias="@Key", default=None)
@@ -26,9 +25,9 @@ class Page(PascalModel):
     image_height: Optional[int] = Field(alias="@ImageHeight", default=None)
 
     @validator("page_type", pre=True)
-    def page_type_to_enum(cls, v) -> ComicPageType:
+    def page_type_to_enum(cls, v) -> PageType:
         if isinstance(v, str):
-            return ComicPageType.load(v)
+            return PageType.load(v)
         return v
 
     def __lt__(self, other):
@@ -85,10 +84,10 @@ class ComicInfo(PascalModel):
     pages: List[Page] = Field(default_factory=list)
     community_rating: Optional[float] = Field(default=None, ge=0, le=5)
 
-    listable_fields: ClassVar[Dict[str, str]] = {"Pages": "Page"}
+    list_fields: ClassVar[Dict[str, str]] = {"Pages": "Page"}
 
     def __init__(self, **data):
-        from_xml_list(mappings=ComicInfo.listable_fields, content=data)
+        from_xml_list(mappings=ComicInfo.list_fields, content=data)
         super().__init__(**data)
 
     @validator("black_and_white", pre=True)
@@ -202,6 +201,13 @@ class ComicInfo(PascalModel):
         return sorted({x.strip() for x in self.locations.split(",")}, alg=ns.NA | ns.G)
 
     def to_metadata(self) -> Metadata:
+        from dex_starr.models.metadata.enums import Format, Genre
+        from dex_starr.models.metadata.enums import PageType as MetadataPageType
+        from dex_starr.models.metadata.enums import Role
+        from dex_starr.models.metadata.schema import Creator, Issue
+        from dex_starr.models.metadata.schema import Page as MetadataPage
+        from dex_starr.models.metadata.schema import Publisher, Series, StoryArc
+
         # region Parse Creators
         creators = {}
         creator_mappings = {
@@ -258,13 +264,13 @@ class ComicInfo(PascalModel):
             ),
             pages=sorted(
                 {
-                    Page(
+                    MetadataPage(
                         image=x.image,
-                        page_type=x.page_type,
+                        page_type=MetadataPageType.load(str(x.page_type)),
                         double_page=x.double_page,
-                        image_size=x.image_size,
                         key=x.key,
                         bookmark=x.bookmark,
+                        image_size=x.image_size,
                         image_width=x.image_width,
                         image_height=x.image_height,
                     )
@@ -278,15 +284,20 @@ class ComicInfo(PascalModel):
     @staticmethod
     def from_file(info_file: Path) -> "ComicInfo":
         with info_file.open("rb") as stream:
-            content = xmltodict.parse(stream, force_list=list(ComicInfo.listable_fields.values()))[
-                "ComicInfo"
-            ]
-            return ComicInfo(**content)
+            content = xmltodict.parse(stream, force_list=list(ComicInfo.list_fields.values()))
+            return ComicInfo(**content["ComicInfo"])
 
     def to_file(self, info_file: Path):
         content = self.dict(by_alias=True, exclude_none=True)
-        to_xml_list(mappings=ComicInfo.listable_fields, content=content)
+        to_xml_list(mappings=ComicInfo.list_fields, content=content)
         content = clean_contents(content)
+
+        content["@xmlns:xsi"] = "http://www.w3.org/2001/XMLSchema-instance"
+        content["@xsi:noNamespaceSchemaLocation"] = (
+            "https://raw.githubusercontent.com/"
+            "Buried-In-Code/Dex-Starr/main/schemas/"
+            "ComicInfo.xsd"
+        )
 
         with info_file.open("w", encoding="UTF-8") as stream:
             xmltodict.unparse(

@@ -7,21 +7,11 @@ from natsort import ns
 from rich.prompt import IntPrompt, Prompt
 
 from dex_starr.console import CONSOLE, create_menu
-from dex_starr.models.comic_info.schema import ComicInfo, Page
+from dex_starr.models.comic_info.schema import ComicInfo
 from dex_starr.models.metadata.enums import Format
 from dex_starr.models.metadata.schema import Issue, Metadata, Publisher, Series, Sources
-from dex_starr.models.metron_info.enums import Format as MetronFormat
-from dex_starr.models.metron_info.enums import InformationSource, Role
-from dex_starr.models.metron_info.schema import (
-    Arc,
-    Credit,
-    GenreResource,
-    MetronInfo,
-    Resource,
-    RoleResource,
-)
-from dex_starr.models.metron_info.schema import Series as MetronSeries
-from dex_starr.models.metron_info.schema import Source as MetronSource
+from dex_starr.models.metron_info.enums import InformationSource
+from dex_starr.models.metron_info.schema import MetronInfo
 
 
 def create_metadata() -> Metadata:
@@ -40,6 +30,9 @@ def create_metadata() -> Metadata:
 
 
 def to_comic_info(metadata: Metadata) -> ComicInfo:
+    from dex_starr.models.comic_info.enums import PageType
+    from dex_starr.models.comic_info.schema import Page
+
     roles = ["Writer", "Penciller", "Inker", "Colorist", "Letterer", "Cover Artist", "Editor"]
     creators = {}
     for role in roles:
@@ -90,7 +83,7 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
             {
                 Page(
                     image=x.image,
-                    page_type=x.page_type,
+                    page_type=PageType.load(str(x.page_type)),
                     double_page=x.double_page,
                     image_size=x.image_size,
                     key=x.key,
@@ -130,9 +123,21 @@ def get_source(sources: Sources, information_source: InformationSource) -> Optio
 
 
 def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInfo:
+    from dex_starr.models.metron_info.enums import Format, Genre, PageType, Role
+    from dex_starr.models.metron_info.schema import (
+        Arc,
+        Credit,
+        GenreResource,
+        Page,
+        Resource,
+        RoleResource,
+        Series,
+        Source,
+    )
+
     information_source = select_primary_source(metadata.issue.sources, resolution_order)
     return MetronInfo(
-        id=MetronSource(
+        id=Source(
             source=information_source, value=get_source(metadata.issue.sources, information_source)
         )
         if information_source
@@ -143,7 +148,7 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
             else None,
             value=metadata.publisher.title,
         ),
-        series=MetronSeries(
+        series=Series(
             lang=metadata.issue.language,
             id=get_source(metadata.series.sources, information_source)
             if information_source
@@ -151,7 +156,7 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
             name=metadata.series.title,
             sort_name=metadata.series.title,
             volume=metadata.series.volume,
-            format=MetronFormat.load(str(metadata.issue.format)),
+            format=Format.load(str(metadata.issue.format)),
         ),
         collection_title=metadata.issue.title,
         number=metadata.issue.number,
@@ -162,7 +167,10 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
         store_date=metadata.issue.store_date,
         page_count=metadata.issue.page_count,
         notes=metadata.notes,
-        genres=sorted({GenreResource(value=x) for x in metadata.issue.genres}, alg=ns.NA | ns.G),
+        genres=sorted(
+            {GenreResource(value=Genre.load(str(x))) for x in metadata.issue.genres},
+            alg=ns.NA | ns.G,
+        ),
         # TODO: Add tags
         story_arcs=sorted(
             {Arc(name=x.title, number=x.number) for x in metadata.issue.story_arcs},
@@ -189,7 +197,7 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
             {
                 Page(
                     image=x.image,
-                    page_type=x.page_type,
+                    page_type=PageType.load(str(x.page_type)),
                     double_page=x.double_page,
                     image_size=x.image_size,
                     key=x.key,

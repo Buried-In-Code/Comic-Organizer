@@ -37,6 +37,22 @@
       ],
       "type": "string"
     },
+    "pageType": {
+      "default": "Story",
+      "enum": [
+        "Front Cover",
+        "Inner Cover",
+        "Roundup",
+        "Story",
+        "Advertisement",
+        "Editorial",
+        "Letters",
+        "Preview",
+        "Back Cover",
+        "Other"
+      ],
+      "type": "string"
+    },
     "role": {
       "default": "Other",
       "enum": [
@@ -194,8 +210,7 @@
               "type": "integer"
             },
             "sources": {
-              "$ref": "#/definitions/sources",
-              "type": "object"
+              "$ref": "#/definitions/sources"
             },
             "storeDate": {
               "default": null,
@@ -286,11 +301,9 @@
                 "type": "integer"
               },
               "imageHeight": {
-                "default": null,
-                "type": [
-                  "integer",
-                  "null"
-                ]
+                "default": 0,
+                "minimum": 0,
+                "type": "integer"
               },
               "imageSize": {
                 "default": 0,
@@ -298,11 +311,9 @@
                 "type": "integer"
               },
               "imageWidth": {
-                "default": null,
-                "type": [
-                  "integer",
-                  "null"
-                ]
+                "default": 0,
+                "minimum": 0,
+                "type": "integer"
               },
               "key": {
                 "default": null,
@@ -312,8 +323,7 @@
                 ]
               },
               "pageType": {
-                "default": "Story",
-                "type": "string"
+                "$ref": "#/definitions/pageType"
               }
             },
             "required": [
@@ -335,8 +345,7 @@
               ]
             },
             "sources": {
-              "$ref": "#/definitions/sources",
-              "type": "object"
+              "$ref": "#/definitions/sources"
             },
             "title": {
               "type": "string"
@@ -352,8 +361,7 @@
           "additionalProperties": false,
           "properties": {
             "sources": {
-              "$ref": "#/definitions/sources",
-              "type": "object"
+              "$ref": "#/definitions/sources"
             },
             "startYear": {
               "default": null,

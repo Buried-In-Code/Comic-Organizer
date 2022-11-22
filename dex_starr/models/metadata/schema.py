@@ -11,8 +11,7 @@ from pydantic import Field, validator
 
 from dex_starr import __version__
 from dex_starr.models import CamelModel
-from dex_starr.models.comic_info.enums import ComicPageType
-from dex_starr.models.metadata.enums import Format, Genre, Role
+from dex_starr.models.metadata.enums import Format, Genre, PageType, Role
 
 
 def sanitize(dirty: str) -> str:
@@ -238,18 +237,18 @@ class Issue(CamelModel):
 
 class Page(CamelModel):
     image: int
-    page_type: ComicPageType = ComicPageType.STORY
+    page_type: PageType = PageType.STORY
     double_page: bool = False
-    image_size: int = 0
     key: Optional[str] = None
     bookmark: Optional[str] = None
-    image_width: Optional[int] = None
-    image_height: Optional[int] = None
+    image_size: int = Field(default=0, ge=0)
+    image_width: int = Field(default=0, ge=0)
+    image_height: int = Field(default=0, ge=0)
 
     @validator("page_type", pre=True)
-    def page_type_to_enum(cls, v) -> ComicPageType:
+    def page_type_to_enum(cls, v) -> PageType:
         if isinstance(v, str):
-            return ComicPageType.load(v)
+            return PageType.load(v)
         return v
 
     def __lt__(self, other):

@@ -9,6 +9,7 @@ __all__ = [
     "Series",
     "Source",
     "MetronInfo",
+    "Page",
 ]
 
 from datetime import date
@@ -20,13 +21,9 @@ from natsort import humansorted as sorted
 from natsort import ns
 from pydantic import Field, validator
 
-from dex_starr.models import PascalModel, clean_contents, from_xml_list, text_fields, to_xml_list
+from dex_starr.models import PascalModel, clean_contents, from_xml_list, to_xml_list, to_xml_text
 from dex_starr.models.comic_info.schema import Page
-from dex_starr.models.metadata.enums import Format as MetadataFormat
-from dex_starr.models.metadata.enums import Role as MetadataRole
-from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Publisher
-from dex_starr.models.metadata.schema import Series as MetadataSeries
-from dex_starr.models.metadata.schema import Sources, StoryArc
+from dex_starr.models.metadata.schema import Metadata
 from dex_starr.models.metron_info.enums import AgeRating, Format, Genre, InformationSource, Role
 
 
@@ -78,12 +75,12 @@ class Credit(PascalModel):
     creator: Resource
     roles: List[RoleResource] = Field(default_factory=list)
 
-    listable_fields: ClassVar[Dict[str, str]] = {"Roles": "Role"}
-    resource_fields: ClassVar[List[str]] = ["Creator", "Roles"]
+    list_fields: ClassVar[Dict[str, str]] = {"Roles": "Role"}
+    text_fields: ClassVar[List[str]] = ["Creator", "Roles"]
 
     def __init__(self, **data):
-        from_xml_list(mappings=Credit.listable_fields, content=data)
-        text_fields(mappings=Credit.resource_fields, content=data)
+        from_xml_list(mappings=Credit.list_fields, content=data)
+        to_xml_text(mappings=Credit.text_fields, content=data)
         super().__init__(**data)
 
     def __lt__(self, other):
@@ -275,8 +272,8 @@ class MetronInfo(PascalModel):
     credits: List[Credit] = Field(default_factory=list)
     pages: List[Page] = Field(default_factory=list)
 
-    listable_fields: ClassVar[Dict[str, str]] = {
-        **Credit.listable_fields,
+    list_fields: ClassVar[Dict[str, str]] = {
+        **Credit.list_fields,
         "Stories": "Story",
         "Prices": "Price",
         "Genres": "Genre",
@@ -290,6 +287,7 @@ class MetronInfo(PascalModel):
         "Pages": "Page",
     }
     text_fields: ClassVar[List[str]] = [
+        *Credit.text_fields,
         "Stories",
         "Genres",
         "Tags",
@@ -300,8 +298,8 @@ class MetronInfo(PascalModel):
     ]
 
     def __init__(self, **data):
-        from_xml_list(mappings=MetronInfo.listable_fields, content=data)
-        text_fields(mappings=MetronInfo.text_fields, content=data)
+        from_xml_list(mappings=MetronInfo.list_fields, content=data)
+        to_xml_text(mappings=MetronInfo.text_fields, content=data)
         super().__init__(**data)
 
     @validator("age_rating", pre=True)
@@ -311,6 +309,17 @@ class MetronInfo(PascalModel):
         return v
 
     def to_metadata(self) -> Metadata:
+        from dex_starr.models.metadata.enums import Format, Genre, PageType, Role
+        from dex_starr.models.metadata.schema import (
+            Creator,
+            Issue,
+            Page,
+            Publisher,
+            Series,
+            Sources,
+            StoryArc,
+        )
+
         return Metadata(
             publisher=Publisher(
                 # TODO: Imprint
@@ -333,7 +342,7 @@ class MetronInfo(PascalModel):
                 ),
                 title=self.publisher.value,
             ),
-            series=MetadataSeries(
+            series=Series(
                 sources=Sources(
                     comicvine=self.series.id
                     if self.id.source == InformationSource.COMIC_VINE
@@ -359,15 +368,15 @@ class MetronInfo(PascalModel):
                         Creator(
                             name=x.creator.value,
                             roles=sorted(
-                                {MetadataRole.load(str(r.value)) for r in x.roles}, alg=ns.NA | ns.G
+                                {Role.load(str(r.value)) for r in x.roles}, alg=ns.NA | ns.G
                             ),
                         )
                         for x in self.credits
                     },
                     alg=ns.NA | ns.G,
                 ),
-                format=MetadataFormat.load(str(self.series.format)),
-                genres=sorted({x.value for x in self.genres}, alg=ns.NA | ns.G),
+                format=Format.load(str(self.series.format)),
+                genres=sorted({Genre.load(str(x.value)) for x in self.genres}, alg=ns.NA | ns.G),
                 language=self.series.lang,
                 locations=sorted({x.value for x in self.locations}, alg=ns.NA | ns.G),
                 number=self.number,
@@ -398,7 +407,7 @@ class MetronInfo(PascalModel):
                 {
                     Page(
                         image=x.image,
-                        page_type=x.page_type,
+                        page_type=PageType.load(str(x.page_type)),
                         double_page=x.double_page,
                         image_size=x.image_size,
                         key=x.key,
@@ -416,15 +425,20 @@ class MetronInfo(PascalModel):
     @staticmethod
     def from_file(info_file: Path) -> "MetronInfo":
         with info_file.open("rb") as stream:
-            content = xmltodict.parse(stream, force_list=list(MetronInfo.listable_fields.values()))[
-                "MetronInfo"
-            ]
-            return MetronInfo(**content)
+            content = xmltodict.parse(stream, force_list=list(MetronInfo.list_fields.values()))
+            return MetronInfo(**content["MetronInfo"])
 
     def to_file(self, info_file: Path):
         content = self.dict(by_alias=True, exclude_none=True)
-        to_xml_list(mappings=MetronInfo.listable_fields, content=content)
+        to_xml_list(mappings=MetronInfo.list_fields, content=content)
         content = clean_contents(content)
+
+        content["@xmlns:xsi"] = "http://www.w3.org/2001/XMLSchema-instance"
+        content["@xsi:noNamespaceSchemaLocation"] = (
+            "https://raw.githubusercontent.com/"
+            "Metron-Project/metroninfo/master/drafts/"
+            "v1.0/MetronInfo.xsd"
+        )
 
         with info_file.open("w", encoding="UTF-8") as stream:
             xmltodict.unparse(

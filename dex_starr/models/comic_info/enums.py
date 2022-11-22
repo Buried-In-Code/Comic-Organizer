@@ -1,4 +1,4 @@
-__all__ = ["YesNo", "Manga", "AgeRating", "ComicPageType"]
+__all__ = ["YesNo", "Manga", "AgeRating", "PageType"]
 
 import logging
 from enum import Enum
@@ -6,6 +6,39 @@ from enum import Enum
 from dex_starr.console import RichLogger
 
 LOGGER = RichLogger(logging.getLogger(__name__))
+
+
+class PageType(Enum):
+    FRONT_COVER = "FrontCover"
+    INNER_COVER = "InnerCover"
+    ROUNDUP = "Roundup"
+    STORY = "Story"
+    ADVERTISEMENT = "Advertisement"
+    EDITORIAL = "Editorial"
+    LETTERS = "Letters"
+    PREVIEW = "Preview"
+    BACK_COVER = "BackCover"
+    OTHER = "Other"
+    DELETED = "Deleted"
+
+    @staticmethod
+    def load(value: str) -> "PageType":
+        for entry in PageType:
+            if entry.value.lower().replace(" ", "") == value.lower().replace(" ", ""):
+                return entry
+        LOGGER.warning(f"Unable to find PageType: '{value}'")
+        return PageType.STORY
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return f"{type(self).__name__}{{{self.value}}}"
+
+    def __lt__(self, other):
+        if not isinstance(other, PageType):
+            raise NotImplementedError()
+        return self.value < other.value
 
 
 class YesNo(Enum):
@@ -25,7 +58,7 @@ class YesNo(Enum):
         return self.value
 
     def __repr__(self):
-        return self.value
+        return f"{type(self).__name__}{{{self.value}}}"
 
     def __lt__(self, other):
         if not isinstance(other, YesNo):
@@ -51,7 +84,7 @@ class Manga(Enum):
         return self.value
 
     def __repr__(self):
-        return self.value
+        return f"{type(self).__name__}{{{self.value}}}"
 
     def __lt__(self, other):
         if not isinstance(other, Manga):
@@ -88,42 +121,9 @@ class AgeRating(Enum):
         return self.value
 
     def __repr__(self):
-        return self.value
+        return f"{type(self).__name__}{{{self.value}}}"
 
     def __lt__(self, other):
         if not isinstance(other, AgeRating):
-            raise NotImplementedError()
-        return self.value < other.value
-
-
-class ComicPageType(Enum):
-    FRONT_COVER = "FrontCover"
-    INNER_COVER = "InnerCover"
-    ROUNDUP = "Roundup"
-    STORY = "Story"
-    ADVERTISEMENT = "Advertisement"
-    EDITORIAL = "Editorial"
-    LETTERS = "Letters"
-    PREVIEW = "Preview"
-    BACK_COVER = "BackCover"
-    OTHER = "Other"
-    DELETED = "Deleted"
-
-    @staticmethod
-    def load(value: str) -> "ComicPageType":
-        for entry in ComicPageType:
-            if entry.value.lower() == value.lower():
-                return entry
-        LOGGER.warning(f"Unable to find ComicPageType: '{value}'")
-        return ComicPageType.STORY
-
-    def __str__(self):
-        return self.value
-
-    def __repr__(self):
-        return self.value
-
-    def __lt__(self, other):
-        if not isinstance(other, ComicPageType):
             raise NotImplementedError()
         return self.value < other.value

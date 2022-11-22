@@ -1,4 +1,11 @@
-__all__ = ["PascalModel", "CamelModel", "clean_contents", "from_xml_list", "to_xml_list"]
+__all__ = [
+    "PascalModel",
+    "CamelModel",
+    "clean_contents",
+    "from_xml_list",
+    "to_xml_list",
+    "to_xml_text",
+]
 
 from enum import Enum
 from typing import Any, Dict, List
@@ -58,6 +65,13 @@ def clean_contents(content: Dict[str, Any]) -> Dict[str, Any]:
     return content
 
 
+def from_xml_list(mappings: Dict[str, str], content: Dict[str, Any]) -> Dict[str, Any]:
+    for key, value in mappings.items():
+        if key in content and isinstance(content[key], dict) and value in content[key]:
+            content[key] = content[key][value]
+    return content
+
+
 def to_xml_list(mappings: Dict[str, str], content: Dict[str, Any]) -> Dict[str, Any]:
     for key, value in content.copy().items():
         if isinstance(value, dict):
@@ -71,14 +85,7 @@ def to_xml_list(mappings: Dict[str, str], content: Dict[str, Any]) -> Dict[str, 
     return content
 
 
-def from_xml_list(mappings: Dict[str, str], content: Dict[str, Any]) -> Dict[str, Any]:
-    for key, value in mappings.items():
-        if key in content and isinstance(content[key], dict) and value in content[key]:
-            content[key] = content[key][value]
-    return content
-
-
-def text_fields(mappings: List[str], content: Dict[str, Any]) -> Dict[str, str]:
+def to_xml_text(mappings: List[str], content: Dict[str, Any]) -> Dict[str, Any]:
     for field in mappings:
         if field in content:
             if isinstance(content[field], str):
