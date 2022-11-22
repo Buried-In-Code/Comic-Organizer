@@ -169,3 +169,41 @@ class AgeRating(Enum):
         if not isinstance(other, AgeRating):
             raise NotImplementedError()
         return self.value < other.value
+
+
+class Genre(Enum):
+    ADULT = "Adult"
+    CRIME = "Crime"
+    ESPIONAGE = "Espionage"
+    FANTASY = "Fantasy"
+    HISTORICAL = "Historical"
+    HORROR = "Horror"
+    HUMOR = "Humor"
+    MANGA = "Manga"
+    PARODY = "Parody"
+    ROMANCE = "Romance"
+    SCIENCE_FICTION = "Science Fiction"
+    SPORT = "Sport"
+    SUPER_HERO = "Super-Hero"
+    WAR = "War"
+    WESTERN = "Western"
+    OTHER = "Other"
+
+    @staticmethod
+    def load(value: str) -> "Genre":
+        for entry in Genre:
+            if entry.value.lower() == value.lower():
+                return entry
+        LOGGER.warning(f"Unable to find Genre: '{value}'")
+        return Genre.OTHER
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return f"{type(self).__name__}{{{self.value}}}"
+
+    def __lt__(self, other):
+        if not isinstance(other, Genre):
+            raise NotImplementedError()
+        return self.value < other.value

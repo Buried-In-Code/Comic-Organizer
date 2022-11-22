@@ -338,15 +338,15 @@ class MetronInfo(PascalModel):
                         Creator(
                             name=x.creator.value,
                             roles=sorted(
-                                {MetadataRole.load(str(r.value)) for r in x.roles}, alg=ns.NA | ns.G
+                                {Role.load(str(r.value)) for r in x.roles}, alg=ns.NA | ns.G
                             ),
                         )
                         for x in self.credits
                     },
                     alg=ns.NA | ns.G,
                 ),
-                format=MetadataFormat.load(str(self.series.format)),
-                genres=sorted({x.value for x in self.genres}, alg=ns.NA | ns.G),
+                format=Format.load(str(self.series.format)),
+                genres=sorted({Genre.load(str(x.value)) for x in self.genres}, alg=ns.NA | ns.G),
                 language=self.series.lang,
                 locations=sorted({x.value for x in self.locations}, alg=ns.NA | ns.G),
                 number=self.number,

@@ -157,7 +157,10 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
         store_date=metadata.issue.store_date,
         page_count=metadata.issue.page_count,
         notes=metadata.notes,
-        genres=sorted({GenreResource(value=x) for x in metadata.issue.genres}, alg=ns.NA | ns.G),
+        genres=sorted(
+            {GenreResource(value=Genre.load(str(x))) for x in metadata.issue.genres},
+            alg=ns.NA | ns.G,
+        ),
         # TODO: Add tags
         story_arcs=sorted(
             {Arc(name=x.title, number=x.number) for x in metadata.issue.story_arcs},
