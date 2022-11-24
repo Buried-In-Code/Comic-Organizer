@@ -36,14 +36,14 @@ def read_info_file(archive: Archive) -> Metadata:
     info_file = archive.extracted_folder / "Metadata.json"
     if info_file.exists():
         try:
-            LOGGER.debug("Parsing Metadata.json")
+            LOGGER.info("Parsing Metadata.json")
             return Metadata.from_file(info_file)
         except ValidationError as err:
             LOGGER.warning(f"Unable to parse Metadata.json: {err}")
     info_file = archive.extracted_folder / "MetronInfo.xml"
     if info_file.exists():
         try:
-            LOGGER.debug("Parsing MetronInfo.xml")
+            LOGGER.info("Parsing MetronInfo.xml")
             metron_info = MetronInfo.from_file(info_file)
             return metron_info.to_metadata()
         except ValidationError as err:
@@ -51,7 +51,7 @@ def read_info_file(archive: Archive) -> Metadata:
     info_file = archive.extracted_folder / "ComicInfo.xml"
     if info_file.exists():
         try:
-            LOGGER.debug("Parsing ComicInfo.xml")
+            LOGGER.info("Parsing ComicInfo.xml")
             comic_info = ComicInfo.from_file(info_file)
             return comic_info.to_metadata()
         except ValidationError as err:
@@ -61,11 +61,14 @@ def read_info_file(archive: Archive) -> Metadata:
 
 def write_info_file(archive: Archive, settings: Settings, metadata: Metadata):
     if settings.general.generate_metadata_file:
+        LOGGER.info("Generating 'Metadata.json'")
         metadata.to_file(archive.extracted_folder / "Metadata.json")
     if settings.metron.generate_metroninfo_file:
+        LOGGER.info("Generating 'MetronInfo.xml'")
         metron_info = to_metron_info(metadata, settings.general.resolution_order)
         metron_info.to_file(archive.extracted_folder / "MetronInfo.xml")
     if settings.general.generate_comicinfo_file:
+        LOGGER.info("Generating 'ComicInfo.xml'")
         comic_info = to_comic_info(metadata)
         comic_info.to_file(archive.extracted_folder / "ComicInfo.xml")
 
