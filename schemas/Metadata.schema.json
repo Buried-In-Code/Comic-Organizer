@@ -248,7 +248,7 @@
             "coverDate",
             "format",
             "number",
-            "sources"
+            "resources"
           ],
           "type": "object"
         },
@@ -330,7 +330,7 @@
             }
           },
           "required": [
-            "sources",
+            "resources",
             "title"
           ],
           "type": "object"
@@ -359,7 +359,7 @@
             }
           },
           "required": [
-            "sources",
+            "resources",
             "startYear",
             "title",
             "volume"
