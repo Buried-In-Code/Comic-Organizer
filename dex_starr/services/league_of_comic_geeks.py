@@ -13,9 +13,10 @@ from natsort import ns
 from rich.prompt import Prompt
 
 from dex_starr.console import CONSOLE, RichLogger, create_menu
-from dex_starr.models.metadata.enums import Format, Role
-from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Publisher, Series
+from dex_starr.models.metadata.enums import Format, Role, Source
+from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Publisher, Resource, Series
 from dex_starr.services.sqlite_cache import SQLiteCache
+from dex_starr.settings import LeagueOfComicGeeksSettings
 
 LOGGER = RichLogger(logging.getLogger(__name__))
 
@@ -40,8 +41,16 @@ def generate_search_terms(series_title: str, format: str, number: Optional[str] 
 
 
 class HimonTalker:
-    def __init__(self, api_key: str, client_id: str):
-        self.session = LeagueofComicGeeks(api_key, client_id, cache=SQLiteCache(expiry=14))
+    def __init__(self, settings: LeagueOfComicGeeksSettings):
+        self.session = LeagueofComicGeeks(
+            client_id=settings.client_id,
+            client_secret=settings.client_secret,
+            access_token=settings.access_token,
+            cache=SQLiteCache(expiry=14),
+        )
+        if not settings.access_token:
+            LOGGER.info("Generating new access token")
+            self.session.access_token = settings.access_token = self.session.generate_access_token()
 
     def update_issue(self, result: Comic, issue: Issue):
         if result.characters:
@@ -67,7 +76,13 @@ class HimonTalker:
         # TODO: Number
         if result.page_count:
             issue.page_count = result.page_count
-        issue.sources.league_of_comic_geeks = result.comic_id
+        issue.resources = sorted(
+            {
+                Resource(source=Source.LEAGUE_OF_COMIC_GEEKS, value=result.comic_id),
+                *issue.resources,
+            },
+            alg=ns.NA | ns.G,
+        )
         # TODO: Store Date
         # TODO: Story Arcs
         if result.description:
@@ -77,7 +92,13 @@ class HimonTalker:
             issue.title = result.title
 
     def update_series(self, result: HimonSeries, series: Series):
-        series.sources.league_of_comic_geeks = result.series_id
+        series.resources = sorted(
+            {
+                Resource(source=Source.LEAGUE_OF_COMIC_GEEKS, value=result.series_id),
+                *series.resources,
+            },
+            alg=ns.NA | ns.G,
+        )
         if result.year_begin:
             series.start_year = result.year_begin
         if result.title:
@@ -86,7 +107,13 @@ class HimonTalker:
             series.volume = result.volume
 
     def update_publisher(self, result: HimonSeries, publisher: Publisher):
-        publisher.sources.league_of_comic_geeks = result.publisher_id
+        publisher.resources = sorted(
+            {
+                Resource(source=Source.LEAGUE_OF_COMIC_GEEKS, value=result.publisher_id),
+                *publisher.resources,
+            },
+            alg=ns.NA | ns.G,
+        )
         if result.publisher_name:
             publisher.title = result.publisher_name
 
@@ -157,12 +184,14 @@ class HimonTalker:
 
     def lookup_comic(self, metadata: Metadata) -> Optional[Comic]:
         output = None
-        if metadata.issue.sources.league_of_comic_geeks:
+        source_list = [x.source for x in metadata.issue.resources]
+        if Source.LEAGUE_OF_COMIC_GEEKS in source_list:
+            index = source_list.index(Source.LEAGUE_OF_COMIC_GEEKS)
             try:
-                output = self.session.comic(metadata.issue.sources.league_of_comic_geeks)
+                output = self.session.comic(metadata.issue.resources[index].value)
             except ServiceError:
                 LOGGER.warning(
-                    f"Unable to find comic: comic_id={metadata.issue.sources.league_of_comic_geeks}"
+                    f"Unable to find comic: comic_id={metadata.issue.resources[index].value}"
                 )
                 output = None
         if not output:

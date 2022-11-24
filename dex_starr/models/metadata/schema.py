@@ -1,4 +1,13 @@
-__all__ = ["Publisher", "Series", "Creator", "StoryArc", "Issue", "Metadata", "Sources"]
+__all__ = [
+    "Resource",
+    "Publisher",
+    "Series",
+    "Creator",
+    "StoryArc",
+    "Issue",
+    "Page",
+    "Metadata",
+]
 
 import json
 import re
@@ -11,7 +20,7 @@ from pydantic import Field, validator
 
 from dex_starr import __version__
 from dex_starr.models import CamelModel
-from dex_starr.models.metadata.enums import Format, Genre, PageType, Role
+from dex_starr.models.metadata.enums import Format, Genre, PageType, Role, Source
 
 
 def sanitize(dirty: str) -> str:
@@ -20,46 +29,33 @@ def sanitize(dirty: str) -> str:
     return dirty.replace(" ", "-")
 
 
-class Sources(CamelModel):
-    comicvine: Optional[int] = None
-    grand_comics_database: Optional[int] = None
-    league_of_comic_geeks: Optional[int] = None
-    marvel: Optional[int] = None
-    metron: Optional[int] = None
+class Resource(CamelModel):
+    source: Source
+    value: int
+
+    @validator("source", pre=True)
+    def to_source_enum(cls, v) -> Source:
+        if isinstance(v, Source):
+            return v
+        return Source.load(str(v))
+
+    def __lt__(self, other):
+        if not isinstance(other, Resource):
+            raise NotImplementedError()
+        return self.source < other.source
 
     def __eq__(self, other):
-        if not isinstance(other, Sources):
+        if not isinstance(other, Resource):
             raise NotImplementedError()
-        return (
-            self.comicvine,
-            self.grand_comics_database,
-            self.league_of_comic_geeks,
-            self.marvel,
-            self.metron,
-        ) == (
-            other.comicvine,
-            other.grand_comics_database,
-            other.league_of_comic_geeks,
-            other.marvel,
-            other.metron,
-        )
+        return self.source == other.source
 
     def __hash__(self):
-        return hash(
-            (
-                type(self),
-                self.comicvine,
-                self.grand_comics_database,
-                self.league_of_comic_geeks,
-                self.marvel,
-                self.metron,
-            )
-        )
+        return hash((type(self), self.source))
 
 
 class Publisher(CamelModel):
     imprint: Optional[str] = None
-    sources: Sources = Sources()
+    resources: List[Resource] = Field(default_factory=list)
     title: str
 
     @property
@@ -81,7 +77,7 @@ class Publisher(CamelModel):
 
 
 class Series(CamelModel):
-    sources: Sources = Sources()
+    resources: List[Resource] = Field(default_factory=list)
     start_year: Optional[int] = Field(default=None, gt=1900)
     title: str
     volume: int = Field(default=1, gt=0)
@@ -119,10 +115,10 @@ class Creator(CamelModel):
     roles: List[Role] = Field(default_factory=list)
 
     @validator("roles", pre=True, each_item=True)
-    def role_to_enum(cls, v) -> Role:
-        if isinstance(v, str):
-            return Role.load(v)
-        return v
+    def to_role_enum(cls, v) -> Role:
+        if isinstance(v, Role):
+            return v
+        return Role.load(str(v))
 
     def __lt__(self, other):
         if not isinstance(other, Creator):
@@ -168,7 +164,7 @@ class Issue(CamelModel):
     locations: List[str] = Field(default_factory=list)
     number: str
     page_count: int = Field(default=0, ge=0)
-    sources: Sources = Sources()
+    resources: List[Resource] = Field(default_factory=list)
     store_date: Optional[date] = None
     story_arcs: List[StoryArc] = Field(default_factory=list)
     summary: Optional[str] = None
@@ -176,16 +172,16 @@ class Issue(CamelModel):
     title: Optional[str] = None
 
     @validator("format", pre=True)
-    def format_to_enum(cls, v) -> Format:
-        if isinstance(v, str):
-            return Format.load(v)
-        return v
+    def to_format_enum(cls, v) -> Format:
+        if isinstance(v, Format):
+            return v
+        return Format.load(str(v))
 
     @validator("genres", pre=True, each_item=True)
-    def genre_to_enum(cls, v) -> Genre:
-        if isinstance(v, str):
-            return Genre.load(v)
-        return v
+    def to_genre_enum(cls, v) -> Genre:
+        if isinstance(v, Genre):
+            return v
+        return Genre.load(str(v))
 
     @property
     def file_name(self) -> str:
@@ -246,10 +242,10 @@ class Page(CamelModel):
     image_height: int = Field(default=0, ge=0)
 
     @validator("page_type", pre=True)
-    def page_type_to_enum(cls, v) -> PageType:
-        if isinstance(v, str):
-            return PageType.load(v)
-        return v
+    def to_page_type_enum(cls, v) -> PageType:
+        if isinstance(v, PageType):
+            return v
+        return PageType.load(str(v))
 
     def __lt__(self, other):
         if not isinstance(other, Page):

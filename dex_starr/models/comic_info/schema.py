@@ -25,10 +25,10 @@ class Page(PascalModel):
     image_height: Optional[int] = Field(alias="@ImageHeight", default=None)
 
     @validator("page_type", pre=True)
-    def page_type_to_enum(cls, v) -> PageType:
-        if isinstance(v, str):
-            return PageType.load(v)
-        return v
+    def to_page_type_enum(cls, v) -> PageType:
+        if isinstance(v, PageType):
+            return v
+        return PageType.load(str(v))
 
     def __lt__(self, other):
         if not isinstance(other, Page):
@@ -91,22 +91,22 @@ class ComicInfo(PascalModel):
         super().__init__(**data)
 
     @validator("black_and_white", pre=True)
-    def black_and_white_to_enum(cls, v) -> YesNo:
-        if isinstance(v, str):
-            return YesNo.load(v)
-        return v
+    def to_yes_no_enum(cls, v) -> YesNo:
+        if isinstance(v, YesNo):
+            return v
+        return YesNo.load(str(v))
 
     @validator("manga", pre=True)
-    def manga_to_enum(cls, v) -> Manga:
-        if isinstance(v, str):
-            return Manga.load(v)
-        return v
+    def to_manga_enum(cls, v) -> Manga:
+        if isinstance(v, Manga):
+            return v
+        return Manga.load(str(v))
 
     @validator("age_rating", pre=True)
-    def age_rating_to_enum(cls, v) -> AgeRating:
-        if isinstance(v, str):
-            return AgeRating.load(v)
-        return v
+    def to_age_rating_enum(cls, v) -> AgeRating:
+        if isinstance(v, AgeRating):
+            return v
+        return AgeRating.load(str(v))
 
     @property
     def story_arc_list(self) -> List[str]:
@@ -201,12 +201,15 @@ class ComicInfo(PascalModel):
         return sorted({x.strip() for x in self.locations.split(",")}, alg=ns.NA | ns.G)
 
     def to_metadata(self) -> Metadata:
-        from dex_starr.models.metadata.enums import Format, Genre
-        from dex_starr.models.metadata.enums import PageType as MetadataPageType
         from dex_starr.models.metadata.enums import Role
-        from dex_starr.models.metadata.schema import Creator, Issue
-        from dex_starr.models.metadata.schema import Page as MetadataPage
-        from dex_starr.models.metadata.schema import Publisher, Series, StoryArc
+        from dex_starr.models.metadata.schema import (
+            Creator,
+            Issue,
+            Page,
+            Publisher,
+            Series,
+            StoryArc,
+        )
 
         # region Parse Creators
         creators = {}
@@ -228,11 +231,11 @@ class ComicInfo(PascalModel):
         return Metadata(
             publisher=Publisher(
                 imprint=self.imprint,
-                # TODO: Sources
+                # TODO: Resources
                 title=self.publisher,
             ),
             series=Series(
-                # TODO: Sources
+                # TODO: Resources
                 start_year=self.volume if self.volume and self.volume > 1900 else None,
                 title=self.series,
                 volume=self.volume if self.volume and self.volume < 1900 else 1,
@@ -247,13 +250,13 @@ class ComicInfo(PascalModel):
                     },
                     alg=ns.NA | ns.G,
                 ),
-                format=Format.load(self.format),
-                genres=sorted({Genre.load(x) for x in self.genre_list}, alg=ns.NA | ns.G),
+                format=self.format,
+                genres=self.genre_list,
                 language=self.language_iso.lower() if self.language_iso else "en",
                 locations=self.location_list,
                 number=self.number,
                 page_count=self.page_count,
-                # TODO: Sources
+                # TODO: Resources
                 # TODO: Store date
                 story_arcs=sorted(
                     {StoryArc(title=x) for x in self.story_arc_list}, alg=ns.NA | ns.G
@@ -264,9 +267,9 @@ class ComicInfo(PascalModel):
             ),
             pages=sorted(
                 {
-                    MetadataPage(
+                    Page(
                         image=x.image,
-                        page_type=MetadataPageType.load(str(x.page_type)),
+                        page_type=str(x.page_type),
                         double_page=x.double_page,
                         key=x.key,
                         bookmark=x.bookmark,

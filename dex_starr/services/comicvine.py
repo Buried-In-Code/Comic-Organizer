@@ -13,16 +13,25 @@ from simyan.schemas.publisher import Publisher as SimyanPublisher
 from simyan.schemas.volume import Volume
 
 from dex_starr.console import CONSOLE, RichLogger, create_menu
-from dex_starr.models.metadata.enums import Role
-from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
+from dex_starr.models.metadata.enums import Role, Source
+from dex_starr.models.metadata.schema import (
+    Creator,
+    Issue,
+    Metadata,
+    Publisher,
+    Resource,
+    Series,
+    StoryArc,
+)
 from dex_starr.services.sqlite_cache import SQLiteCache
+from dex_starr.settings import ComicvineSettings
 
 LOGGER = RichLogger(logging.getLogger(__name__))
 
 
 class SimyanTalker:
-    def __init__(self, api_key: str):
-        self.session = Comicvine(api_key=api_key, cache=SQLiteCache(expiry=14))
+    def __init__(self, settings: ComicvineSettings):
+        self.session = Comicvine(api_key=settings.api_key, cache=SQLiteCache(expiry=14))
 
     def update_issue(self, result: SimyanIssue, issue: Issue):
         if result.characters or result.first_appearance_characters or result.deaths:
@@ -64,7 +73,10 @@ class SimyanTalker:
         if result.number:
             issue.number = result.number
         # TODO: Page Count
-        issue.sources.comicvine = result.issue_id
+        issue.resources = sorted(
+            {Resource(source=Source.COMICVINE, value=result.issue_id), *issue.resources},
+            alg=ns.NA | ns.G,
+        )
         if result.store_date:
             issue.store_date = result.store_date
         if result.story_arcs or result.first_appearance_story_arcs:
@@ -118,11 +130,13 @@ class SimyanTalker:
 
     def lookup_issue(self, issue: Issue, series_id: int) -> Optional[SimyanIssue]:
         output = None
-        if issue.sources.comicvine:
+        source_list = [x.source for x in issue.resources]
+        if Source.COMICVINE in source_list:
+            index = source_list.index(Source.COMICVINE)
             try:
-                output = self.session.issue(issue.sources.comicvine)
+                output = self.session.issue(issue.resources[index].value)
             except ServiceError:
-                LOGGER.warning(f"Unable to find issue: issue_id={issue.sources.comicvine}")
+                LOGGER.warning(f"Unable to find issue: issue_id={issue.resources[index].value}")
                 output = None
         if not output:
             output = self._search_issue(series_id, issue.number)
@@ -134,7 +148,10 @@ class SimyanTalker:
         return output
 
     def update_series(self, result: Volume, series: Series):
-        series.sources.comicvine = result.volume_id
+        series.resources = sorted(
+            {Resource(source=Source.COMICVINE, value=result.volume_id), *series.resources},
+            alg=ns.NA | ns.G,
+        )
         if result.start_year:
             series.start_year = result.start_year
         if result.name:
@@ -179,11 +196,13 @@ class SimyanTalker:
 
     def lookup_volume(self, series: Series, publisher_id: int) -> Optional[Volume]:
         output = None
-        if series.sources.comicvine:
+        source_list = [x.source for x in series.resources]
+        if Source.COMICVINE in source_list:
+            index = source_list.index(Source.COMICVINE)
             try:
-                output = self.session.volume(series.sources.comicvine)
+                output = self.session.volume(series.resources[index].value)
             except ServiceError:
-                LOGGER.warning(f"Unable to find volume: volume_id={series.sources.comicvine}")
+                LOGGER.warning(f"Unable to find volume: volume_id={series.resources[index].value}")
                 output = None
         if not output:
             output = self._search_volume(publisher_id, series.title, series.start_year)
@@ -195,7 +214,10 @@ class SimyanTalker:
         return output
 
     def update_publisher(self, result: SimyanPublisher, publisher: Publisher):
-        publisher.sources.comicvine = result.publisher_id
+        publisher.resources = sorted(
+            {Resource(source=Source.COMICVINE, value=result.publisher_id), *publisher.resources},
+            alg=ns.NA | ns.G,
+        )
         if result.name:
             publisher.title = result.name or publisher.title
 
@@ -229,12 +251,14 @@ class SimyanTalker:
 
     def lookup_publisher(self, publisher: Publisher) -> Optional[SimyanPublisher]:
         output = None
-        if publisher.sources.comicvine:
+        source_list = [x.source for x in publisher.resources]
+        if Source.COMICVINE in source_list:
+            index = source_list.index(Source.COMICVINE)
             try:
-                output = self.session.publisher(publisher.sources.comicvine)
+                output = self.session.publisher(publisher.resources[index].value)
             except ServiceError:
                 LOGGER.warning(
-                    f"Unable to find publisher: publisher_id={publisher.sources.comicvine}"
+                    f"Unable to find publisher: publisher_id={publisher.resources[index].value}"
                 )
                 output = None
         if not output:
@@ -249,7 +273,7 @@ class SimyanTalker:
     def update_metadata(self, metadata: Metadata):
         if publisher := self.lookup_publisher(metadata.publisher):
             self.update_publisher(publisher, metadata.publisher)
-            if volume := self.lookup_volume(metadata.series, metadata.publisher.sources.comicvine):
+            if volume := self.lookup_volume(metadata.series, publisher.publisher_id):
                 self.update_series(volume, metadata.series)
-                if issue := self.lookup_issue(metadata.issue, metadata.series.sources.comicvine):
+                if issue := self.lookup_issue(metadata.issue, volume.volume_id):
                     self.update_issue(issue, metadata.issue)

@@ -2,7 +2,7 @@ __all__ = [
     "Settings",
     "GeneralSettings",
     "ComicvineSettings",
-    "LeagueOfComicGeeks",
+    "LeagueOfComicGeeksSettings",
     "MarvelSettings",
     "MetronSettings",
 ]
@@ -40,7 +40,7 @@ class MarvelSettings(SettingsModel):
     private_key: Optional[str] = None
 
 
-class LeagueOfComicGeeks(SettingsModel):
+class LeagueOfComicGeeksSettings(SettingsModel):
     client_id: Optional[str] = None
     client_secret: Optional[str] = None
     access_token: Optional[str] = None
@@ -77,7 +77,7 @@ class Settings(SettingsModel):
         ]
     )
     comicvine: ComicvineSettings = ComicvineSettings()
-    league_of_comic_geeks: LeagueOfComicGeeks = LeagueOfComicGeeks()
+    league_of_comic_geeks: LeagueOfComicGeeksSettings = LeagueOfComicGeeksSettings()
     marvel: MarvelSettings = MarvelSettings()
     metron: MetronSettings = MetronSettings()
 

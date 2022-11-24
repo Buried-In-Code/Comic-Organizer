@@ -52,10 +52,10 @@ class RoleResource(PascalModel):
     value: Role = Field(alias="#text")
 
     @validator("value", pre=True)
-    def value_to_enum(cls, v) -> Role:
-        if isinstance(v, str):
-            return Role.load(v)
-        return v
+    def to_role_enum(cls, v) -> Role:
+        if isinstance(v, Role):
+            return v
+        return Role.load(str(v))
 
     def __lt__(self, other):
         if not isinstance(other, RoleResource):
@@ -143,10 +143,10 @@ class GenreResource(PascalModel):
     value: Genre = Field(alias="#text")
 
     @validator("value", pre=True)
-    def value_to_enum(cls, v) -> Genre:
-        if isinstance(v, str):
-            return Genre.load(v)
-        return v
+    def to_genre_enum(cls, v) -> Genre:
+        if isinstance(v, Genre):
+            return v
+        return Genre.load(str(v))
 
     def __lt__(self, other):
         if not isinstance(other, GenreResource):
@@ -189,10 +189,10 @@ class Series(PascalModel):
     format: Format = Format.SERIES
 
     @validator("format", pre=True)
-    def format_to_enum(cls, v) -> Format:
-        if isinstance(v, str):
-            return Format.load(v)
-        return v
+    def to_format_enum(cls, v) -> Format:
+        if isinstance(v, Format):
+            return v
+        return Format.load(str(v))
 
     def __lt__(self, other):
         if not isinstance(other, Resource):
@@ -224,10 +224,10 @@ class Source(PascalModel):
     value: int = Field(alias="#text", gt=0)
 
     @validator("source", pre=True)
-    def source_to_enum(cls, v) -> InformationSource:
-        if isinstance(v, str):
-            return InformationSource.load(v)
-        return v
+    def to_information_source_enum(cls, v) -> InformationSource:
+        if isinstance(v, InformationSource):
+            return v
+        return InformationSource.load(str(v))
 
     def __lt__(self, other):
         if not isinstance(other, Source):
@@ -303,59 +303,30 @@ class MetronInfo(PascalModel):
         super().__init__(**data)
 
     @validator("age_rating", pre=True)
-    def age_rating_to_enum(cls, v) -> AgeRating:
-        if isinstance(v, str):
-            return AgeRating.load(v)
-        return v
+    def to_age_rating_enum(cls, v) -> AgeRating:
+        if isinstance(v, AgeRating):
+            return v
+        return AgeRating.load(str(v))
 
     def to_metadata(self) -> Metadata:
-        from dex_starr.models.metadata.enums import Format, Genre, PageType, Role
         from dex_starr.models.metadata.schema import (
             Creator,
             Issue,
             Page,
             Publisher,
+            Resource,
             Series,
-            Sources,
             StoryArc,
         )
 
         return Metadata(
             publisher=Publisher(
                 # TODO: Imprint
-                sources=Sources(
-                    comicvine=self.publisher.id
-                    if self.id.source == InformationSource.COMIC_VINE
-                    else None,
-                    grand_comics_database=self.publisher.id
-                    if self.id.source == InformationSource.GRAND_COMICS_DATABASE
-                    else None,
-                    league_of_comic_geeks=self.publisher.id
-                    if self.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
-                    else None,
-                    marvel=self.publisher.id
-                    if self.id.source == InformationSource.MARVEL
-                    else None,
-                    metron=self.publisher.id
-                    if self.id.source == InformationSource.METRON
-                    else None,
-                ),
+                resources=[Resource(source=str(self.id.source), value=self.publisher.id)],
                 title=self.publisher.value,
             ),
             series=Series(
-                sources=Sources(
-                    comicvine=self.series.id
-                    if self.id.source == InformationSource.COMIC_VINE
-                    else None,
-                    grand_comics_database=self.series.id
-                    if self.id.source == InformationSource.GRAND_COMICS_DATABASE
-                    else None,
-                    league_of_comic_geeks=self.series.id
-                    if self.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
-                    else None,
-                    marvel=self.series.id if self.id.source == InformationSource.MARVEL else None,
-                    metron=self.series.id if self.id.source == InformationSource.METRON else None,
-                ),
+                resources=[Resource(source=str(self.id.source), value=self.series.id)],
                 # TODO: Start Year
                 title=self.series.name,
                 volume=self.series.volume,
@@ -367,33 +338,19 @@ class MetronInfo(PascalModel):
                     {
                         Creator(
                             name=x.creator.value,
-                            roles=sorted(
-                                {Role.load(str(r.value)) for r in x.roles}, alg=ns.NA | ns.G
-                            ),
+                            roles=sorted({str(r.value) for r in x.roles}, alg=ns.NA | ns.G),
                         )
                         for x in self.credits
                     },
                     alg=ns.NA | ns.G,
                 ),
-                format=Format.load(str(self.series.format)),
-                genres=sorted({Genre.load(str(x.value)) for x in self.genres}, alg=ns.NA | ns.G),
+                format=str(self.series.format),
+                genres=sorted({str(x.value) for x in self.genres}, alg=ns.NA | ns.G),
                 language=self.series.lang,
                 locations=sorted({x.value for x in self.locations}, alg=ns.NA | ns.G),
                 number=self.number,
                 page_count=self.page_count,
-                sources=Sources(
-                    comicvine=self.id.value
-                    if self.id.source == InformationSource.COMIC_VINE
-                    else None,
-                    grand_comics_database=self.id.value
-                    if self.id.source == InformationSource.GRAND_COMICS_DATABASE
-                    else None,
-                    league_of_comic_geeks=self.id.value
-                    if self.id.source == InformationSource.LEAGUE_OF_COMIC_GEEKS
-                    else None,
-                    marvel=self.id.value if self.id.source == InformationSource.MARVEL else None,
-                    metron=self.id.value if self.id.source == InformationSource.METRON else None,
-                ),
+                resources=[Resource(source=str(self.id.source), value=self.id.value)],
                 store_date=self.store_date,
                 story_arcs=sorted(
                     {StoryArc(title=x.name, number=x.number) for x in self.story_arcs},
@@ -407,7 +364,7 @@ class MetronInfo(PascalModel):
                 {
                     Page(
                         image=x.image,
-                        page_type=PageType.load(str(x.page_type)),
+                        page_type=str(x.page_type),
                         double_page=x.double_page,
                         image_size=x.image_size,
                         key=x.key,

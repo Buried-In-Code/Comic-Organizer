@@ -14,16 +14,27 @@ from natsort import ns
 from rich.prompt import Prompt
 
 from dex_starr.console import CONSOLE, RichLogger, create_menu
-from dex_starr.models.metadata.enums import Format, Genre, Role
-from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Publisher, Series, StoryArc
+from dex_starr.models.metadata.enums import Format, Genre, Role, Source
+from dex_starr.models.metadata.schema import (
+    Creator,
+    Issue,
+    Metadata,
+    Publisher,
+    Resource,
+    Series,
+    StoryArc,
+)
 from dex_starr.services.sqlite_cache import SQLiteCache
+from dex_starr.settings import MetronSettings
 
 LOGGER = RichLogger(logging.getLogger(__name__))
 
 
 class MokkariTalker:
-    def __init__(self, username: str, password: str):
-        self.session = Mokkari(username=username, passwd=password, cache=SQLiteCache(expiry=14))
+    def __init__(self, settings: MetronSettings):
+        self.session = Mokkari(
+            username=settings.username, passwd=settings.password, cache=SQLiteCache(expiry=14)
+        )
 
     def update_issue(self, result: MokkariIssue, issue: Issue):
         if result.characters:
@@ -51,7 +62,9 @@ class MokkariTalker:
         # TODO: Locations
         if result.number:
             issue.number = result.number
-        issue.sources.metron = result.id
+        issue.resources = sorted(
+            {Resource(source=Source.METRON, value=result.id), *issue.resources}, alg=ns.NA | ns.G
+        )
         if result.store_date:
             issue.store_date = result.store_date
         if result.arcs:
@@ -92,11 +105,13 @@ class MokkariTalker:
 
     def lookup_issue(self, issue: Issue, series_id: int) -> Optional[MokkariIssue]:
         output = None
-        if issue.sources.metron:
+        source_list = [x.source for x in issue.resources]
+        if Source.METRON in source_list:
+            index = source_list.index(Source.METRON)
             try:
-                output = self.session.issue(issue.sources.metron)
+                output = self.session.issue(issue.resources[index].value)
             except ApiError:
-                LOGGER.warning(f"Unable to find issue: issue_id={issue.sources.metron}")
+                LOGGER.warning(f"Unable to find issue: issue_id={issue.resources[index].value}")
                 output = None
         if not output:
             output = self._search_issue(series_id, issue.number)
@@ -108,7 +123,9 @@ class MokkariTalker:
         return output
 
     def update_series(self, result: MokkariSeries, series: Series):
-        series.sources.metron = result.id
+        series.resources = sorted(
+            {Resource(source=Source.METRON, value=result.id), *series.resources}, alg=ns.NA | ns.G
+        )
         if result.year_began:
             series.start_year = result.year_began
         if result.name:
@@ -160,11 +177,13 @@ class MokkariTalker:
 
     def lookup_series(self, series: Series, publisher_id: int) -> Optional[MokkariSeries]:
         output = None
-        if series.sources.metron:
+        source_list = [x.source for x in series.resources]
+        if Source.METRON in source_list:
+            index = source_list.index(Source.METRON)
             try:
-                output = self.session.series(series.sources.metron)
+                output = self.session.series(series.resources[index].value)
             except ApiError:
-                LOGGER.warning(f"Unable to find series: series_id={series.sources.metron}")
+                LOGGER.warning(f"Unable to find series: series_id={series.resources[index].value}")
                 output = None
         if not output:
             output = self._search_series(
@@ -178,7 +197,10 @@ class MokkariTalker:
         return output
 
     def update_publisher(self, result: MokkariPublisher, publisher: Publisher):
-        publisher.sources.metron = result.id
+        publisher.resources = sorted(
+            {Resource(source=Source.METRON, value=result.id), *publisher.resources},
+            alg=ns.NA | ns.G,
+        )
         if result.name:
             publisher.title = result.name
 
@@ -210,11 +232,15 @@ class MokkariTalker:
 
     def lookup_publisher(self, publisher: Publisher) -> Optional[MokkariPublisher]:
         output = None
-        if publisher.sources.metron:
+        source_list = [x.source for x in publisher.resources]
+        if Source.METRON in source_list:
+            index = source_list.index(Source.METRON)
             try:
-                output = self.session.publisher(publisher.sources.metron)
+                output = self.session.publisher(publisher.resources[index].value)
             except ApiError:
-                LOGGER.warning(f"Unable to find publisher: publisher_id={publisher.sources.metron}")
+                LOGGER.warning(
+                    f"Unable to find publisher: publisher_id={publisher.resources[index].value}"
+                )
                 output = None
         if not output:
             output = self._search_publisher(publisher.title)
@@ -228,7 +254,7 @@ class MokkariTalker:
     def update_metadata(self, metadata: Metadata):
         if publisher := self.lookup_publisher(metadata.publisher):
             self.update_publisher(publisher, metadata.publisher)
-            if series := self.lookup_series(metadata.series, metadata.publisher.sources.metron):
+            if series := self.lookup_series(metadata.series, publisher.id):
                 self.update_series(series, metadata.series)
-                if issue := self.lookup_issue(metadata.issue, metadata.series.sources.metron):
+                if issue := self.lookup_issue(metadata.issue, series.id):
                     self.update_issue(issue, metadata.issue)

@@ -8,9 +8,8 @@ from rich.prompt import IntPrompt, Prompt
 
 from dex_starr.console import CONSOLE, create_menu
 from dex_starr.models.comic_info.schema import ComicInfo
-from dex_starr.models.metadata.enums import Format
-from dex_starr.models.metadata.schema import Issue, Metadata, Publisher, Series, Sources
-from dex_starr.models.metron_info.enums import InformationSource
+from dex_starr.models.metadata.enums import Format, Source
+from dex_starr.models.metadata.schema import Issue, Metadata, Publisher, Resource, Series
 from dex_starr.models.metron_info.schema import MetronInfo
 
 
@@ -30,7 +29,6 @@ def create_metadata() -> Metadata:
 
 
 def to_comic_info(metadata: Metadata) -> ComicInfo:
-    from dex_starr.models.comic_info.enums import PageType
     from dex_starr.models.comic_info.schema import Page
 
     roles = ["Writer", "Penciller", "Inker", "Colorist", "Letterer", "Cover Artist", "Editor"]
@@ -83,7 +81,7 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
             {
                 Page(
                     image=x.image,
-                    page_type=PageType.load(str(x.page_type)),
+                    page_type=str(x.page_type),
                     double_page=x.double_page,
                     image_size=x.image_size,
                     key=x.key,
@@ -98,32 +96,25 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
     )
 
 
-def select_primary_source(
-    sources: Sources, resolution_order: List[str]
-) -> Optional[InformationSource]:
-    source_list = [key for key, value in sources.__dict__.items() if value]
+def get_primary_source(
+    resources: List[Resource], resolution_order: List[str]
+) -> Optional[Resource]:
+    source_list = [str(x.source) for x in resources]
     for entry in resolution_order:
-        if entry.lower().replace(" ", "_") in source_list:
-            return InformationSource(entry)
+        if entry in source_list:
+            index = source_list.index(entry)
+            return resources[index]
     return None
 
 
-def get_source(sources: Sources, information_source: InformationSource) -> Optional[int]:
-    if information_source == InformationSource.COMIC_VINE:
-        return sources.comicvine
-    if information_source == InformationSource.GRAND_COMICS_DATABASE:
-        return sources.grand_comics_database
-    if information_source == InformationSource.LEAGUE_OF_COMIC_GEEKS:
-        return sources.league_of_comic_geeks
-    if information_source == InformationSource.MARVEL:
-        return sources.marvel
-    if information_source == InformationSource.METRON:
-        return sources.metron
+def get_source_id(resources: List[Resource], primary_source: Source) -> Optional[int]:
+    for entry in resources:
+        if entry.source == primary_source:
+            return entry.value
     return None
 
 
 def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInfo:
-    from dex_starr.models.metron_info.enums import Format, Genre, PageType, Role
     from dex_starr.models.metron_info.schema import (
         Arc,
         Credit,
@@ -135,28 +126,26 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
         Source,
     )
 
-    information_source = select_primary_source(metadata.issue.sources, resolution_order)
+    primary_source = get_primary_source(metadata.issue.resources, resolution_order)
     return MetronInfo(
-        id=Source(
-            source=information_source, value=get_source(metadata.issue.sources, information_source)
-        )
-        if information_source
+        id=Source(source=str(primary_source.source), value=primary_source.value)
+        if primary_source
         else None,
         publisher=Resource(
-            id=get_source(metadata.publisher.sources, information_source)
-            if information_source
+            id=get_source_id(metadata.publisher.resources, primary_source.source)
+            if primary_source
             else None,
             value=metadata.publisher.title,
         ),
         series=Series(
             lang=metadata.issue.language,
-            id=get_source(metadata.series.sources, information_source)
-            if information_source
+            id=get_source_id(metadata.series.resources, primary_source.source)
+            if primary_source
             else None,
             name=metadata.series.title,
             sort_name=metadata.series.title,
             volume=metadata.series.volume,
-            format=Format.load(str(metadata.issue.format)),
+            format=str(metadata.issue.format),
         ),
         collection_title=metadata.issue.title,
         number=metadata.issue.number,
@@ -168,7 +157,7 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
         page_count=metadata.issue.page_count,
         notes=metadata.notes,
         genres=sorted(
-            {GenreResource(value=Genre.load(str(x))) for x in metadata.issue.genres},
+            {GenreResource(value=str(x)) for x in metadata.issue.genres},
             alg=ns.NA | ns.G,
         ),
         # TODO: Add tags
@@ -185,9 +174,7 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
             {
                 Credit(
                     creator=Resource(value=x.name),
-                    roles=sorted(
-                        {RoleResource(value=Role.load(str(r))) for r in x.roles}, alg=ns.NA | ns.G
-                    ),
+                    roles=sorted({RoleResource(value=str(r)) for r in x.roles}, alg=ns.NA | ns.G),
                 )
                 for x in metadata.issue.creators
             },
@@ -197,11 +184,11 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
             {
                 Page(
                     image=x.image,
-                    page_type=PageType.load(str(x.page_type)),
+                    page_type=str(x.page_type),
                     double_page=x.double_page,
-                    image_size=x.image_size,
                     key=x.key,
                     bookmark=x.bookmark,
+                    image_size=x.image_size,
                     image_width=x.image_width,
                     image_height=x.image_height,
                 )

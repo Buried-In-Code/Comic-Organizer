@@ -94,10 +94,16 @@
       ],
       "number": "1",
       "pageCount": 40,
-      "sources": {
-        "Comicvine": 111265,
-        "League of Comic Geeks": 4579722
-      },
+      "resources": [
+        {
+          "source": "Comicvine",
+          "value": 111265
+        },
+        {
+          "source": "League of Comic Geeks",
+          "value": 4579722
+        }
+      ],
       "storeDate": "2005-05-18",
       "storyArcs": [
         {
@@ -147,17 +153,29 @@
     ],
     "publisher": {
       "imprint": null,
-      "sources": {
-        "Comicvine": 10,
-        "League of Comic Geeks": 1
-      },
+      "resources": [
+        {
+          "source": "Comicvine",
+          "value": 10
+        },
+        {
+          "source": "League of Comic Geeks",
+          "value": 1
+        }
+      ],
       "title": "DC Comics"
     },
     "series": {
-      "sources": {
-        "Comicvine": 18216,
-        "League of Comic Geeks": 110787
-      },
+      "resources": [
+        {
+          "source": "Comicvine",
+          "value": 18216
+        },
+        {
+          "source": "League of Comic Geeks",
+          "value": 110787
+        }
+      ],
       "startYear": 2005,
       "title": "Green Lantern",
       "volume": 4

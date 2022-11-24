@@ -111,20 +111,14 @@ def main():
 
     services = {}
     if settings.comicvine.api_key:
-        services["Comicvine"] = SimyanTalker(api_key=settings.comicvine.api_key)
+        services["Comicvine"] = SimyanTalker(settings=settings.comicvine)
     if settings.metron.username and settings.metron.password:
-        services["Metron"] = MokkariTalker(
-            username=settings.metron.username, password=settings.metron.password
-        )
-    if settings.league_of_comic_geeks.client_id and settings.league_of_comic_geeks.access_token:
-        services["League of Comic Geeks"] = HimonTalker(
-            api_key=settings.league_of_comic_geeks.access_token,
-            client_id=settings.league_of_comic_geeks.client_id,
-        )
+        services["Metron"] = MokkariTalker(settings=settings.metron)
+    if settings.league_of_comic_geeks.client_id and settings.league_of_comic_geeks.client_secret:
+        services["League of Comic Geeks"] = HimonTalker(settings=settings.league_of_comic_geeks)
     if settings.marvel.public_key and settings.marvel.private_key:
-        services["Marvel"] = EsakTalker(
-            public_key=settings.marvel.public_key, private_key=settings.marvel.private_key
-        )
+        services["Marvel"] = EsakTalker(settings=settings.marvel)
+    settings.save()
 
     # region Clean cache
     for child in get_cache_root().iterdir():

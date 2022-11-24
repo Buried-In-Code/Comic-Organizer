@@ -13,9 +13,10 @@ from natsort import ns
 from rich.prompt import Prompt
 
 from dex_starr.console import CONSOLE, RichLogger, create_menu
-from dex_starr.models.metadata.enums import Format, Role
-from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Series, StoryArc
+from dex_starr.models.metadata.enums import Format, Role, Source
+from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Resource, Series, StoryArc
 from dex_starr.services.sqlite_cache import SQLiteCache
+from dex_starr.settings import MarvelSettings
 
 LOGGER = RichLogger(logging.getLogger(__name__))
 
@@ -25,9 +26,11 @@ def clean_title(title: str) -> str:
 
 
 class EsakTalker:
-    def __init__(self, public_key: str, private_key: str):
+    def __init__(self, settings: MarvelSettings):
         self.session = Esak(
-            public_key=public_key, private_key=private_key, cache=SQLiteCache(expiry=14)
+            public_key=settings.public_key,
+            private_key=settings.private_key,
+            cache=SQLiteCache(expiry=14),
         )
 
     def update_issue(self, result: Comic, issue: Issue):
@@ -51,7 +54,9 @@ class EsakTalker:
             issue.number = result.issue_number
         if result.page_count:
             issue.page_count = result.page_count
-        issue.sources.marvel = result.id
+        issue.resources = sorted(
+            {Resource(source=Source.MARVEL, value=result.id), *issue.resources}, alg=ns.NA | ns.G
+        )
         if result.dates.on_sale:
             issue.store_date = result.dates.on_sale
         if result.events:
@@ -101,11 +106,13 @@ class EsakTalker:
 
     def lookup_comic(self, issue: Issue, series_id: int) -> Optional[Comic]:
         output = None
-        if issue.sources.marvel:
+        source_list = [x.source for x in issue.resources]
+        if Source.MARVEL in source_list:
+            index = source_list.index(Source.MARVEL)
             try:
-                output = self.session.comic(issue.sources.marvel)
+                output = self.session.comic(issue.resources[index].value)
             except ApiError:
-                LOGGER.warning(f"Unable to find comic: comic_id={issue.sources.marvel}")
+                LOGGER.warning(f"Unable to find comic: comic_id={issue.resources[index].value}")
                 output = None
         if not output:
             output = self._search_comic(series_id, issue.number, str(issue.format))
@@ -117,7 +124,9 @@ class EsakTalker:
         return output
 
     def update_series(self, result: EsakSeries, series: Series):
-        series.sources.marvel = result.id
+        series.resources = sorted(
+            {Resource(source=Source.MARVEL, value=result.id), *series.resources}, alg=ns.NA | ns.G
+        )
         if result.start_year:
             series.start_year = result.start_year
         if result.title:
@@ -157,11 +166,13 @@ class EsakTalker:
 
     def lookup_series(self, series: Series) -> Optional[EsakSeries]:
         output = None
-        if series.sources.marvel:
+        source_list = [x.source for x in series.resources]
+        if Source.MARVEL in source_list:
+            index = source_list.index(Source.MARVEL)
             try:
-                output = self.session.series(series.sources.marvel)
+                output = self.session.series(series.resources[index].value)
             except ApiError:
-                LOGGER.warning(f"Unable to find series: series_id={series.sources.marvel}")
+                LOGGER.warning(f"Unable to find series: series_id={series.resources[index].value}")
                 output = None
         if not output:
             output = self._search_series(series.title, series.start_year)
@@ -177,5 +188,5 @@ class EsakTalker:
             return
         if series := self.lookup_series(metadata.series):
             self.update_series(series, metadata.series)
-            if comic := self.lookup_comic(metadata.issue, metadata.series.sources.marvel):
+            if comic := self.lookup_comic(metadata.issue, series.id):
                 self.update_issue(comic, metadata.issue)
