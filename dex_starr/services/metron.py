@@ -1,7 +1,6 @@
 __all__ = ["MokkariTalker"]
 
 import html
-import logging
 from typing import Optional
 
 from mokkari.exceptions import ApiError
@@ -27,7 +26,7 @@ from dex_starr.models.metadata.schema import (
 from dex_starr.services.sqlite_cache import SQLiteCache
 from dex_starr.settings import MetronSettings
 
-LOGGER = RichLogger(logging.getLogger(__name__))
+LOGGER = RichLogger(__name__)
 
 
 class MokkariTalker:

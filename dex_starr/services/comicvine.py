@@ -1,6 +1,5 @@
 __all__ = ["SimyanTalker"]
 
-import logging
 from typing import Optional
 
 from natsort import humansorted as sorted
@@ -26,7 +25,7 @@ from dex_starr.models.metadata.schema import (
 from dex_starr.services.sqlite_cache import SQLiteCache
 from dex_starr.settings import ComicvineSettings
 
-LOGGER = RichLogger(logging.getLogger(__name__))
+LOGGER = RichLogger(__name__)
 
 
 class SimyanTalker:

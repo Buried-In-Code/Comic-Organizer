@@ -1,5 +1,6 @@
 __all__ = ["CONSOLE", "DatePrompt", "DatetimePrompt", "create_menu", "RichLogger"]
 
+import logging
 from datetime import date, datetime
 from typing import List, Optional
 
@@ -24,8 +25,8 @@ CONSOLE = Console(
 
 
 class RichLogger:
-    def __init__(self, logger):
-        self.logger = logger
+    def __init__(self, name: str):
+        self.logger = logging.getLogger(name)
 
     def debug(self, message: str):
         self.logger.debug(f"[logging.level.debug]{message}[/]", extra={"markup": True})

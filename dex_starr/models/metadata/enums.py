@@ -1,11 +1,10 @@
 __all__ = ["Role", "Format", "Genre", "PageType", "Source"]
 
-import logging
 from enum import Enum
 
 from dex_starr.console import RichLogger
 
-LOGGER = RichLogger(logging.getLogger(__name__))
+LOGGER = RichLogger(__name__)
 
 
 class Source(Enum):

@@ -1,6 +1,5 @@
 __all__ = ["Archive"]
 
-import logging
 import shutil
 from pathlib import Path
 from typing import Optional
@@ -20,7 +19,7 @@ from dex_starr.console import RichLogger
 from dex_starr.models.metadata.schema import Metadata
 from dex_starr.settings import GeneralSettings
 
-LOGGER = RichLogger(logging.getLogger(__name__))
+LOGGER = RichLogger(__name__)
 
 
 class Archive:

@@ -1,7 +1,6 @@
 __all__ = ["HimonTalker"]
 
 import html
-import logging
 from typing import Optional
 
 from himon.exceptions import ServiceError
@@ -18,7 +17,7 @@ from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Publisher
 from dex_starr.services.sqlite_cache import SQLiteCache
 from dex_starr.settings import LeagueOfComicGeeksSettings
 
-LOGGER = RichLogger(logging.getLogger(__name__))
+LOGGER = RichLogger(__name__)
 
 
 def generate_search_terms(series_title: str, format: str, number: Optional[str] = None):

@@ -1,4 +1,3 @@
-import logging
 from argparse import ArgumentParser, Namespace
 from typing import Dict, List, Union
 
@@ -29,7 +28,7 @@ from dex_starr.services.marvel import EsakTalker
 from dex_starr.services.metron import MokkariTalker
 from dex_starr.settings import Settings
 
-LOGGER = RichLogger(logging.getLogger("Dex-Starr"))
+LOGGER = RichLogger("Dex-Starr")
 
 
 def read_info_file(archive: Archive) -> Metadata:

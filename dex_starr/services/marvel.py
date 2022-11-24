@@ -1,6 +1,5 @@
 __all__ = ["EsakTalker"]
 
-import logging
 import re
 from typing import Optional
 
@@ -18,7 +17,7 @@ from dex_starr.models.metadata.schema import Creator, Issue, Metadata, Resource,
 from dex_starr.services.sqlite_cache import SQLiteCache
 from dex_starr.settings import MarvelSettings
 
-LOGGER = RichLogger(logging.getLogger(__name__))
+LOGGER = RichLogger(__name__)
 
 
 def clean_title(title: str) -> str:

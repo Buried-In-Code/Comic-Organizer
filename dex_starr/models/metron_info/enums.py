@@ -1,12 +1,11 @@
 __all__ = ["Format", "InformationSource", "Role", "Genre", "AgeRating", "PageType"]
 
-import logging
 from enum import Enum
 
 from dex_starr.console import RichLogger
 from dex_starr.models.comic_info.enums import PageType
 
-LOGGER = RichLogger(logging.getLogger(__name__))
+LOGGER = RichLogger(__name__)
 
 
 class Format(Enum):
