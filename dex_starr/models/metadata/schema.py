@@ -179,7 +179,7 @@ class Issue(CamelModel):
     creators: List[Creator] = Field(default_factory=list)
     format: Format = Format.COMIC
     genres: List[Genre] = Field(default_factory=list)
-    language: str = "en"
+    language: str = Field(alias="@language", default="en")
     locations: List[str] = Field(default_factory=list)
     number: str
     page_count: int = Field(default=0, ge=0)
