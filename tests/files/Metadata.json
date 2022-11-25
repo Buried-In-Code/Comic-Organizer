@@ -1,0 +1,191 @@
+{
+  "content": {
+    "issue": {
+      "characters": [
+        "Green Lantern - Hal Jordan",
+        "Green Lantern - John Stewart",
+        "Green Lantern - Abin Sur",
+        "James Jordan",
+        "Jillian Pearlman",
+        "Shane Sellers",
+        "Shark - Karshon"
+      ],
+      "coverDate": "2005-07-01",
+      "creators": [
+        {
+          "name": "Geoff Johns",
+          "roles": [
+            "Writer"
+          ]
+        },
+        {
+          "name": "Ethan Van Sciver",
+          "roles": [
+            "Artist"
+          ]
+        },
+        {
+          "name": "Carlos Pacheco",
+          "roles": [
+            "Penciller",
+            "Cover Artist"
+          ]
+        },
+        {
+          "name": "Jes\u00fas Merino",
+          "roles": [
+            "Inker",
+            "Cover Artist"
+          ]
+        },
+        {
+          "name": "Moose Baumann",
+          "roles": [
+            "Colourist"
+          ]
+        },
+        {
+          "name": "Rob Leigh",
+          "roles": [
+            "Letterer"
+          ]
+        },
+        {
+          "name": "Peter Steigerwald",
+          "roles": [
+            "Cover Artist"
+          ]
+        },
+        {
+          "name": "Alex Ross",
+          "roles": [
+            "Variant Cover Artist"
+          ]
+        },
+        {
+          "name": "Harvey Richards",
+          "roles": [
+            "Assistant Editor"
+          ]
+        },
+        {
+          "name": "Peter J. Tomasi",
+          "roles": [
+            "Editor"
+          ]
+        },
+        {
+          "name": "Dan DiDio",
+          "roles": [
+            "Executive Editor"
+          ]
+        }
+      ],
+      "format": "Comic",
+      "genres": [
+        "Super-Hero"
+      ],
+      "language": "en",
+      "locations": [
+        "3600 Sectors of Space",
+        "California",
+        "Coast City",
+        "Edwards Air Force Base"
+      ],
+      "number": "1",
+      "pageCount": 40,
+      "resources": [
+        {
+          "source": "Comicvine",
+          "value": 111265
+        },
+        {
+          "source": "League of Comic Geeks",
+          "value": 4579722
+        }
+      ],
+      "storeDate": "2005-05-18",
+      "storyArcs": [
+        {
+          "number": null,
+          "title": "Green Lantern: Rebirth"
+        }
+      ],
+      "summary": "Strap in and hang on as one of DC's greatest icons, Hal Jordan returns to the forefront of the DCU in a new monthly series. Green Lantern challenges your imagination and leaves you breathless as you witness the adventures of one of the greatest heroes in the DCU. From the runways at Edwards Air Force Base to the darkest corner of Space Sector 2814, the Green Lantern will proudly shine his light! This special 40-page debut issue kicks off the 3-part tale \\\"No Fear.\\\" Spinning out of the pages of Green Lantern: Rebirth, Hal Jordan returns to the DCU as the Emerald Warrior, ready to reclaim his life and the light of the Green Lantern. But the forces of darkness have already begun to rise, looking to claim the power of the Green Lantern for themselves.",
+      "teams": [
+        "Green Lantern Corps",
+        "The Manhunters"
+      ],
+      "title": "Airbourne"
+    },
+    "notes": null,
+    "pages": [
+      {
+        "bookmark": null,
+        "doublePage": false,
+        "image": 0,
+        "imageHeight": 2951,
+        "imageSize": 1733120,
+        "imageWidth": 1920,
+        "key": null,
+        "pageType": "FrontCover"
+      },
+      {
+        "bookmark": null,
+        "doublePage": false,
+        "image": 1,
+        "imageHeight": 2951,
+        "imageSize": 1320938,
+        "imageWidth": 1920,
+        "key": null,
+        "pageType": "Story"
+      },
+      {
+        "bookmark": null,
+        "doublePage": false,
+        "image": 2,
+        "imageHeight": 2951,
+        "imageSize": 1298224,
+        "imageWidth": 1920,
+        "key": null,
+        "pageType": "Story"
+      }
+    ],
+    "publisher": {
+      "imprint": null,
+      "resources": [
+        {
+          "source": "Comicvine",
+          "value": 10
+        },
+        {
+          "source": "League of Comic Geeks",
+          "value": 1
+        }
+      ],
+      "title": "DC Comics"
+    },
+    "series": {
+      "resources": [
+        {
+          "source": "Comicvine",
+          "value": 18216
+        },
+        {
+          "source": "League of Comic Geeks",
+          "value": 110787
+        }
+      ],
+      "startYear": 2005,
+      "title": "Green Lantern",
+      "volume": 4
+    }
+  },
+  "meta": {
+    "date": "2022-11-17",
+    "tool": {
+      "name": "Dex-Starr",
+      "version": "0.2.0"
+    }
+  }
+}

@@ -18,4 +18,4 @@ logs/
 .python-version
 
 # =====Project=====
-*cache.sqlite
+tests/output/

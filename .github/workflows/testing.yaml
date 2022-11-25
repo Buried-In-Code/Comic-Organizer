@@ -1,0 +1,90 @@
+name: Testing
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - docs/**
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - docs/**
+
+jobs:
+  generate_output:
+    name: Generate Output
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - '3.11'
+        os:
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      #----------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      #----------------------------------------------
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      #----------------------------------------------
+      - name: Install project
+        run: pip install .
+      - name: Create output files
+        run: python tests/generate_output.py
+      #----------------------------------------------
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Output
+          path: tests/output/
+      #----------------------------------------------
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Schemas
+          path: schemas/
+
+  validate_output:
+    needs: generate_output
+    name: Validate Output
+    strategy:
+      fail-fast: false
+
+    runs-on: ubuntu-latest
+    steps:
+      #----------------------------------------------
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: Output
+          path: ./output
+      #----------------------------------------------
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: Schemas
+          path: ./schemas
+      #----------------------------------------------
+      - name: Validate Metadata.json
+        uses: ScratchAddons/validate-json-action@master
+        with:
+          schema: schemas/Metadata.schema.json
+          jsons: |
+            output/Metadata.json
+            output/Metadata-ComicInfo.json
+            output/Metadata-MetronInfo.json
+      #----------------------------------------------
+      - name: apt-get update
+        run: sudo apt-get update -y
+      - name: Install xmllint
+        run: sudo apt-get install -y libxml2-utils
+      - name: Validate ComicInfo.xml
+        run: xmllint --noout --schema schemas/ComicInfo.xsd output/ComicInfo*
+      - name: Validate MetronInfo.xml
+        run: xmllint --noout --schema schemas/MetronInfo.xsd output/MetronInfo*

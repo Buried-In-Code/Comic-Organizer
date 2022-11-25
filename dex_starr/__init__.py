@@ -1,4 +1,4 @@
-__version__ = "0.2.0b0"
+__version__ = "0.2.0"
 __all__ = [
     "__version__",
     "IMAGE_EXTENSIONS",
@@ -11,13 +11,18 @@ __all__ = [
     "get_project_root",
     "list_files",
     "safe_list_get",
-    "yaml_setup",
+    "setup_logging",
 ]
 
+import logging
 from pathlib import Path
 from typing import Any, List
 
-from ruamel.yaml import YAML
+from natsort import humansorted as sorted
+from natsort import ns
+from rich.logging import RichHandler
+
+from dex_starr.console import CONSOLE
 
 IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 SUPPORTED_EXTENSIONS = [".cbz", ".cbr", ".cbt", ".cb7"]
@@ -42,7 +47,7 @@ def filter_files(folder: Path, filter_: List[str] = None) -> List[Path]:
             files.extend(filter_files(folder=file, filter_=filter_))
         elif file.suffix in filter_:
             files.append(file)
-    return sorted(files)
+    return sorted(files, alg=ns.NA | ns.G | ns.P)
 
 
 def get_project_root() -> Path:
@@ -68,7 +73,7 @@ def list_files(folder: Path) -> List[Path]:
             files.extend(list_files(folder=file))
         else:
             files.append(file)
-    return sorted(files)
+    return sorted(files, alg=ns.NA | ns.G | ns.P)
 
 
 def safe_list_get(list_: List[Any], index: int = 0, default: Any = None) -> Any:
@@ -78,15 +83,19 @@ def safe_list_get(list_: List[Any], index: int = 0, default: Any = None) -> Any:
         return default
 
 
-def yaml_setup() -> YAML:
-    def null_representer(self, data):
-        return self.represent_scalar("tag:yaml.org,2002:null", "~")
-
-    yaml = YAML(pure=True)
-    yaml.default_flow_style = False
-    yaml.width = 2147483647
-    yaml.indent(mapping=2, sequence=4, offset=2)
-    yaml.representer.add_representer(type(None), null_representer)
-    # yaml.emitter.alt_null = '~'
-    yaml.version = (1, 2)
-    return yaml
+def setup_logging(debug: bool = False):
+    logging.basicConfig(
+        format="%(message)s",
+        datefmt="[%Y-%m-%d %H:%M:%S]",
+        level=logging.DEBUG if debug else logging.INFO,
+        handlers=[
+            RichHandler(
+                rich_tracebacks=True,
+                tracebacks_show_locals=True,
+                omit_repeated_times=False,
+                show_path=False,
+                show_time=False,
+                console=CONSOLE,
+            )
+        ],
+    )
