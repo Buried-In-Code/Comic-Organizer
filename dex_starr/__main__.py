@@ -32,13 +32,13 @@ LOGGER = RichLogger("Dex-Starr")
 
 
 def read_info_file(archive: Archive) -> Metadata:
-    info_file = archive.extracted_folder / "Metadata.json"
+    info_file = archive.extracted_folder / "Metadata.xml"
     if info_file.exists():
         try:
-            LOGGER.info("Parsing Metadata.json")
+            LOGGER.info("Parsing Metadata.xml")
             return Metadata.from_file(info_file)
         except ValidationError as err:
-            LOGGER.warning(f"Unable to parse Metadata.json: {err}")
+            LOGGER.warning(f"Unable to parse Metadata.xml: {err}")
     info_file = archive.extracted_folder / "MetronInfo.xml"
     if info_file.exists():
         try:

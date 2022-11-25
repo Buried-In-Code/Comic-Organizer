@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	<xs:element name="metadata">
+		<xs:complexType>
+			<xs:all>
+				<xs:element name="content" type="contentType"/>
+				<xs:element name="meta" type="metaType"/>
+			</xs:all>
+		</xs:complexType>
+	</xs:element>
+
+	<!-- Complex Types -->
+	<xs:complexType name="contentType">
+		<xs:all>
+			<xs:element name="publisher" type="publisherType"/>
+			<xs:element name="series" type="seriesType"/>
+			<xs:element name="issue" type="issueType"/>
+			<xs:element name="pages" type="pageArray"/>
+			<xs:element name="notes" type="xs:string" minOccurs="0"/>
+		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="publisherType">
+		<xs:all>
+			<xs:element name="imprint" type="xs:string" minOccurs="0"/>
+			<xs:element name="title" type="xs:string"/>
+			<xs:element name="resources" type="resourceArray" minOccurs="0"/>
+		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="seriesType">
+		<xs:all>
+			<xs:element name="startYear" type="xs:positiveInteger" minOccurs="0"/>
+			<xs:element name="title" type="xs:string"/>
+			<xs:element name="volume" type="xs:positiveInteger" default="1"/>
+			<xs:element name="resources" type="resourceArray" minOccurs="0"/>
+		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="issueType">
+		<xs:all>
+			<xs:element name="characters" type="characterArray" minOccurs="0"/>
+			<xs:element name="coverDate" type="xs:date" minOccurs="0"/>
+			<xs:element name="creators" type="creatorArray" minOccurs="0"/>
+			<xs:element name="format" type="formatEnum" default="Comic"/>
+			<xs:element name="genres" type="genreArray" minOccurs="0"/>
+			<xs:element name="locations" type="locationArray" minOccurs="0"/>
+			<xs:element name="number" type="xs:string"/>
+			<xs:element name="pageCount" type="zeroInclusiveInt" default="0"/>
+			<xs:element name="storeDate" type="xs:date" minOccurs="0"/>
+			<xs:element name="storyArcs" type="storyArcArray" minOccurs="0"/>
+			<xs:element name="summary" type="xs:string" minOccurs="0"/>
+			<xs:element name="teams" type="teamArray" minOccurs="0"/>
+			<xs:element name="title" type="xs:string" minOccurs="0"/>
+			<xs:element name="resources" type="resourceArray" minOccurs="0"/>
+		</xs:all>
+		<xs:attribute name="language" type="languageCode" default="en"/>
+	</xs:complexType>
+	<xs:complexType name="metaType">
+		<xs:all>
+			<xs:element name="tool">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:attribute name="version" type="versionType" use="required"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:all>
+		<xs:attribute name="date" type="xs:date" use="required"/>
+	</xs:complexType>
+
+	<!-- Arrays -->
+	<xs:complexType name="resourceArray">
+		<xs:sequence>
+			<xs:element name="resource" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:positiveInteger">
+							<xs:attribute name="source" type="sourceEnum" use="required"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="characterArray">
+		<xs:sequence>
+			<xs:element name="character" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="creatorArray">
+		<xs:sequence>
+			<xs:element name="creator" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:all>
+						<xs:element name="name" type="xs:string"/>
+						<xs:element name="roles">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="role" type="roleEnum" default="Other"
+									            minOccurs="0" maxOccurs="unbounded"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:all>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="genreArray">
+		<xs:sequence>
+			<xs:element name="genre" type="genreEnum" default="Other" minOccurs="0"
+			            maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="locationArray">
+		<xs:sequence>
+			<xs:element name="location" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="storyArcArray">
+		<xs:sequence>
+			<xs:element name="storyArc" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:attribute name="number" type="xs:positiveInteger"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="teamArray">
+		<xs:sequence>
+			<xs:element name="team" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="pageArray">
+		<xs:sequence>
+			<xs:element name="page" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:attribute name="image" type="xs:int" use="required"/>
+					<xs:attribute name="pageType" type="pageTypeEnum" default="Story"/>
+					<xs:attribute name="doublePage" type="xs:boolean" default="false"/>
+					<xs:attribute name="key" type="xs:string"/>
+					<xs:attribute name="bookmark" type="xs:string"/>
+					<xs:attribute name="imageSize" type="xs:long" default="0"/>
+					<xs:attribute name="imageWidth" type="zeroInclusiveInt" default="0"/>
+					<xs:attribute name="imageHeight" type="zeroInclusiveInt" default="0"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- Simple Types -->
+	<xs:simpleType name="languageCode">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[a-z]{2}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="zeroInclusiveInt">
+		<xs:restriction base="xs:int">
+			<xs:minInclusive value="0"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="versionType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[0-9]+.[0-9]+.[0-9]+"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<!-- Enums -->
+	<xs:simpleType name="sourceEnum">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Comicvine"/>
+			<xs:enumeration value="Grand Comics Database"/>
+			<xs:enumeration value="League of Comic Geeks"/>
+			<xs:enumeration value="Marvel"/>
+			<xs:enumeration value="Metron"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="roleEnum">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Writer"/>
+			<xs:enumeration value="Story"/>
+			<xs:enumeration value="Artist"/>
+			<xs:enumeration value="Penciller"/>
+			<xs:enumeration value="Inker"/>
+			<xs:enumeration value="Colourist"/>
+			<xs:enumeration value="Letterer"/>
+			<xs:enumeration value="Designer"/>
+			<xs:enumeration value="Cover Artist"/>
+			<xs:enumeration value="Variant Cover Artist"/>
+			<xs:enumeration value="Editor"/>
+			<xs:enumeration value="Assistant Editor"/>
+			<xs:enumeration value="Associate Editor"/>
+			<xs:enumeration value="Consulting Editor"/>
+			<xs:enumeration value="Senior Editor"/>
+			<xs:enumeration value="Group Editor"/>
+			<xs:enumeration value="Executive Editor"/>
+			<xs:enumeration value="Editor in Chief"/>
+			<xs:enumeration value="Creator"/>
+			<xs:enumeration value="Translator"/>
+			<xs:enumeration value="Other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="formatEnum">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Comic"/>
+			<xs:enumeration value="Digital Chapter"/>
+			<xs:enumeration value="Annual"/>
+			<xs:enumeration value="Trade Paperback"/>
+			<xs:enumeration value="Hardcover"/>
+			<xs:enumeration value="Graphic Novel"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="genreEnum">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Adult"/>
+			<xs:enumeration value="Crime"/>
+			<xs:enumeration value="Espionage"/>
+			<xs:enumeration value="Fantasy"/>
+			<xs:enumeration value="Historical"/>
+			<xs:enumeration value="Horror"/>
+			<xs:enumeration value="Humor"/>
+			<xs:enumeration value="Manga"/>
+			<xs:enumeration value="Parody"/>
+			<xs:enumeration value="Romance"/>
+			<xs:enumeration value="Science Fiction"/>
+			<xs:enumeration value="Sport"/>
+			<xs:enumeration value="Super-Hero"/>
+			<xs:enumeration value="War"/>
+			<xs:enumeration value="Western"/>
+			<xs:enumeration value="Other"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="pageTypeEnum">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Front Cover"/>
+			<xs:enumeration value="Inner Cover"/>
+			<xs:enumeration value="Roundup"/>
+			<xs:enumeration value="Story"/>
+			<xs:enumeration value="Advertisement"/>
+			<xs:enumeration value="Editorial"/>
+			<xs:enumeration value="Letters"/>
+			<xs:enumeration value="Preview"/>
+			<xs:enumeration value="Back Cover"/>
+			<xs:enumeration value="Other"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

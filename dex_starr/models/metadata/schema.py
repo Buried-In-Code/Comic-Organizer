@@ -9,17 +9,18 @@ __all__ = [
     "Metadata",
 ]
 
-import json
 import re
 from datetime import date
-from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import ClassVar, Dict, List, Optional
 
+import xmltodict
+from natsort import humansorted as sorted
+from natsort import ns
 from pydantic import Field, validator
 
 from dex_starr import __version__
-from dex_starr.models import CamelModel
+from dex_starr.models import CamelModel, clean_contents, from_xml_list, to_xml_list, to_xml_text
 from dex_starr.models.metadata.enums import Format, Genre, PageType, Role, Source
 
 
@@ -30,8 +31,8 @@ def sanitize(dirty: str) -> str:
 
 
 class Resource(CamelModel):
-    source: Source
-    value: int
+    source: Source = Field(alias="@source")
+    value: int = Field(alias="#text")
 
     @validator("source", pre=True)
     def to_source_enum(cls, v) -> Source:
@@ -58,6 +59,12 @@ class Publisher(CamelModel):
     resources: List[Resource] = Field(default_factory=list)
     title: str
 
+    list_fields: ClassVar[Dict[str, str]] = {"resources": "resource"}
+
+    def __init__(self, **data):
+        from_xml_list(mappings=Publisher.list_fields, content=data)
+        super().__init__(**data)
+
     @property
     def file_name(self) -> str:
         return sanitize(self.title)
@@ -81,6 +88,12 @@ class Series(CamelModel):
     start_year: Optional[int] = Field(default=None, gt=1900)
     title: str
     volume: int = Field(default=1, gt=0)
+
+    list_fields: ClassVar[Dict[str, str]] = {"resources": "resource"}
+
+    def __init__(self, **data):
+        from_xml_list(mappings=Series.list_fields, content=data)
+        super().__init__(**data)
 
     @property
     def file_name(self) -> str:
@@ -114,6 +127,12 @@ class Creator(CamelModel):
     name: str
     roles: List[Role] = Field(default_factory=list)
 
+    list_fields: ClassVar[Dict[str, str]] = {"roles": "role"}
+
+    def __init__(self, **data):
+        from_xml_list(mappings=Creator.list_fields, content=data)
+        super().__init__(**data)
+
     @validator("roles", pre=True, each_item=True)
     def to_role_enum(cls, v) -> Role:
         if isinstance(v, Role):
@@ -135,8 +154,8 @@ class Creator(CamelModel):
 
 
 class StoryArc(CamelModel):
-    title: str
-    number: Optional[int] = None
+    title: str = Field(alias="#text")
+    number: Optional[int] = Field(alias="@number", default=None)
 
     def __lt__(self, other):
         if not isinstance(other, StoryArc):
@@ -170,6 +189,23 @@ class Issue(CamelModel):
     summary: Optional[str] = None
     teams: List[str] = Field(default_factory=list)
     title: Optional[str] = None
+
+    list_fields: ClassVar[Dict[str, str]] = {
+        **Creator.list_fields,
+        "characters": "character",
+        "creators": "creator",
+        "genres": "genre",
+        "locations": "location",
+        "resources": "resource",
+        "storyArcs": "storyArc",
+        "teams": "team",
+    }
+    text_fields: ClassVar[List[str]] = ["storyArcs"]
+
+    def __init__(self, **data):
+        from_xml_list(mappings=Issue.list_fields, content=data)
+        to_xml_text(mappings=Issue.text_fields, content=data)
+        super().__init__(**data)
 
     @validator("format", pre=True)
     def to_format_enum(cls, v) -> Format:
@@ -232,14 +268,14 @@ class Issue(CamelModel):
 
 
 class Page(CamelModel):
-    image: int
-    page_type: PageType = PageType.STORY
-    double_page: bool = False
-    key: Optional[str] = None
-    bookmark: Optional[str] = None
-    image_size: int = Field(default=0, ge=0)
-    image_width: int = Field(default=0, ge=0)
-    image_height: int = Field(default=0, ge=0)
+    image: int = Field(alias="@image")
+    page_type: PageType = Field(alias="@pageType", default=PageType.STORY)
+    double_page: bool = Field(alias="@doublePage", default=False)
+    key: Optional[str] = Field(alias="@key", default=None)
+    bookmark: Optional[str] = Field(alias="@bookmark", default=None)
+    image_size: int = Field(alias="@imageSize", default=0, ge=0)
+    image_width: int = Field(alias="@imageWidth", default=0, ge=0)
+    image_height: int = Field(alias="@imageHeight", default=0, ge=0)
 
     @validator("page_type", pre=True)
     def to_page_type_enum(cls, v) -> PageType:
@@ -268,24 +304,43 @@ class Metadata(CamelModel):
     pages: List[Page] = Field(default_factory=list)
     notes: Optional[str] = None
 
+    list_fields: ClassVar[Dict[str, str]] = {
+        **Publisher.list_fields,
+        **Series.list_fields,
+        **Issue.list_fields,
+        "pages": "page",
+    }
+
+    def __init__(self, **data):
+        from_xml_list(mappings=Metadata.list_fields, content=data)
+        super().__init__(**data)
+
     @staticmethod
     def from_file(metadata_file: Path) -> "Metadata":
-        with metadata_file.open("r", encoding="UTF-8") as stream:
-            content = json.load(stream)
-            return Metadata(**content["content"])
+        with metadata_file.open("rb") as stream:
+            content = xmltodict.parse(stream, force_list=list(Metadata.list_fields.values()))
+            return Metadata(**content["metadata"]["content"])
 
     def to_file(self, metadata_file: Path):
-        content = self.dict(by_alias=True)
+        content = self.dict(by_alias=True, exclude_none=True)
+        to_xml_list(mappings=Metadata.list_fields, content=content)
         content = clean_contents(content)
 
-        with metadata_file.open("w", encoding="UTF-8") as stream:
-            json.dump(
-                {"content": content, "meta": generate_meta()},
-                stream,
-                sort_keys=True,
-                default=str,
-                indent=2,
-                ensure_ascii=False,
+        with metadata_file.open("wb") as stream:
+            xmltodict.unparse(
+                {
+                    "metadata": {
+                        "content": {k: content[k] for k in sorted(content, alg=ns.NA | ns.G)},
+                        "meta": generate_meta(),
+                        "@xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+                        "@xsi:noNamespaceSchemaLocation": "https://raw.githubusercontent.com/"
+                        "Buried-In-Code/Dex-Starr/use-xml/"
+                        "schemas/Metadata.xsd",
+                    }
+                },
+                output=stream,
+                short_empty_elements=True,
+                pretty=True,
             )
 
     def __lt__(self, other):
@@ -311,22 +366,7 @@ class Metadata(CamelModel):
 
 
 def generate_meta() -> Dict[str, str]:
-    return {"date": date.today().isoformat(), "tool": {"name": "Dex-Starr", "version": __version__}}
-
-
-def clean_contents(content: Dict[str, Any]) -> Dict[str, Any]:
-    for key, value in content.copy().items():
-        if isinstance(key, Enum):
-            content[str(key)] = value
-            del content[key]
-        if isinstance(value, Enum):
-            content[key] = str(value)
-        elif isinstance(value, dict):
-            content[key] = clean_contents(value)
-        elif isinstance(value, list):
-            for index, entry in enumerate(value):
-                if isinstance(entry, Enum):
-                    content[key][index] = str(entry)
-                elif isinstance(entry, dict):
-                    content[key][index] = clean_contents(entry)
-    return content
+    return {
+        "@date": date.today().isoformat(),
+        "tool": {"#text": "Dex-Starr", "@version": __version__},
+    }
