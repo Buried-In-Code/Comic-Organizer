@@ -34,7 +34,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       #----------------------------------------------
       - name: Install project
-        run: pip install -e .
+        run: pip install .
       - name: Create output files
         run: python tests/generate_output.py
       #----------------------------------------------
