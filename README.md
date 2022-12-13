@@ -93,7 +93,7 @@ The files are named based on the format of Comic:
 - Hardcover *(If it is not a numbered issue)*: `{Series Title}-{Issue Title}-HC.cbz`
 - Trade Paperback *(If it is a numbered issue)*: `{Series Title}-#{Issue Number}-TP.cbz`
 - Trade Paperback *(If it is not a numbered issue)*: `{Series Title}-{Issue Title}-TP.cbz`
-- Graphic Novel: `{Series Title}-{Issue Title}.cbz`
+- Graphic Novel: `{Series Title}.cbz`
 
 ## Collection Folder Structure
 
@@ -113,7 +113,7 @@ Root Folder
 |  |  |  +-- Series-Title-HC.cbz
 |  |  |  +-- Series-#1-TP.cbz
 |  |  |  +-- Series-Title-TP.cbz
-|  |  |  +-- Series-Title.cbz
+|  |  |  +-- Series.cbz
 |  |  +-- Series-v2
 |  |  |  +-- Series-v2-#1.cbz
 |  |  |  +-- Series-v2-Annual-#1.cbz
@@ -122,7 +122,7 @@ Root Folder
 |  |  |  +-- Series-v2-Title-HC.cbz
 |  |  |  +-- Series-v2-#1-TP.cbz
 |  |  |  +-- Series-v2-Title-TP.cbz
-|  |  |  +-- Series-v2-Title.cbz
+|  |  |  +-- Series-v2.cbz
 ```
 
 ## Socials

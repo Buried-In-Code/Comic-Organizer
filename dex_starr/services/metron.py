@@ -10,9 +10,9 @@ from mokkari.series import Series as MokkariSeries
 from mokkari.session import Session as Mokkari
 from natsort import humansorted as sorted
 from natsort import ns
-from rich.prompt import Prompt
+from rich.prompt import IntPrompt, Prompt
 
-from dex_starr.console import CONSOLE, RichLogger, create_menu
+from dex_starr.console import CONSOLE, create_menu
 from dex_starr.models.metadata.enums import Format, Genre, Role, Source
 from dex_starr.models.metadata.schema import (
     Creator,
@@ -25,8 +25,6 @@ from dex_starr.models.metadata.schema import (
 )
 from dex_starr.services.sqlite_cache import SQLiteCache
 from dex_starr.settings import MetronSettings
-
-LOGGER = RichLogger(__name__)
 
 
 class MokkariTalker:
@@ -77,8 +75,16 @@ class MokkariTalker:
         if result.collection_title:
             issue.title = result.collection_title
 
+    def _select_issue(self, issue_id: int) -> Optional[MokkariIssue]:
+        CONSOLE.print(f"Getting Issue: {issue_id=}", style="logging.level.debug")
+        try:
+            return self.session.issue(issue_id)
+        except ApiError:
+            CONSOLE.print(f"Unable to get Issue: {issue_id=}", style="logging.level.warning")
+        return None
+
     def _search_issue(self, series_id: int, number: str) -> Optional[MokkariIssue]:
-        LOGGER.debug(f"Searching for: {series_id=}, {number=}")
+        CONSOLE.print(f"Searching for Issue: {series_id=}, {number=}", style="logging.level.debug")
         output = None
         try:
             issue_list = self.session.issues_list({"series_id": series_id, "number": number})
@@ -91,15 +97,7 @@ class MokkariTalker:
                 default="None of the Above",
             )
             if issue_index != 0:
-                try:
-                    output = self.session.issue(issue_list[issue_index - 1].id)
-                except ApiError:
-                    LOGGER.warning(
-                        f"Unable to find issue: issue_id={issue_list[issue_index - 1].id}"
-                    )
-                    output = None
-        else:
-            LOGGER.info(f"Unable to find issue: {series_id=}, {number=}")
+                output = self._select_issue(issue_list[issue_index - 1].id)
         return output
 
     def lookup_issue(self, issue: Issue, series_id: int) -> Optional[MokkariIssue]:
@@ -107,18 +105,21 @@ class MokkariTalker:
         source_list = [x.source for x in issue.resources]
         if Source.METRON in source_list:
             index = source_list.index(Source.METRON)
-            try:
-                output = self.session.issue(issue.resources[index].value)
-            except ApiError:
-                LOGGER.warning(f"Unable to find issue: issue_id={issue.resources[index].value}")
-                output = None
+            output = self._select_issue(issue.resources[index].value)
         if not output:
             output = self._search_issue(series_id, issue.number)
         while not output:
-            search = Prompt.ask("Issue number", default="Exit", console=CONSOLE)
-            if search.lower() == "exit":
-                return None
-            output = self._search_issue(series_id, search)
+            index = create_menu(
+                options=["Enter Issue id", "Enter Issue number"], prompt="Select", default="Exit"
+            )
+            if index == 0:
+                return
+            elif index == 1:
+                issue_id = IntPrompt.ask("Issue id", console=CONSOLE)
+                output = self._select_issue(issue_id)
+            else:
+                issue_number = Prompt.ask("Issue number", console=CONSOLE)
+                output = self._search_issue(series_id, issue_number)
         return output
 
     def update_series(self, result: MokkariSeries, series: Series):
@@ -132,6 +133,14 @@ class MokkariTalker:
         if result.volume:
             series.volume = result.volume
 
+    def _select_series(self, series_id: int) -> Optional[MokkariSeries]:
+        CONSOLE.print(f"Getting Series: {series_id=}", style="logging.level.debug")
+        try:
+            return self.session.series(series_id)
+        except ApiError:
+            CONSOLE.print(f"Unable to get Series: {series_id=}", style="logging.level.warning")
+        return None
+
     def _search_series(
         self,
         publisher_id: int,
@@ -139,7 +148,10 @@ class MokkariTalker:
         volume: Optional[int] = None,
         start_year: Optional[int] = None,
     ) -> Optional[MokkariSeries]:
-        LOGGER.debug(f"Searching for: {publisher_id=}, {title=}, {volume=}, {start_year=}")
+        CONSOLE.print(
+            f"Searching for Series: {publisher_id=}, {title=}, {volume=}, {start_year=}",
+            style="logging.level.debug",
+        )
         output = None
         params = {"publisher_id": publisher_id, "name": title}
         if volume:
@@ -157,17 +169,7 @@ class MokkariTalker:
                 default="None of the Above",
             )
             if series_index != 0:
-                try:
-                    output = self.session.series(series_list[series_index - 1].id)
-                except ApiError:
-                    LOGGER.warning(
-                        f"Unable to find series: series_id={series_list[series_index - 1].id}"
-                    )
-                    output = None
-        else:
-            LOGGER.info(
-                f"Unable to find series: {publisher_id=}, {title=}, {volume=}, {start_year=}"
-            )
+                output = self._select_series(series_list[series_index - 1].id)
         if not output and start_year:
             return self._search_series(publisher_id, title, volume=volume)
         if not output and volume:
@@ -179,20 +181,23 @@ class MokkariTalker:
         source_list = [x.source for x in series.resources]
         if Source.METRON in source_list:
             index = source_list.index(Source.METRON)
-            try:
-                output = self.session.series(series.resources[index].value)
-            except ApiError:
-                LOGGER.warning(f"Unable to find series: series_id={series.resources[index].value}")
-                output = None
+            output = self._select_series(series.resources[index].value)
         if not output:
             output = self._search_series(
                 publisher_id, series.title, series.volume, series.start_year
             )
         while not output:
-            search = Prompt.ask("Series title", default="Exit", console=CONSOLE)
-            if search.lower() == "exit":
-                return None
-            output = self._search_series(publisher_id, search)
+            index = create_menu(
+                options=["Enter Series id", "Enter Series title"], prompt="Select", default="Exit"
+            )
+            if index == 0:
+                return
+            elif index == 1:
+                series_id = IntPrompt.ask("Series id", console=CONSOLE)
+                output = self._select_series(series_id)
+            else:
+                series_title = Prompt.ask("Series title", console=CONSOLE)
+                output = self._search_series(publisher_id, series_title)
         return output
 
     def update_publisher(self, result: MokkariPublisher, publisher: Publisher):
@@ -203,8 +208,18 @@ class MokkariTalker:
         if result.name:
             publisher.title = result.name
 
+    def _select_publisher(self, publisher_id: int) -> Optional[MokkariPublisher]:
+        CONSOLE.print(f"Getting Publisher: {publisher_id=}", style="logging.level.debug")
+        try:
+            return self.session.publisher(publisher_id)
+        except ApiError:
+            CONSOLE.print(
+                f"Unable to get Publisher: {publisher_id=}", style="logging.level.warning"
+            )
+        return None
+
     def _search_publisher(self, title: str) -> Optional[MokkariPublisher]:
-        LOGGER.debug(f"Searching for: {title=}")
+        CONSOLE.print(f"Searching for Publisher: {title=}", style="logging.level.debug")
         output = None
         try:
             publisher_list = self.session.publishers_list({"name": title})
@@ -217,16 +232,7 @@ class MokkariTalker:
                 default="None of the Above",
             )
             if publisher_index != 0:
-                try:
-                    output = self.session.publisher(publisher_list[publisher_index - 1].id)
-                except ApiError:
-                    LOGGER.warning(
-                        "Unable to find publisher: "
-                        f"publisher_id={publisher_list[publisher_index - 1].id}"
-                    )
-                    output = None
-        else:
-            LOGGER.info(f"Unable to find publisher: {title=}")
+                output = self._select_publisher(publisher_list[publisher_index - 1].id)
         return output
 
     def lookup_publisher(self, publisher: Publisher) -> Optional[MokkariPublisher]:
@@ -234,20 +240,25 @@ class MokkariTalker:
         source_list = [x.source for x in publisher.resources]
         if Source.METRON in source_list:
             index = source_list.index(Source.METRON)
-            try:
-                output = self.session.publisher(publisher.resources[index].value)
-            except ApiError:
-                LOGGER.warning(
-                    f"Unable to find publisher: publisher_id={publisher.resources[index].value}"
-                )
-                output = None
+            output = self._select_publisher(publisher.resources[index].value)
         if not output:
             output = self._search_publisher(publisher.title)
+        if not output and publisher.title.startswith("Marvel"):
+            output = self._search_publisher("Marvel")
         while not output:
-            search = Prompt.ask("Publisher title", default="Exit", console=CONSOLE)
-            if search.lower() == "exit":
-                return None
-            output = self._search_publisher(search)
+            index = create_menu(
+                options=["Enter Publisher id", "Enter Publisher title"],
+                prompt="Select",
+                default="Exit",
+            )
+            if index == 0:
+                return
+            elif index == 1:
+                publisher_id = IntPrompt.ask("Publisher id", console=CONSOLE)
+                output = self._select_publisher(publisher_id)
+            else:
+                publisher_title = Prompt.ask("Publisher title", console=CONSOLE)
+                output = self._search_publisher(publisher_title)
         return output
 
     def update_metadata(self, metadata: Metadata):
