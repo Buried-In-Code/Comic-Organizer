@@ -48,7 +48,7 @@ cb7 = [
   "py7zr >= 0.20.2"
 ]
 dev = [
-  "pre-commit >= 2.20.0"
+  "pre-commit >= 2.21.0"
 ]
 
 [project.scripts]
