@@ -194,13 +194,13 @@ class Issue(CamelModel):
             return f"-#{self.number.zfill(3)}"
         output = ""
         index = create_menu(
-            options=["Show number and title", "Show only title", "Show neither"],
+            options=["Show number and title", "Show only number", "Show only title"],
             prompt="File naming format",
-            default="Show only number",
+            default="Show neither",
         )
-        if index in [0, 1]:
-            output += f"-#{self.number.zfill(2)}"
         if index in [1, 2]:
+            output += f"-#{self.number.zfill(2)}"
+        if index in [1, 3]:
             output += f"-{sanitize(self.title)}"
         if self.format == Format.HARDCOVER:
             return f"{output}-HC"
