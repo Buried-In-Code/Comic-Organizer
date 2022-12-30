@@ -70,7 +70,7 @@ repos:
           - --filter-files
           - --profile=black
   - repo: https://github.com/pappasam/toml-sort
-    rev: v0.20.1
+    rev: v0.21.0
     hooks:
       - id: toml-sort
         args:
