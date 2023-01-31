@@ -4,7 +4,7 @@ requires = ["hatchling"]
 
 [project]
 authors = [
-  { name = "BuriedInCode", email = "BuriedInCode@tuta.io" },
+  {email = "BuriedInCode@tuta.io", name = "BuriedInCode"}
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -15,11 +15,11 @@ classifiers = [
   "Operating System :: MacOS",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
-  "Programming Language :: Python",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python",
   "Typing :: Typed"
 ]
 dependencies = [
@@ -37,7 +37,7 @@ dependencies = [
 ]
 description = "Unify and organize your comic collection."
 dynamic = ["version"]
-keywords = ["comics", "comic", "metadata", "tagging", "tagger"]
+keywords = ["comic", "comics", "metadata", "tagger", "tagging"]
 license = "GPL-3.0-or-later"
 name = "dex-starr"
 readme = "README.md"
@@ -66,7 +66,7 @@ skips = ["B101"]
 
 [tool.black]
 line-length = 100
-target-version = ["py38", "py39", "py310", "py311"]
+target-version = ["py310", "py311", "py38", "py39"]
 
 [tool.hatch.version]
 path = "dex_starr/__init__.py"
