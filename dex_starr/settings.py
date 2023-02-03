@@ -8,7 +8,7 @@ __all__ = [
 ]
 
 from pathlib import Path
-from typing import ClassVar, List, Optional
+from typing import ClassVar, List
 
 from pydantic import BaseModel, Extra, Field, validator
 
@@ -66,7 +66,7 @@ class GeneralSettings(SettingsModel):
 
 
 class Settings(SettingsModel):
-    FILENAME: ClassVar = get_config_root() / "settings.toml"
+    FILENAME: ClassVar[str] = get_config_root() / "settings.toml"
     general: GeneralSettings = GeneralSettings(
         resolution_order=[
             "Marvel",
