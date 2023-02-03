@@ -97,6 +97,14 @@ def pull_info(
         services[service].update_metadata(metadata)
 
 
+def clean_cache():
+    for child in get_cache_root().iterdir():
+        if child.is_dir():
+            del_folder(child)
+        elif child.name != "cache.sqlite":
+            child.unlink(missing_ok=True)
+
+
 def parse_arguments() -> Namespace:
     parser = ArgumentParser(prog="Dex-Starr")
     parser.version = __version__
@@ -134,13 +142,7 @@ def main():
         services["Marvel"] = EsakTalker(settings=settings.marvel)
     settings.save()
 
-    # region Clean cache
-    for child in get_cache_root().iterdir():
-        if child.is_dir():
-            del_folder(child)
-        elif child.name != "cache.sqlite":
-            child.unlink(missing_ok=True)
-    # endregion
+    clean_cache()
 
     try:
         for archive_file in list_files(
