@@ -19,6 +19,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import Field, validator
 
 from dex_starr import __version__
+from dex_starr.console import create_menu
 from dex_starr.models import CamelModel
 from dex_starr.models.metadata.enums import Format, Genre, PageType, Role, Source
 
@@ -189,25 +190,25 @@ class Issue(CamelModel):
             return f"-Annual-#{self.number.zfill(2)}"
         if self.format == Format.DIGITAL_CHAPTER:
             return f"-Chapter-#{self.number.zfill(2)}"
+        if self.format == Format.COMIC:
+            return f"-#{self.number.zfill(3)}"
+        output = ""
+        index = create_menu(
+            options=["Show number and title", "Show only number", "Show only title"],
+            prompt="File naming format",
+            default="Show neither",
+        )
+        if index in [1, 2]:
+            output += f"-#{self.number.zfill(2)}"
+        if index in [1, 3]:
+            output += f"-{sanitize(self.title)}"
         if self.format == Format.HARDCOVER:
-            if self.number != "0":
-                filename = f"-#{self.number.zfill(2)}"
-            elif self.title:
-                filename = "-" + sanitize(self.title)
-            else:
-                filename = ""
-            return f"{filename}-HC"
-        if self.format == Format.TRADE_PAPERBACK:
-            if self.number != "0":
-                filename = f"-#{self.number.zfill(2)}"
-            elif self.title:
-                filename = "-" + sanitize(self.title)
-            else:
-                filename = ""
-            return f"{filename}-TP"
-        if self.format == Format.GRAPHIC_NOVEL:
-            return f"-{self.title}" if self.title else ""
-        return f"-#{self.number.zfill(3)}"
+            return f"{output}-HC"
+        elif self.format == Format.TRADE_PAPERBACK:
+            return f"{output}-TP"
+        elif self.format == Format.GRAPHIC_NOVEL:
+            return f"{output}-GN"
+        raise ValueError(f"Unknown format: {self.format}")
 
     def __lt__(self, other):
         if not isinstance(other, Issue):

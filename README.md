@@ -17,13 +17,10 @@
 [![Flake8](https://img.shields.io/badge/Linter-Flake8-informational?style=flat-square)](https://github.com/PyCQA/flake8)
 
 [![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Dex-Starr.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Dex-Starr/graphs/contributors)
-[![Github Action - Code Analysis](https://img.shields.io/github/workflow/status/Buried-In-Code/Dex-Starr/Code%20Analysis?logo=Github-Actions&label=Code-Analysis&style=flat-square)](https://github.com/Buried-In-Code/Dex-Starr/actions/workflows/code-analysis.yaml)
-[![Github Action - Testing](https://img.shields.io/github/workflow/status/Buried-In-Code/Dex-Starr/Testing?logo=Github-Actions&label=Testing&style=flat-square)](https://github.com/Buried-In-Code/Dex-Starr/actions/workflows/testing.yaml)
-[![Github Action - Publishing](https://img.shields.io/github/workflow/status/Buried-In-Code/Dex-Starr/Publishing?logo=Github-Actions&label=Publishing&style=flat-square)](https://github.com/Buried-In-Code/Dex-Starr/actions/workflows/publishing.yaml)
+[![Github Action - Testing](https://img.shields.io/github/actions/workflow/status/Buried-In-Code/Dex-Starr/testing.yaml?branch=main&logo=Github-Actions&label=Testing&style=flat-square)](https://github.com/Buried-In-Code/Dex-Starr/actions/workflows/testing.yaml)
 
-Dex-Starr helps sort and organize your comic collection by using the information stored in ComicInfo files.\
-It also formats all your digital comics into a single format (cbz or cb7), adds and/or updates the supported list of Info files.\
-Dex-Starr can also pull information from a list of sources to populate missing fields.
+Dex-Starr's goal is to help sort and organize your comic collection by using the information stored in Info files.\
+It also formats all your digital comics into a single format (cbz or cb7), adds and/or updates the supported list of Info files.
 
 ## Supported Formats
 
@@ -64,17 +61,18 @@ Dex-Starr can also pull information from a list of sources to populate missing f
 
 ### Arguments
 
-| Argument             | Type | Description                                                                       |
-| -------------------- | ---- | --------------------------------------------------------------------------------- |
-| `--manual-edit`      | bool | Pause the Script before bundling the files to allow manual removal of Ads, etc... |
-| `--resolve-manually` | bool | Manually choose which fields are chosen by the importer                           |
+| Argument        | Type | Description                                                                       |
+| --------------- | ---- | --------------------------------------------------------------------------------- |
+| `--manual-edit` | bool | Pause the Script before bundling the files to allow manual removal of Ads, etc... |
+| `--version`     | bool | Display the version of Dex-Starr running                                          |
+| `--debug`       | bool | Display extra/debug messages while running                                        |
 
 ## Services
 
-- [Comicvine](https://comicvine.gamespot.com) using [Simyan](https://github.com/Metron-Project/Simyan)
-- [League of Comic Geeks](https://leagueofcomicgeeks.com) using [Himon](https://github.com/Buried-In-Code/Himon)
-- [Marvel](https://www.marvel.com/comics) using [Esak](https://github.com/Metron-Project/Esak)
-- [Metron](https://metron.cloud) using [Mokkari](https://github.com/Metron-Project/Mokkari)
+- [Comicvine](https://comicvine.gamespot.com) using the [Simyan](https://github.com/Metron-Project/Simyan) library.
+- [League of Comic Geeks](https://leagueofcomicgeeks.com) using the [Himon](https://github.com/Buried-In-Code/Himon) library.
+- [Marvel](https://www.marvel.com/comics) using the [Esak](https://github.com/Metron-Project/Esak) library.
+- [Metron](https://metron.cloud) using the [Mokkari](https://github.com/Metron-Project/Mokkari) library.
 
 ## File Renaming
 
@@ -86,43 +84,38 @@ Series with volume greater than 1 will display its volume in the title.
 
 The files are named based on the format of Comic:
 
-- **_Default_**: `{Series Title}-#{Issue Number}.cbz`
+- **_Default/Comic_**: `{Series Title}-#{Issue Number}.cbz`
 - Annual: `{Series Title}-Annual-#{Issue Number}.cbz`
 - Digital Chapter: `{Series Title}-Chapter-#{Issue Number}.cbz`
-- Hardcover *(If it is a numbered issue)*: `{Series Title}-#{Issue Number}-HC.cbz`
-- Hardcover *(If it is not a numbered issue)*: `{Series Title}-{Issue Title}-HC.cbz`
-- Trade Paperback *(If it is a numbered issue)*: `{Series Title}-#{Issue Number}-TP.cbz`
-- Trade Paperback *(If it is not a numbered issue)*: `{Series Title}-{Issue Title}-TP.cbz`
-- Graphic Novel: `{Series Title}-{Issue Title}.cbz`
+- Hardcover ends with: `-HC.cbz`
+- Trade Paperback ends with: `-TP.cbz`
+- Graphic Novel ends with: `-GN.cbz`
 
 ## Collection Folder Structure
 
 ```
-Root Folder
-+-- Import
-|  +-- New Comic #10.cbr
-|  +-- New Comic #11.cbz
-+-- Processing
-+-- Collection
-|  +-- Publisher
-|  |  +-- Series
-|  |  |  +-- Series-#1.cbz
-|  |  |  +-- Series-Annual-#1.cbz
-|  |  |  +-- Series-Chapter-#1.cbz
-|  |  |  +-- Series-#1-HC.cbz
-|  |  |  +-- Series-Title-HC.cbz
-|  |  |  +-- Series-#1-TP.cbz
-|  |  |  +-- Series-Title-TP.cbz
-|  |  |  +-- Series-Title.cbz
-|  |  +-- Series-v2
-|  |  |  +-- Series-v2-#1.cbz
-|  |  |  +-- Series-v2-Annual-#1.cbz
-|  |  |  +-- Series-v2-Chapter-#1.cbz
-|  |  |  +-- Series-v2-#1-HC.cbz
-|  |  |  +-- Series-v2-Title-HC.cbz
-|  |  |  +-- Series-v2-#1-TP.cbz
-|  |  |  +-- Series-v2-Title-TP.cbz
-|  |  |  +-- Series-v2-Title.cbz
+Import
++-- New Comic #10.cbr
++-- New Comic #11.cbz
+```
+
+```
+Collection
++-- Publisher
+|  +-- Series
+|  |  +-- Series-#1.cbz
+|  |  +-- Series-Annual-#1.cbz
+|  |  +-- Series-Chapter-#1.cbz
+|  |  +-- Series-HC.cbz
+|  |  +-- Series-#1-TP.cbz
+|  |  +-- Series-GN.cbz
+|  +-- Series-v2
+|  |  +-- Series-v2-#1.cbz
+|  |  +-- Series-v2-Annual-#1.cbz
+|  |  +-- Series-v2-Chapter-#1.cbz
+|  |  +-- Series-v2-#1-HC.cbz
+|  |  +-- Series-v2-TP.cbz
+|  |  +-- Series-v2-GN.cbz
 ```
 
 ## Socials

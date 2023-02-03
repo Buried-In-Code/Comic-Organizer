@@ -2,9 +2,7 @@ __all__ = ["Role", "Format", "Genre", "PageType", "Source"]
 
 from enum import Enum
 
-from dex_starr.console import RichLogger
-
-LOGGER = RichLogger(__name__)
+from dex_starr.console import CONSOLE
 
 
 class Source(Enum):
@@ -22,7 +20,7 @@ class Source(Enum):
         mappings = {"comic vine": Source.COMICVINE}
         if value.lower() in mappings:
             return mappings[value.lower()]
-        raise ValueError(f"Unable to find Source: '{value}'")
+        raise ValueError(f"'{value}' isnt a valid metadata.Source")
 
     def __str__(self):
         return self.value
@@ -53,7 +51,7 @@ class PageType(Enum):
         for entry in PageType:
             if entry.value.lower().replace(" ", "") == value.lower().replace(" ", ""):
                 return entry
-        LOGGER.warning(f"Unable to find PageType: '{value}'")
+        CONSOLE.print(f"'{value}' isnt a valid metadata.PageType", style="logging.level.warning")
         return PageType.STORY
 
     def __str__(self):
@@ -104,7 +102,7 @@ class Role(Enum):
         }
         if value.lower() in mappings:
             return mappings[value.lower()]
-        LOGGER.warning(f"Unable to find Role: '{value}'")
+        CONSOLE.print(f"'{value}' isnt a valid metadata.Role", style="logging.level.warning")
         return Role.OTHER
 
     def __str__(self):
@@ -135,7 +133,7 @@ class Format(Enum):
         mappings = {"hard cover": Format.HARDCOVER}
         if value.lower() in mappings:
             return mappings[value.lower()]
-        LOGGER.warning(f"Unable to find Format: '{value}'")
+        CONSOLE.print(f"'{value}' isnt a valid metadata.Format", style="logging.level.warning")
         return Format.COMIC
 
     def __str__(self):
@@ -173,7 +171,7 @@ class Genre(Enum):
         for entry in Genre:
             if entry.value.lower() == value.lower():
                 return entry
-        LOGGER.warning(f"Unable to find Genre: '{value}'")
+        CONSOLE.print(f"'{value}' isnt a valid metadata.Genre", style="logging.level.warning")
         return Genre.OTHER
 
     def __str__(self):

@@ -2,9 +2,7 @@ __all__ = ["YesNo", "Manga", "AgeRating", "PageType"]
 
 from enum import Enum
 
-from dex_starr.console import RichLogger
-
-LOGGER = RichLogger(__name__)
+from dex_starr.console import CONSOLE
 
 
 class PageType(Enum):
@@ -25,7 +23,7 @@ class PageType(Enum):
         for entry in PageType:
             if entry.value.lower().replace(" ", "") == value.lower().replace(" ", ""):
                 return entry
-        LOGGER.warning(f"Unable to find PageType: '{value}'")
+        CONSOLE.print(f"'{value}' isnt a valid comic_info.PageType", style="logging.level.warning")
         return PageType.STORY
 
     def __str__(self):
@@ -50,7 +48,7 @@ class YesNo(Enum):
         for entry in YesNo:
             if entry.value.lower() == value.lower():
                 return entry
-        LOGGER.warning(f"Unable to find YesNo: '{value}'")
+        CONSOLE.print(f"'{value}' isnt a valid comic_info.YesNo", style="logging.level.warning")
         return YesNo.UNKNOWN
 
     def __str__(self):
@@ -76,7 +74,7 @@ class Manga(Enum):
         for entry in Manga:
             if entry.value.lower() == value.lower():
                 return entry
-        LOGGER.warning(f"Unable to find Manga: '{value}'")
+        CONSOLE.print(f"'{value}' isnt a value comic_info.Manga", style="logging.level.warning")
         return Manga.UNKNOWN
 
     def __str__(self):
@@ -113,7 +111,7 @@ class AgeRating(Enum):
         for entry in AgeRating:
             if entry.value.lower() == value.lower():
                 return entry
-        LOGGER.warning(f"Unable to find AgeRating: '{value}'")
+        CONSOLE.print(f"'{value}' isnt a valid comic_info.AgeRating", style="logging.level.warning")
         return AgeRating.UNKNOWN
 
     def __str__(self):

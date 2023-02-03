@@ -8,7 +8,9 @@ import xmltodict
 from natsort import humansorted as sorted
 from natsort import ns
 from pydantic import Field, validator
+from rich.prompt import Prompt
 
+from dex_starr.console import CONSOLE
 from dex_starr.models import PascalModel, clean_contents, from_xml_list, to_xml_list
 from dex_starr.models.comic_info.enums import AgeRating, Manga, PageType, YesNo
 from dex_starr.models.metadata.schema import Metadata
@@ -200,8 +202,8 @@ class ComicInfo(PascalModel):
             return []
         return sorted({x.strip() for x in self.locations.split(",")}, alg=ns.NA | ns.G)
 
-    def to_metadata(self) -> Metadata:
-        from dex_starr.models.metadata.enums import Role
+    def to_metadata(self, enter_missing: bool = True) -> Metadata:
+        from dex_starr.models.metadata.enums import Format, Role
         from dex_starr.models.metadata.schema import (
             Creator,
             Issue,
@@ -232,12 +234,12 @@ class ComicInfo(PascalModel):
             publisher=Publisher(
                 imprint=self.imprint,
                 # TODO: Resources
-                title=self.publisher,
+                title=self.publisher or Prompt.ask("Publisher title", console=CONSOLE),
             ),
             series=Series(
                 # TODO: Resources
                 start_year=self.volume if self.volume and self.volume > 1900 else None,
-                title=self.series,
+                title=self.series or Prompt.ask("Series title", console=CONSOLE),
                 volume=self.volume if self.volume and self.volume < 1900 else 1,
             ),
             issue=Issue(
@@ -250,11 +252,11 @@ class ComicInfo(PascalModel):
                     },
                     alg=ns.NA | ns.G,
                 ),
-                format=self.format,
+                format=self.format or Format.COMIC,
                 genres=self.genre_list,
                 language=self.language_iso.lower() if self.language_iso else "en",
                 locations=self.location_list,
-                number=self.number,
+                number=self.number or "1",
                 page_count=self.page_count,
                 # TODO: Resources
                 # TODO: Store date

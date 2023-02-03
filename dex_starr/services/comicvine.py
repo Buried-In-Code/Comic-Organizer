@@ -4,14 +4,14 @@ from typing import Optional
 
 from natsort import humansorted as sorted
 from natsort import ns
-from rich.prompt import Prompt
+from rich.prompt import IntPrompt, Prompt
 from simyan.comicvine import Comicvine
 from simyan.exceptions import ServiceError
 from simyan.schemas.issue import Issue as SimyanIssue
 from simyan.schemas.publisher import Publisher as SimyanPublisher
 from simyan.schemas.volume import Volume
 
-from dex_starr.console import CONSOLE, RichLogger, create_menu
+from dex_starr.console import CONSOLE, create_menu
 from dex_starr.models.metadata.enums import Role, Source
 from dex_starr.models.metadata.schema import (
     Creator,
@@ -24,8 +24,6 @@ from dex_starr.models.metadata.schema import (
 )
 from dex_starr.services.sqlite_cache import SQLiteCache
 from dex_starr.settings import ComicvineSettings
-
-LOGGER = RichLogger(__name__)
 
 
 class SimyanTalker:
@@ -100,8 +98,16 @@ class SimyanTalker:
         if result.name:
             issue.title = result.name
 
+    def _select_issue(self, issue_id: int) -> Optional[SimyanIssue]:
+        CONSOLE.print(f"Getting Issue: {issue_id=}", style="logging.level.debug")
+        try:
+            return self.session.issue(issue_id)
+        except ServiceError:
+            CONSOLE.print(f"Unable to get Issue: {issue_id=}", style="logging.level.warning")
+        return None
+
     def _search_issue(self, series_id: int, number: str) -> Optional[SimyanIssue]:
-        LOGGER.debug(f"Searching for: {series_id=}, {number=}")
+        CONSOLE.print(f"Searching for Issue: {series_id=}, {number=}", style="logging.level.debug")
         output = None
         try:
             issue_list = self.session.issue_list(
@@ -116,15 +122,7 @@ class SimyanTalker:
                 default="None of the Above",
             )
             if issue_index != 0:
-                try:
-                    output = self.session.issue(issue_list[issue_index - 1].issue_id)
-                except ServiceError:
-                    LOGGER.warning(
-                        f"Unable to find issue: issue_id={issue_list[issue_index - 1].issue_id}"
-                    )
-                    output = None
-        else:
-            LOGGER.info(f"Unable to find issue: {series_id=}, {number=}")
+                output = self._select_issue(issue_list[issue_index - 1].issue_id)
         return output
 
     def lookup_issue(self, issue: Issue, series_id: int) -> Optional[SimyanIssue]:
@@ -132,18 +130,21 @@ class SimyanTalker:
         source_list = [x.source for x in issue.resources]
         if Source.COMICVINE in source_list:
             index = source_list.index(Source.COMICVINE)
-            try:
-                output = self.session.issue(issue.resources[index].value)
-            except ServiceError:
-                LOGGER.warning(f"Unable to find issue: issue_id={issue.resources[index].value}")
-                output = None
+            output = self._select_issue(issue.resources[index].value)
         if not output:
             output = self._search_issue(series_id, issue.number)
         while not output:
-            search = Prompt.ask("Issue number", default="Exit", console=CONSOLE)
-            if search.lower() == "exit":
+            index = create_menu(
+                options=["Enter Issue id", "Enter Issue number"], prompt="Select", default="Exit"
+            )
+            if index == 0:
                 return
-            output = self._search_issue(series_id, search)
+            elif index == 1:
+                issue_id = IntPrompt.ask("Issue id", console=CONSOLE)
+                output = self._select_issue(issue_id)
+            else:
+                issue_number = Prompt.ask("Issue number", console=CONSOLE)
+                output = self._search_issue(series_id, issue_number)
         return output
 
     def update_series(self, result: Volume, series: Series):
@@ -156,10 +157,21 @@ class SimyanTalker:
         if result.name:
             series.title = result.name
 
+    def _select_volume(self, volume_id: int) -> Optional[Volume]:
+        CONSOLE.print(f"Getting Volume: {volume_id=}", style="logging.level.debug")
+        try:
+            return self.session.volume(volume_id)
+        except ServiceError:
+            CONSOLE.print(f"Unable to get Volume: {volume_id=}", style="logging.level.warning")
+        return None
+
     def _search_volume(
         self, publisher_id: int, title: str, start_year: Optional[int] = None
     ) -> Optional[Volume]:
-        LOGGER.debug(f"Searching for: {publisher_id=}, {title=}, {start_year=}")
+        CONSOLE.print(
+            f"Searching for Volume: {publisher_id=}, {title=}, {start_year=}",
+            style="logging.level.debug",
+        )
         output = None
         try:
             volume_list = self.session.volume_list({"filter": f"name:{title}"})
@@ -179,16 +191,7 @@ class SimyanTalker:
                 default="None of the Above",
             )
             if volume_index != 0:
-                try:
-                    output = self.session.volume(volume_list[volume_index - 1].volume_id)
-                except ServiceError:
-                    LOGGER.warning(
-                        "Unable to find volume: "
-                        f"volume_id={volume_list[volume_index - 1].volume_id}"
-                    )
-                    output = None
-        else:
-            LOGGER.info(f"Unable to find volume: {publisher_id=}, {title=}, {start_year=}")
+                output = self._select_volume(volume_list[volume_index - 1].volume_id)
         if not output and start_year:
             return self._search_volume(publisher_id, title)
         return output
@@ -198,18 +201,21 @@ class SimyanTalker:
         source_list = [x.source for x in series.resources]
         if Source.COMICVINE in source_list:
             index = source_list.index(Source.COMICVINE)
-            try:
-                output = self.session.volume(series.resources[index].value)
-            except ServiceError:
-                LOGGER.warning(f"Unable to find volume: volume_id={series.resources[index].value}")
-                output = None
+            output = self._select_volume(series.resources[index].value)
         if not output:
             output = self._search_volume(publisher_id, series.title, series.start_year)
         while not output:
-            search = Prompt.ask("Volume title", default="Exit", console=CONSOLE)
-            if search.lower() == "exit":
-                return None
-            output = self._search_volume(publisher_id, search)
+            index = create_menu(
+                options=["Enter Volume id", "Enter Volume title"], prompt="Select", default="Exit"
+            )
+            if index == 0:
+                return
+            elif index == 1:
+                volume_id = IntPrompt.ask("Volume id", console=CONSOLE)
+                output = self._select_volume(volume_id)
+            else:
+                volume_title = Prompt.ask("Volume title", console=CONSOLE)
+                output = self._search_volume(publisher_id, volume_title)
         return output
 
     def update_publisher(self, result: SimyanPublisher, publisher: Publisher):
@@ -220,8 +226,18 @@ class SimyanTalker:
         if result.name:
             publisher.title = result.name or publisher.title
 
+    def _select_publisher(self, publisher_id: int) -> Optional[Publisher]:
+        CONSOLE.print(f"Getting Publisher: {publisher_id=}", style="logging.level.debug")
+        try:
+            return self.session.publisher(publisher_id)
+        except ServiceError:
+            CONSOLE.print(
+                f"Unable to get Publisher: {publisher_id=}", style="logging.level.warning"
+            )
+        return None
+
     def _search_publisher(self, title: str) -> Optional[SimyanPublisher]:
-        LOGGER.debug(f"Searching for: {title=}")
+        CONSOLE.print(f"Searching for Publisher: {title=}", style="logging.level.debug")
         output = None
         try:
             publisher_list = self.session.publisher_list({"filter": f"name:{title}"})
@@ -234,18 +250,7 @@ class SimyanTalker:
                 default="None of the Above",
             )
             if publisher_index != 0:
-                try:
-                    output = self.session.publisher(
-                        publisher_list[publisher_index - 1].publisher_id
-                    )
-                except ServiceError:
-                    LOGGER.warning(
-                        "Unable to find publisher: "
-                        f"publisher_id={publisher_list[publisher_index - 1].publisher_id}"
-                    )
-                    output = None
-        else:
-            LOGGER.info(f"Unable to find publisher: {title=}")
+                output = self._select_publisher(publisher_list[publisher_index - 1].publisher_id)
         return output
 
     def lookup_publisher(self, publisher: Publisher) -> Optional[SimyanPublisher]:
@@ -253,20 +258,25 @@ class SimyanTalker:
         source_list = [x.source for x in publisher.resources]
         if Source.COMICVINE in source_list:
             index = source_list.index(Source.COMICVINE)
-            try:
-                output = self.session.publisher(publisher.resources[index].value)
-            except ServiceError:
-                LOGGER.warning(
-                    f"Unable to find publisher: publisher_id={publisher.resources[index].value}"
-                )
-                output = None
+            output = self._select_publisher(publisher.resources[index].value)
         if not output:
             output = self._search_publisher(publisher.title)
+        if not output and publisher.title.startswith("Marvel"):
+            output = self._search_publisher("Marvel")
         while not output:
-            search = Prompt.ask("Publisher title", default="Exit", console=CONSOLE)
-            if search.lower() == "exit":
-                return None
-            output = self._search_publisher(search)
+            index = create_menu(
+                options=["Enter Publisher id", "Enter Publisher title"],
+                prompt="Select",
+                default="Exit",
+            )
+            if index == 0:
+                return
+            elif index == 1:
+                publisher_id = IntPrompt.ask("Publisher id", console=CONSOLE)
+                output = self._select_publisher(publisher_id)
+            else:
+                publisher_title = Prompt.ask("Publisher title", console=CONSOLE)
+                output = self._search_publisher(publisher_title)
         return output
 
     def update_metadata(self, metadata: Metadata):

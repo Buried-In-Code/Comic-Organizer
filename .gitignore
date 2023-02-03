@@ -16,6 +16,7 @@ logs/
 .coverage
 .pdm.toml
 .python-version
+hatch.toml
 
 # =====Project=====
 tests/output/

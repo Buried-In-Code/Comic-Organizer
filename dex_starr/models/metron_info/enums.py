@@ -2,10 +2,40 @@ __all__ = ["Format", "InformationSource", "Role", "Genre", "AgeRating", "PageTyp
 
 from enum import Enum
 
-from dex_starr.console import RichLogger
-from dex_starr.models.comic_info.enums import PageType
+from dex_starr.console import CONSOLE
 
-LOGGER = RichLogger(__name__)
+
+class PageType(Enum):
+    FRONT_COVER = "FrontCover"
+    INNER_COVER = "InnerCover"
+    ROUNDUP = "Roundup"
+    STORY = "Story"
+    ADVERTISEMENT = "Advertisement"
+    EDITORIAL = "Editorial"
+    LETTERS = "Letters"
+    PREVIEW = "Preview"
+    BACK_COVER = "BackCover"
+    OTHER = "Other"
+    DELETED = "Deleted"
+
+    @staticmethod
+    def load(value: str) -> "PageType":
+        for entry in PageType:
+            if entry.value.lower().replace(" ", "") == value.lower().replace(" ", ""):
+                return entry
+        CONSOLE.print(f"'{value}' isnt a valid metron_info.PageType", style="logging.level.warning")
+        return PageType.STORY
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return f"{type(self).__name__}{{{self.value}}}"
+
+    def __lt__(self, other):
+        if not isinstance(other, PageType):
+            raise NotImplementedError()
+        return self.value < other.value
 
 
 class Format(Enum):
@@ -24,7 +54,7 @@ class Format(Enum):
         mappings = {"comic": Format.SERIES}
         if value.lower() in mappings:
             return mappings[value.lower()]
-        LOGGER.warning(f"Unable to find Format: '{value}'")
+        CONSOLE.print(f"'{value}' isnt a valid metron_info.Format", style="logging.level.warning")
         return Format.SERIES
 
     def __str__(self):
@@ -54,7 +84,7 @@ class InformationSource(Enum):
         mappings = {"comicvine": InformationSource.COMIC_VINE}
         if value.lower() in mappings:
             return mappings[value.lower()]
-        raise ValueError(f"Unable to find InformationSource: '{value}'")
+        raise ValueError(f"'{value}' isnt a valid metron_info.InformationSource")
 
     def __str__(self):
         return self.value
@@ -127,7 +157,7 @@ class Role(Enum):
         }
         if value.lower() in mappings:
             return mappings[value.lower()]
-        LOGGER.warning(f"Unable to find Role: '{value}'")
+        CONSOLE.print(f"'{value}' isnt a valid metron_info.Role", style="logging.level.warning")
         return Role.OTHER
 
     def __str__(self):
@@ -154,7 +184,9 @@ class AgeRating(Enum):
         for entry in AgeRating:
             if entry.value.lower() == value.lower():
                 return entry
-        LOGGER.warning(f"Unable to find AgeRating: '{value}'")
+        CONSOLE.print(
+            f"'{value}' isnt a valid metron_info.AgeRating", style="logging.level.warning"
+        )
         return AgeRating.UNKNOWN
 
     def __str__(self):
@@ -192,7 +224,7 @@ class Genre(Enum):
         for entry in Genre:
             if entry.value.lower() == value.lower():
                 return entry
-        LOGGER.warning(f"Unable to find Genre: '{value}'")
+        CONSOLE.print(f"'{value}' isnt a valid metron_info.Genre", style="logging.level.warning")
         return Genre.OTHER
 
     def __str__(self):

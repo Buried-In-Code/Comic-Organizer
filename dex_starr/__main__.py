@@ -1,23 +1,23 @@
 from argparse import ArgumentParser, Namespace
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from pydantic import ValidationError
 from rich import box
 from rich.panel import Panel
-from rich.prompt import Prompt
+from rich.prompt import Confirm, Prompt
+from rich.syntax import Syntax
 
 from dex_starr import (
-    IMAGE_EXTENSIONS,
-    SUPPORTED_EXTENSIONS,
+    SUPPORTED_FILE_EXTENSIONS,
+    SUPPORTED_IMAGE_EXTENSIONS,
     __version__,
     del_folder,
-    filter_files,
     get_cache_root,
     list_files,
     setup_logging,
 )
 from dex_starr.archive import Archive
-from dex_starr.console import CONSOLE, RichLogger
+from dex_starr.console import CONSOLE
 from dex_starr.models.comic_info.schema import ComicInfo
 from dex_starr.models.metadata.schema import Metadata
 from dex_starr.models.metron_info.schema import MetronInfo
@@ -28,46 +28,54 @@ from dex_starr.services.marvel import EsakTalker
 from dex_starr.services.metron import MokkariTalker
 from dex_starr.settings import Settings
 
-LOGGER = RichLogger("Dex-Starr")
 
-
-def read_info_file(archive: Archive) -> Metadata:
+def read_info_file(archive: Archive) -> Optional[Metadata]:
     info_file = archive.extracted_folder / "Metadata.json"
     if info_file.exists():
         try:
-            LOGGER.info("Parsing Metadata.json")
+            CONSOLE.print("Parsing Metadata.json", style="logging.level.debug")
             return Metadata.from_file(info_file)
         except ValidationError as err:
-            LOGGER.warning(f"Unable to parse Metadata.json: {err}")
+            CONSOLE.print(f"Unable to parse Metadata.json: {err}", style="logging.level.warning")
     info_file = archive.extracted_folder / "MetronInfo.xml"
     if info_file.exists():
         try:
-            LOGGER.info("Parsing MetronInfo.xml")
+            CONSOLE.print("Parsing MetronInfo.xml", style="logging.level.debug")
             metron_info = MetronInfo.from_file(info_file)
-            return metron_info.to_metadata()
+            try:
+                return metron_info.to_metadata()
+            except ValidationError as err:
+                CONSOLE.print(
+                    f"Unable to convert to Metadata: {err}", style="logging.level.warning"
+                )
         except ValidationError as err:
-            LOGGER.warning(f"Unable to parse MetronInfo.xml: {err}")
+            CONSOLE.print(f"Unable to parse MetronInfo.xml: {err}", style="logging.level.warning")
     info_file = archive.extracted_folder / "ComicInfo.xml"
     if info_file.exists():
         try:
-            LOGGER.info("Parsing ComicInfo.xml")
+            CONSOLE.print("Parsing ComicInfo.xml", style="logging.level.debug")
             comic_info = ComicInfo.from_file(info_file)
-            return comic_info.to_metadata()
+            try:
+                return comic_info.to_metadata()
+            except ValidationError as err:
+                CONSOLE.print(
+                    f"Unable to convert to Metadata: {err}", style="logging.level.warning"
+                )
         except ValidationError as err:
-            LOGGER.warning(f"Unable to parse ComicInfo.xml: {err}")
-    return create_metadata()
+            CONSOLE.print(f"Unable to parse ComicInfo.xml: {err}", style="logging.level.warning")
+    return None
 
 
 def write_info_file(archive: Archive, settings: Settings, metadata: Metadata):
     if settings.general.generate_metadata_file:
-        LOGGER.info("Generating 'Metadata.json'")
+        CONSOLE.print("Generating Metadata.json", style="logging.level.debug")
         metadata.to_file(archive.extracted_folder / "Metadata.json")
     if settings.metron.generate_metroninfo_file:
-        LOGGER.info("Generating 'MetronInfo.xml'")
+        CONSOLE.print("Generating MetronInfo.xml", style="logging.level.debug")
         metron_info = to_metron_info(metadata, settings.general.resolution_order)
         metron_info.to_file(archive.extracted_folder / "MetronInfo.xml")
     if settings.general.generate_comicinfo_file:
-        LOGGER.info("Generating 'ComicInfo.xml'")
+        CONSOLE.print("Generating ComicInfo.xml", style="logging.level.debug")
         comic_info = to_comic_info(metadata)
         comic_info.to_file(archive.extracted_folder / "ComicInfo.xml")
 
@@ -85,15 +93,22 @@ def pull_info(
             continue
         if service == "Marvel" and not metadata.publisher.title.startswith("Marvel"):
             continue
-        CONSOLE.print(f"Pulling from {service}", style="bold blue")
+        CONSOLE.rule(f"[bold blue]Pulling from {service}[/]", style="dim blue")
         services[service].update_metadata(metadata)
+
+
+def clean_cache():
+    for child in get_cache_root().iterdir():
+        if child.is_dir():
+            del_folder(child)
+        elif child.name != "cache.sqlite":
+            child.unlink(missing_ok=True)
 
 
 def parse_arguments() -> Namespace:
     parser = ArgumentParser(prog="Dex-Starr")
     parser.version = __version__
     parser.add_argument("--manual-edit", action="store_true")
-    parser.add_argument("--resolve-manually", action="store_true")
     parser.add_argument("--version", action="version")
     parser.add_argument("--debug", action="store_true")
     return parser.parse_args()
@@ -104,8 +119,13 @@ def main():
     setup_logging(args.debug)
 
     CONSOLE.print(
-        Panel.fit("Welcome to Dex-Starr", subtitle=f"v{__version__}", box=box.SQUARE),
-        style="bold magenta",
+        Panel.fit(
+            "Welcome to Dex-Starr",
+            subtitle=f"v{__version__}",
+            box=box.SQUARE,
+            style="title",
+            border_style="title.border",
+        ),
         justify="center",
     )
     settings = Settings.load()
@@ -122,37 +142,67 @@ def main():
         services["Marvel"] = EsakTalker(settings=settings.marvel)
     settings.save()
 
-    # region Clean cache
-    for child in get_cache_root().iterdir():
-        if child.is_dir():
-            del_folder(child)
-        elif child.name != "cache.sqlite":
-            child.unlink(missing_ok=True)
-    # endregion
+    clean_cache()
 
     try:
-        for archive_file in filter_files(
-            settings.general.import_folder, filter_=SUPPORTED_EXTENSIONS
+        for archive_file in list_files(
+            settings.general.import_folder, filter_=SUPPORTED_FILE_EXTENSIONS
         ):
-            CONSOLE.rule(f"[bold blue]Importing {archive_file.name}[/]", style="dim blue")
+            CONSOLE.rule(f"[title]Importing {archive_file.name}[/]", style="subtitle.border")
             archive = Archive(archive_file)
 
             if not archive.extract():
-                LOGGER.error(f"Unable to extract: {archive.source_file.name}")
+                CONSOLE.print(
+                    f"Unable to extract: {archive.source_file.name}", style="logging.level.error"
+                )
                 continue
 
             metadata = read_info_file(archive)
+            if metadata:
+                CONSOLE.print(
+                    Panel.fit(
+                        Syntax(
+                            metadata.json(indent=2, ensure_ascii=False),
+                            "json",
+                            indent_guides=True,
+                            theme="ansi_dark",
+                            word_wrap=True,
+                        ),
+                        box=box.SQUARE,
+                        border_style="syntax.border",
+                    ),
+                )
+                if not Confirm.ask("Keep Metadata", console=CONSOLE):
+                    metadata = None
+            if not metadata:
+                metadata = create_metadata()
             # region Delete extras
             for child in list_files(archive.extracted_folder):
-                if child.suffix not in IMAGE_EXTENSIONS:
-                    LOGGER.debug(f"Deleting {child.name}")
+                if child.suffix not in SUPPORTED_IMAGE_EXTENSIONS:
+                    CONSOLE.print(f"Deleting {child.name}", style="logging.level.debug")
                     child.unlink(missing_ok=True)
             # endregion
-            pull_info(metadata, services, settings.general.resolution_order, args.resolve_manually)
+            pull_info(metadata, services, settings.general.resolution_order)
 
             if args.manual_edit:
                 write_info_file(archive, settings, metadata)
-                CONSOLE.print(metadata)
+                CONSOLE.print(
+                    Panel.fit(
+                        Syntax(
+                            metadata.json(indent=2, ensure_ascii=False),
+                            "json",
+                            indent_guides=True,
+                            theme="ansi_dark",
+                            word_wrap=True,
+                        ),
+                        box=box.SQUARE,
+                        border_style="syntax.border",
+                    ),
+                )
+                CONSOLE.print(
+                    f"Metadata file is at: {archive.extracted_folder / 'Metadata.json'}",
+                    style="logging.level.info",
+                )
                 Prompt.ask("Press <Enter> to continue", console=CONSOLE)
                 metadata = read_info_file(archive)
             write_info_file(archive, settings, metadata)
@@ -161,10 +211,12 @@ def main():
                 if not args.debug:
                     archive.source_file.unlink(missing_ok=True)
             else:
-                LOGGER.error(f"Unable to archive: {archive.result_file.name}")
+                CONSOLE.print(
+                    f"Unable to archive: {archive.result_file.name}", style="logging.level.error"
+                )
             del_folder(archive.extracted_folder)
     except KeyboardInterrupt:
-        LOGGER.info("Shutting down Dex-Starr")
+        CONSOLE.print("Shutting down Dex-Starr", style="logging.level.info")
 
 
 if __name__ == "__main__":
