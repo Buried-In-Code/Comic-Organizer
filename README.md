@@ -17,12 +17,10 @@
 [![Flake8](https://img.shields.io/badge/Linter-Flake8-informational?style=flat-square)](https://github.com/PyCQA/flake8)
 
 [![Github - Contributors](https://img.shields.io/github/contributors/Buried-In-Code/Dex-Starr.svg?logo=Github&label=Contributors&style=flat-square)](https://github.com/Buried-In-Code/Dex-Starr/graphs/contributors)
-[![Github Action - Code Analysis](https://img.shields.io/github/actions/workflow/status/Buried-In-Code/Dex-Starr/code-analysis.yaml?branch=main&logo=Github-Actions&label=Code-Analysis&style=flat-square)](https://github.com/Buried-In-Code/Dex-Starr/actions/workflows/code-analysis.yaml)
 [![Github Action - Testing](https://img.shields.io/github/actions/workflow/status/Buried-In-Code/Dex-Starr/testing.yaml?branch=main&logo=Github-Actions&label=Testing&style=flat-square)](https://github.com/Buried-In-Code/Dex-Starr/actions/workflows/testing.yaml)
 
-Dex-Starr helps sort and organize your comic collection by using the information stored in ComicInfo files.\
-It also formats all your digital comics into a single format (cbz or cb7), adds and/or updates the supported list of Info files.\
-Dex-Starr can also pull information from a list of sources to populate missing fields.
+Dex-Starr's goal is to help sort and organize your comic collection by using the information stored in Info files.\
+It also formats all your digital comics into a single format (cbz or cb7), adds and/or updates the supported list of Info files.
 
 ## Supported Formats
 
@@ -96,27 +94,27 @@ The files are named based on the format of Comic:
 ## Collection Folder Structure
 
 ```
-Root Folder
-+-- Import
-|  +-- New Comic #10.cbr
-|  +-- New Comic #11.cbz
-+-- Processing
-+-- Collection
-|  +-- Publisher
-|  |  +-- Series
-|  |  |  +-- Series-#1.cbz
-|  |  |  +-- Series-Annual-#1.cbz
-|  |  |  +-- Series-Chapter-#1.cbz
-|  |  |  +-- Series-HC.cbz
-|  |  |  +-- Series-#1-TP.cbz
-|  |  |  +-- Series-GN.cbz
-|  |  +-- Series-v2
-|  |  |  +-- Series-v2-#1.cbz
-|  |  |  +-- Series-v2-Annual-#1.cbz
-|  |  |  +-- Series-v2-Chapter-#1.cbz
-|  |  |  +-- Series-v2-#1-HC.cbz
-|  |  |  +-- Series-v2-TP.cbz
-|  |  |  +-- Series-v2-GN.cbz
+Import
++-- New Comic #10.cbr
++-- New Comic #11.cbz
+```
+```
+Collection
++-- Publisher
+|  +-- Series
+|  |  +-- Series-#1.cbz
+|  |  +-- Series-Annual-#1.cbz
+|  |  +-- Series-Chapter-#1.cbz
+|  |  +-- Series-HC.cbz
+|  |  +-- Series-#1-TP.cbz
+|  |  +-- Series-GN.cbz
+|  +-- Series-v2
+|  |  +-- Series-v2-#1.cbz
+|  |  +-- Series-v2-Annual-#1.cbz
+|  |  +-- Series-v2-Chapter-#1.cbz
+|  |  +-- Series-v2-#1-HC.cbz
+|  |  +-- Series-v2-TP.cbz
+|  |  +-- Series-v2-GN.cbz
 ```
 
 ## Socials
