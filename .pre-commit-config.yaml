@@ -47,7 +47,7 @@ repos:
           - --autofix
           - --indent=2
   - repo: https://github.com/psf/black
-    rev: 22.12.0
+    rev: 23.1.0
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/bandit
@@ -63,14 +63,14 @@ repos:
     hooks:
       - id: flake8
   - repo: https://github.com/PyCQA/isort
-    rev: 5.11.4
+    rev: 5.12.0
     hooks:
       - id: isort
         args:
           - --filter-files
           - --profile=black
   - repo: https://github.com/pappasam/toml-sort
-    rev: v0.21.0
+    rev: v0.22.3
     hooks:
       - id: toml-sort
         args:
