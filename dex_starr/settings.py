@@ -31,23 +31,23 @@ class SettingsModel(BaseModel):
 
 class MetronSettings(SettingsModel):
     generate_metroninfo_file: bool = True
-    password: Optional[str] = None
-    username: Optional[str] = None
+    password: str = ""
+    username: str = ""
 
 
 class MarvelSettings(SettingsModel):
-    public_key: Optional[str] = None
-    private_key: Optional[str] = None
+    public_key: str = ""
+    private_key: str = ""
 
 
 class LeagueOfComicGeeksSettings(SettingsModel):
-    client_id: Optional[str] = None
-    client_secret: Optional[str] = None
-    access_token: Optional[str] = None
+    client_id: str = ""
+    client_secret: str = ""
+    access_token: str = ""
 
 
 class ComicvineSettings(SettingsModel):
-    api_key: Optional[str] = None
+    api_key: str = ""
 
 
 class GeneralSettings(SettingsModel):
