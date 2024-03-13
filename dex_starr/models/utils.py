@@ -73,9 +73,11 @@ def to_comic_info(metadata: Metadata) -> ComicInfo:
         characters=", ".join(metadata.issue.characters) if metadata.issue.characters else None,
         teams=", ".join(metadata.issue.teams) if metadata.issue.teams else None,
         locations=", ".join(metadata.issue.locations) if metadata.issue.locations else None,
-        story_arc=", ".join([x.title for x in metadata.issue.story_arcs])
-        if metadata.issue.story_arcs
-        else None,
+        story_arc=(
+            ", ".join([x.title for x in metadata.issue.story_arcs])
+            if metadata.issue.story_arcs
+            else None
+        ),
         # TODO: Series Group
         pages=sorted(
             {
@@ -128,20 +130,26 @@ def to_metron_info(metadata: Metadata, resolution_order: List[str]) -> MetronInf
 
     primary_source = get_primary_source(metadata.issue.resources, resolution_order)
     return MetronInfo(
-        id=Source(source=str(primary_source.source), value=primary_source.value)
-        if primary_source
-        else None,
-        publisher=Resource(
-            id=get_source_id(metadata.publisher.resources, primary_source.source)
+        id=(
+            Source(source=str(primary_source.source), value=primary_source.value)
             if primary_source
-            else None,
+            else None
+        ),
+        publisher=Resource(
+            id=(
+                get_source_id(metadata.publisher.resources, primary_source.source)
+                if primary_source
+                else None
+            ),
             value=metadata.publisher.title,
         ),
         series=Series(
             lang=metadata.issue.language,
-            id=get_source_id(metadata.series.resources, primary_source.source)
-            if primary_source
-            else None,
+            id=(
+                get_source_id(metadata.series.resources, primary_source.source)
+                if primary_source
+                else None
+            ),
             name=metadata.series.title,
             sort_name=metadata.series.title,
             volume=metadata.series.volume,
