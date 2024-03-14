@@ -1,3 +1,8 @@
+# ⚠️ Deprecation Notice ⚠️
+
+This project is now deprecated and no longer actively maintained.\
+This project has been transitioned to a new and improved version called [Perdoo](https://github.com/ComicCorps/Perdoo).
+
 # Dex-Starr
 
 > With test and code of crimson red,\
